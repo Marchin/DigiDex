@@ -51,7 +51,7 @@ public class DataRetriever {
                             string linkToImage = WikimonBaseURL + image.Attributes.GetNamedItem("src").InnerText;
                             using (UnityWebRequest textureRequest = UnityWebRequestTexture.GetTexture(linkToImage)) {
                                 await textureRequest.SendWebRequest();
-                                if (!textureRequest.isNetworkError) {
+                                if (textureRequest.result != UnityWebRequest.Result.ConnectionError) {
                                     var texture = DownloadHandlerTexture.GetContent(textureRequest);
                                     var data = texture.EncodeToPNG();
                                     var file = File.Create(digimonArtPath);
