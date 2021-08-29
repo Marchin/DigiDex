@@ -72,8 +72,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # Custom
-/[Aa]ssets/Art/Digimons
-/[Aa]ssets/Art/Digimons.meta
-Assets/Data/Digimons
-Assets/Data/Digimons.meta
+/[Aa]ssets/[Rr]esources/[Rr]emote/
+/[Aa]ssets/[Rr]esources/[Rr]emote.meta
 .vsconfig
