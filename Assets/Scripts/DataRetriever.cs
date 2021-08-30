@@ -56,8 +56,8 @@ public static class DataRetriever {
                         XmlNode image = digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[1]/td/div/div/a/img");
                         if (image != null) {
                             string linkToImage = WikimonBaseURL + image.Attributes.GetNamedItem("src").InnerText;
-                            bool isPNG = linkToImage.EndsWith(".png");
-                            bool isJPG = linkToImage.EndsWith(".jpg");
+                            bool isPNG = linkToImage.ToLower().EndsWith(".png");
+                            bool isJPG = linkToImage.ToLower().EndsWith(".jpg");
                             if (isPNG || isJPG) {
                                 using (UnityWebRequest textureRequest = UnityWebRequestTexture.GetTexture(linkToImage)) {
                                     await textureRequest.SendWebRequest();
@@ -82,6 +82,7 @@ public static class DataRetriever {
                         digimonData = AssetDatabase.LoadAssetAtPath(digimonDataPath, typeof(Digimon)) as Digimon;
                     }
 
+                    digimonData.LinkSubFix = digimonLinkSubFix;
                     digimonData.Name = digimonName;
 
                     if (File.Exists(digimonArtPath)) {
