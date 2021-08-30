@@ -17,17 +17,16 @@ public class DigimonListTest : MonoBehaviour {
     [SerializeField] private int _maxButtons = default;
     [SerializeField] private Button _profileButton = default;
     [SerializeField] private Animator _profileAnimator = default;
+    [SerializeField] private DigimonList _digimonList = default;
     private Button[] _digimonButtons;
     private TextMeshProUGUI[] _digimonButtonsTexts;
     private float _buttonLenght;
     private float _buttonScrollLength;
     private int _currDigimonScrollIndex;
     private int _selectedDigimonIndex = 0;
-    private DigimonList _digimonList;
     private bool _profileOpen = false;
 
     private async void Start() {
-        _digimonList = Resources.Load<DigimonList>("Remote/Data/DigimonList");
 
         if (_digimonList == null) {
 #if UNITY_EDITOR

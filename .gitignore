@@ -72,6 +72,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # Custom
-/[Aa]ssets/[Rr]esources/[Rr]emote/
-/[Aa]ssets/[Rr]esources/[Rr]emote.meta
+/[Aa]ssets/[Rr]emote/
+/[Aa]ssets/[Rr]emote.meta
 .vsconfig

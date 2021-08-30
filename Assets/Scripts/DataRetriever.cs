@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Xml;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -10,14 +11,13 @@ using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
 
 public static class DataRetriever {
-    const string RemoteResourcesPath = "Assets/Resources";
-    const string DigimonsDataPath = "Remote/Data/Digimons";
+    const string DigimonsDataPath = "Assets/Remote/Data/Digimons";
 
     [MenuItem("DigiDex/Retrieve Data")]
     public static async void RetrieveData() {
         const string WikimonBaseURL = "https://wikimon.net";
         const string DigimonList = WikimonBaseURL + "/List_of_Digimon";
-        const string ArtDigimonsPathX = "Remote/Art/Digimons/Digimon[{0}]";
+        const string ArtDigimonsPathX = "Assets/Remote/Art/Digimons/Digimon[{0}]";
         
         // TODO: Add the new images either in the last folder or on a new one depending on the wether the last folder is full
 
@@ -44,45 +44,48 @@ public static class DataRetriever {
                     XmlDocument digimonSite = new XmlDocument();
                     digimonSite.Load(digimonLink);
 
-                    if (!Directory.Exists(artPath.GetResourceAssetLocation())) {
-                        Directory.CreateDirectory(artPath.GetResourceAssetLocation());
+                    if (!Directory.Exists(artPath)) {
+                        Directory.CreateDirectory(artPath);
                     }
                 
-                    if (!Directory.Exists(DigimonsDataPath.GetResourceAssetLocation())) {
-                        Directory.CreateDirectory(DigimonsDataPath.GetResourceAssetLocation());
+                    if (!Directory.Exists(DigimonsDataPath)) {
+                        Directory.CreateDirectory(DigimonsDataPath);
                     }
                 
-                    if (!File.Exists(digimonArtPath.GetResourceAssetLocation())) {
+                    if (!File.Exists(digimonArtPath)) {
                         XmlNode image = digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[1]/td/div/div/a/img");
                         if (image != null) {
                             string linkToImage = WikimonBaseURL + image.Attributes.GetNamedItem("src").InnerText;
-                            using (UnityWebRequest textureRequest = UnityWebRequestTexture.GetTexture(linkToImage)) {
-                                await textureRequest.SendWebRequest();
-                                if (textureRequest.result != UnityWebRequest.Result.ConnectionError) {
-                                    var texture = DownloadHandlerTexture.GetContent(textureRequest);
-                                    var data = texture.EncodeToPNG();
-                                    var file = File.Create(digimonArtPath.GetResourceAssetLocation());
-                                    file.Write(data, 0, data.Length);
-                                    file.Close();
-                                    AssetDatabase.Refresh();
+                            bool isPNG = linkToImage.EndsWith(".png");
+                            bool isJPG = linkToImage.EndsWith(".jpg");
+                            if (isPNG || isJPG) {
+                                using (UnityWebRequest textureRequest = UnityWebRequestTexture.GetTexture(linkToImage)) {
+                                    await textureRequest.SendWebRequest();
+                                    if (textureRequest.result != UnityWebRequest.Result.ConnectionError) {
+                                        var texture = DownloadHandlerTexture.GetContent(textureRequest);
+                                        var data = isPNG ? texture.EncodeToPNG() : texture.EncodeToJPG();
+                                        var file = File.Create(digimonArtPath);
+                                        file.Write(data, 0, data.Length);
+                                        file.Close();
+                                        AssetDatabase.Refresh();
+                                    }
                                 }
                             }
                         }
                     }
                     
                     Digimon digimonData = null;
-                    if (!File.Exists(digimonDataPath.GetResourceAssetLocation())) {
-
+                    if (!File.Exists(digimonDataPath)) {
                         digimonData = ScriptableObject.CreateInstance<Digimon>();
-                        AssetDatabase.CreateAsset(digimonData, digimonDataPath.GetResourceAssetLocation());
+                        AssetDatabase.CreateAsset(digimonData, digimonDataPath);
                     } else {
-                        digimonData = AssetDatabase.LoadAssetAtPath(digimonDataPath.GetResourceAssetLocation(), typeof(Digimon)) as Digimon;
+                        digimonData = AssetDatabase.LoadAssetAtPath(digimonDataPath, typeof(Digimon)) as Digimon;
                     }
 
                     digimonData.Name = digimonName;
 
-                    if (File.Exists(digimonArtPath.GetResourceAssetLocation())) {
-                        digimonData.Image = AssetDatabase.LoadAssetAtPath(digimonArtPath.GetResourceAssetLocation(), typeof(Sprite)) as Sprite;
+                    if (File.Exists(digimonArtPath)) {
+                        digimonData.Image = AssetDatabase.LoadAssetAtPath(digimonArtPath, typeof(Sprite)) as Sprite;
                     }
 
                     XmlNode profileNode = digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td") ??
@@ -101,6 +104,7 @@ public static class DataRetriever {
                     }
 
                     EditorUtility.SetDirty(digimonData);
+                    AssetDatabase.SaveAssets();
 
                     ++digimonCount;
                 } catch (Exception ex) {
@@ -115,11 +119,11 @@ public static class DataRetriever {
         for (int i = 0; i < folderCount; i++) {
             string digimonsFoldersI = string.Format(ArtDigimonsPathX, i);
             string spriteAtlasPath = digimonsFoldersI + ".spriteatlas";
-            if (!File.Exists(spriteAtlasPath.GetResourceAssetLocation())) {
+            if (!File.Exists(spriteAtlasPath)) {
                 SpriteAtlas spriteAtlas = new SpriteAtlas();
-                UnityEngine.Object folder = AssetDatabase.LoadAssetAtPath(digimonsFoldersI.GetResourceAssetLocation(), typeof(UnityEngine.Object));
+                UnityEngine.Object folder = AssetDatabase.LoadAssetAtPath(digimonsFoldersI, typeof(UnityEngine.Object));
                 spriteAtlas.Add(new UnityEngine.Object[] { folder });
-                AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath.GetResourceAssetLocation());
+                AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
             }
         }
         
@@ -132,23 +136,11 @@ public static class DataRetriever {
     
     [MenuItem("DigiDex/Clean Local Data")]
     public static void CleanLocalData() {
-        if (Directory.Exists("Remote/Art/Digimons".GetResourceAssetLocation())) {
-            Directory.Delete("Remote/Art/Digimons".GetResourceAssetLocation(), true);
+        if (Directory.Exists("Assets/Remote")) {
+            Directory.Delete("Assets/Remote", true);
         }
-        if (File.Exists("Remote/Art/Digimons.meta".GetResourceAssetLocation())) {
-            File.Delete("Remote/Art/Digimons.meta".GetResourceAssetLocation());
-        }
-        if (Directory.Exists(DigimonsDataPath.GetResourceAssetLocation())) {
-            Directory.Delete(DigimonsDataPath.GetResourceAssetLocation(), true);
-        }
-        if (File.Exists("Remote/Data/Digimons.meta".GetResourceAssetLocation())) {
-            File.Delete("Remote/Data/Digimons.meta".GetResourceAssetLocation());
-        }
-        if (File.Exists("Remote/Data/DigimonList.asset".GetResourceAssetLocation())) {
-            File.Delete("Remote/Data/DigimonList.asset".GetResourceAssetLocation());
-        }
-        if (File.Exists("Remote/Data/DigimonList.asset.meta".GetResourceAssetLocation())) {
-            File.Delete("Remote/Data/DigimonList.asset.meta".GetResourceAssetLocation());
+        if (File.Exists("Assets/Remote.meta")) {
+            File.Delete("Assets/Remote.meta");
         }
         AssetDatabase.Refresh();
     }
@@ -156,32 +148,39 @@ public static class DataRetriever {
     
     [MenuItem("DigiDex/Generate Digimon List Asset File")]
     public static void GenerateDigimonList() {
-        const string DigimonListLocation = "Remote/Data/";
+        const string DigimonListLocation = "Assets/Remote/Data/";
         const string DigimonListPath = DigimonListLocation + "DigimonList.asset";
         AssetDatabase.Refresh();
         DigimonList digimonList = null;
-        if (!File.Exists(DigimonListPath.GetResourceAssetLocation())) {
+        if (!File.Exists(DigimonListPath)) {
             digimonList = ScriptableObject.CreateInstance<DigimonList>();
-            AssetDatabase.CreateAsset(digimonList, DigimonListPath.GetResourceAssetLocation());
+            AssetDatabase.CreateAsset(digimonList, DigimonListPath);
         } else {
-            digimonList = AssetDatabase.LoadAssetAtPath(DigimonListPath.GetResourceAssetLocation(), typeof(DigimonList)) as DigimonList;
+            digimonList = AssetDatabase.LoadAssetAtPath(DigimonListPath, typeof(DigimonList)) as DigimonList;
         }
-        Digimon[] digimons = Resources.LoadAll<Digimon>(DigimonsDataPath) as Digimon[];
-        digimonList.Digimons = new List<Digimon>(digimons);
+        
+        digimonList.Digimons = new List<Digimon>();
+        var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
+        for (int i = 0; i < paths.Length; i++) {
+            Digimon digimon = AssetDatabase.LoadAssetAtPath<Digimon>(paths[i]);
+            if (digimon != null) {
+                digimonList.Digimons.Add(digimon);
+            }
+        }
         EditorUtility.SetDirty(digimonList);
         AssetDatabase.SaveAssets();
         Debug.Log("List Generated");
     }
 
-    public static string GetResourceAssetLocation(this string path) {
-        string result = path;
+    // public static string GetResourceAssetLocation(this string path) {
+    //     string result = path;
 
-        if (!string.IsNullOrEmpty(result) && result[0] == '/') {
-            result = RemoteResourcesPath + path;
-        } else {
-            result = RemoteResourcesPath + "/" + path;
-        }
+    //     if (!string.IsNullOrEmpty(result) && result[0] == '/') {
+    //         result = RemoteResourcesPath + path;
+    //     } else {
+    //         result = RemoteResourcesPath + "/" + path;
+    //     }
 
-        return result;
-    }
+    //     return result;
+    // }
 }
