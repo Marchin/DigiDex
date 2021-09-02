@@ -15,7 +15,7 @@ MonoBehaviour:
   m_GroupName: Digimon Data
   m_Data:
     m_SerializedData: []
-  m_GUID: fe383b7df9199f9489fc9bd52c95bca8
+  m_GUID: cee1c2fa1a2ccdd41a143437454c7fdc
   m_SerializeEntries:
   - m_GUID: efa5870f86365b54eb043d75aade45b7
     m_Address: Assets/Remote/Data/Digimons/Achillesmon.asset
@@ -4909,719 +4909,719 @@ MonoBehaviour:
     m_Address: Assets/Remote/Data/Digimons/Tailmon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 0fc182f4fddebec4b8d166f91ed17e96
+  - m_GUID: e832cdc76e43d3440bd78d400a8bddab
     m_Address: Assets/Remote/Data/Digimons/Tanemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 59ac02f3a13d2af43aafad51bbeed3b9
+  - m_GUID: f1eb7246656e60043be6cd89257f8f6b
     m_Address: Assets/Remote/Data/Digimons/Tankdramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 623175d8cb414c54f8d2ef48ad198502
+  - m_GUID: 8cd0de6803f0baa4f8781f2667325225
     m_Address: Assets/Remote/Data/Digimons/Tankmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: dc1689a906949c8418b55d1f9ed763d5
+  - m_GUID: f1a011c9aaed2124388a07c5be746ca6
     m_Address: Assets/Remote/Data/Digimons/Taomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 0f7418ef6e1f2104bb203314c30407b4
+  - m_GUID: a0c513634d42a844c9cf2af29bb8a667
     m_Address: Assets/Remote/Data/Digimons/Taomon (Silver).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 42d5d7d8cb13d1e459790cff75d8c0dc
+  - m_GUID: dfd536933bb83dd4a99835c1aab5f73b
     m_Address: Assets/Remote/Data/Digimons/Targetmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: aa3ce4246f3fd6447978699fe9e1521a
+  - m_GUID: 4744bc58b79e5f94388a91f5a1c05cdd
     m_Address: Assets/Remote/Data/Digimons/Technodramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 8f5bff2685b8e9249b3c98a7cce60a2e
+  - m_GUID: 107b2a1830bfb604a87e7bacd22a2f88
     m_Address: Assets/Remote/Data/Digimons/Tekkamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: eba49b844e4bc1442952bfe507f4dd78
+  - m_GUID: e3631c14fc9e98a469d67db2dd383085
     m_Address: Assets/Remote/Data/Digimons/Tempomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 1810879816623b84ca76fdeae90d58b9
+  - m_GUID: 9d983850e012a2c41a61f4cf20c04e6e
     m_Address: Assets/Remote/Data/Digimons/Tentomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: d330413999b5a0148bb0042ed60b5c95
+  - m_GUID: 52660875a78406d41bd34ada22fd91c3
     m_Address: Assets/Remote/Data/Digimons/Terriermon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 2ff63b1f20d7ef14d87f8c7d4cf2ed22
+  - m_GUID: e79341dce033e1844879eb64b44614f0
     m_Address: Assets/Remote/Data/Digimons/Terriermon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 5f13bfa525d5c484bb771269ea1641fb
+  - m_GUID: f10499637d4416649990502049c333d2
     m_Address: Assets/Remote/Data/Digimons/Terriermon Assistant.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 9007386fe5bfca840a3051e92e6ef103
+  - m_GUID: d96c8b6166c5c4d418ba9d3dc1a7a9b8
     m_Address: Assets/Remote/Data/Digimons/Thunderballmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: d86d3bbc8deb85947a2d7bd7dbc5f920
+  - m_GUID: e251e810bc5ded946af515b6d39eeef2
     m_Address: Assets/Remote/Data/Digimons/Thunderballmon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: ae17b87f2aaff914b9dc00a719211dab
+  - m_GUID: a6587684636f9d04fb0c790e55c25f00
     m_Address: Assets/Remote/Data/Digimons/Thunderbirmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: f59760494f7ea354ba2d6d47ea086419
+  - m_GUID: 81d2f4d92f2f7f24e80de636b75e97bc
     m_Address: Assets/Remote/Data/Digimons/Tia Ludomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 0112a639348d17d4895ac3fb78601e93
+  - m_GUID: 35c962b00471e794894f864a2c2b1dbc
     m_Address: Assets/Remote/Data/Digimons/Tiger Vespamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 2394e101adf10174fb5b7afe8ca0196e
+  - m_GUID: 8ae4150b82da74c4694f69fbc6c2cee5
     m_Address: Assets/Remote/Data/Digimons/Tinkermon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 701070f177c34f648acb39bd335240fe
+  - m_GUID: ac5b01db556c4844197111b677eb6271
     m_Address: Assets/Remote/Data/Digimons/Titamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: e906f0a90948a0640b9058387d27f0f4
+  - m_GUID: f11cd17431be9114ca95f34e0c708994
     m_Address: Assets/Remote/Data/Digimons/Tobiumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: b56083383b4cdc648b4d7500a9a61e99
+  - m_GUID: a097b34b8f9992845b6239f1be64e519
     m_Address: Assets/Remote/Data/Digimons/Tobucatmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: ab0c9b97658c130419989020c7f3cd83
+  - m_GUID: 24a70a4587d091e4fa04944882beb4d1
     m_Address: Assets/Remote/Data/Digimons/Tocanmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: a521cd2f2cbbb6c4189e3335eea51bc8
+  - m_GUID: f00a7715b30e98442aee763793c27ffe
     m_Address: Assets/Remote/Data/Digimons/Togemogumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 978e89f4a73f93b4f8de1ef35bd49200
+  - m_GUID: da75399e71682d5489194060b257ef7b
     m_Address: Assets/Remote/Data/Digimons/Togemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 8cf48cb6c4579ae4d8fbf01b9aeef4d3
+  - m_GUID: 94a9c93193ae2f34abcb22df00a2fb1c
     m_Address: Assets/Remote/Data/Digimons/Togemon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: a685c907d51be14439347d9012dc4f59
+  - m_GUID: a8aae2c698c7f824cb9cc06a4affaad4
     m_Address: Assets/Remote/Data/Digimons/Tokomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 0ea44cf2104c1d642848d7e1643f6a81
+  - m_GUID: fe32fb579c8f04b4a8ff1be7a72b5bf8
     m_Address: Assets/Remote/Data/Digimons/Tokomon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 033c550f58c061945837df8e9f53c7da
+  - m_GUID: 11056d64818a51a4e9a08d5e99d755e0
     m_Address: Assets/Remote/Data/Digimons/Tonosama Gekomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 074761433ed73314683a232989f0d340
+  - m_GUID: 8ae6546190648964dbffa53b5629c016
     m_Address: Assets/Remote/Data/Digimons/Tonosama Mamemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 5d6d40cd3ef66484d8674308b8ffc4f1
+  - m_GUID: ec60a17ae8c85644c84a6448f3672263
     m_Address: Assets/Remote/Data/Digimons/Torikara Ballmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: c0dc2c16fa2404d4dafdeb6249962a26
+  - m_GUID: 7756016059218f548a75e766b14013dc
     m_Address: Assets/Remote/Data/Digimons/Toropiamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 1cf2d6e75618f0842acd1c4befa04778
+  - m_GUID: 7df57099d55c80d4e97e791bae22e998
     m_Address: Assets/Remote/Data/Digimons/Tortamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: b2b0c7d1f9cff8b42828fac06d1bfbda
+  - m_GUID: cce6d54b052dcd14b9e4a6d695422b69
     m_Address: Assets/Remote/Data/Digimons/Toy Agumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: e01d91b86601dde419cf5a5cade874a2
+  - m_GUID: 5d145be8022081640b0e29ad5eb3e17c
     m_Address: Assets/Remote/Data/Digimons/Toy Agumon (Black).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: d32bb28c4883fd74790cacdbd7fec3b6
+  - m_GUID: 37148aa62a4a3854e9fc7a19447f1498
     m_Address: Assets/Remote/Data/Digimons/Trailmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 0a5c0400783aa464993fa8c65b85db12
+  - m_GUID: f20d60933fd327947b0eea0cdf876d05
     m_Address: Assets/Remote/Data/Digimons/Trailmon Angler.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: b6b1dabd8da7e244eab92d5480d7db00
+  - m_GUID: df98f6223c62f41459d00a4372a7c924
     m_Address: Assets/Remote/Data/Digimons/Trailmon Ball.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 01f0933b61d205246a19d54cdfd1162d
+  - m_GUID: 070f07d07ae39f142864a40e065d951e
     m_Address: Assets/Remote/Data/Digimons/Trailmon Battle Form.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 29aa66a4f8eede3439cd9ffc446a247c
+  - m_GUID: 5a872c6df3ca6a149b74c9ec27ec34b9
     m_Address: Assets/Remote/Data/Digimons/Trailmon Buffalo.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 72d5309de3a33564e845059423e95579
+  - m_GUID: 3bcca33c09cf3654998d4abe0addb284
     m_Address: Assets/Remote/Data/Digimons/Trailmon C-89.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 6a30b9daee9183947ae5385b6983e677
+  - m_GUID: 76ef568888077364dbfa851c859a4fd0
     m_Address: Assets/Remote/Data/Digimons/Trailmon Franken.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: d5757b067151e9c478f2905fcc31cc1c
+  - m_GUID: 9db43daf3a7f8284ea0536c943312b16
     m_Address: Assets/Remote/Data/Digimons/Trailmon Kettle.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: c3d1dc5419b105d4eacedf7bdc8d0738
+  - m_GUID: c20f5ffda06718d499b0c3612172bf56
     m_Address: Assets/Remote/Data/Digimons/Trailmon Mole.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 3cd94e0781423d042bba0b7683d16877
+  - m_GUID: 67422e6ede6f9ae4dbfe9977c1e5a425
     m_Address: Assets/Remote/Data/Digimons/Trailmon Raccoon Dog.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 742628bc15619294cae55da4dfb2a4ae
+  - m_GUID: b3a2cb1de122f1f40b6fd243f0e597d1
     m_Address: Assets/Remote/Data/Digimons/Trailmon Worm.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: fe1281f5373c20d458b880a76ee5b729
+  - m_GUID: 6f747dc1fb3042a448637f97c2362e01
     m_Address: Assets/Remote/Data/Digimons/Trailmon of Darkness.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 37c8048d9b68fd74e81d40ecac7985d9
+  - m_GUID: 0aaf10d0930438f4891853824d5e4d75
     m_Address: Assets/Remote/Data/Digimons/Triceramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: d9d70afdf3c55bf4785843e0d2560222
+  - m_GUID: 8754348b617da074eb9ccc5c234457e5
     m_Address: Assets/Remote/Data/Digimons/Triceramon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 53a83638329ac294498640258c477b7c
+  - m_GUID: 21d4deff2d08c1041807ee0624a050a3
     m_Address: Assets/Remote/Data/Digimons/Troopmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: c2fcceaf56ba26a47afd3644fe633e22
+  - m_GUID: 05a0802f1430ef3448d931ddbb709b66
     m_Address: Assets/Remote/Data/Digimons/Tsubumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: f6c3c06c5672e4f48bf6abc8c4d4c871
+  - m_GUID: 7439b233867add6438f4495de3ab397e
     m_Address: Assets/Remote/Data/Digimons/Tuchidarumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: fb2d0b57f9a74be448420d304522964d
+  - m_GUID: bfe1b069c93a5924d875b4f3921b3912
     m_Address: Assets/Remote/Data/Digimons/Tukaimon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: f591bb9948669ea4f9de2b4a83514715
+  - m_GUID: a8aedc993957c7345b1b20cd3d608f35
     m_Address: Assets/Remote/Data/Digimons/Tsumemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: f2796c8c40d25e44aa1d1570dad9a637
+  - m_GUID: c52b5363b52f3e34aa579cc1eeae16bd
     m_Address: Assets/Remote/Data/Digimons/Tunomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 68c706bb4c5f02a41a4f942277a92549
+  - m_GUID: 80c78d5361f61774f81ef6d1e2148eb3
     m_Address: Assets/Remote/Data/Digimons/Turuiemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: f165a94a714b8f4478fdc3f95171f84b
+  - m_GUID: 3d223f296f598e641885d0bec6e2a2f2
     m_Address: Assets/Remote/Data/Digimons/Tuskmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 56206273871173d4d9552ad635565778
+  - m_GUID: 3f5cb794066a3ff4c93496df22731f7d
     m_Address: Assets/Remote/Data/Digimons/Tuwarmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 86692924bf4579844953ecdead1b3690
+  - m_GUID: 4e75f8651ddd3e94cabcab845e4345a4
     m_Address: Assets/Remote/Data/Digimons/Tyilinmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 06f286dba53d9fe4da8ad03feac1fa8f
+  - m_GUID: 4bba9068f348a2a409342cd1aa287cdc
     m_Address: Assets/Remote/Data/Digimons/Tylomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 53b07d3d8306ac245958ab26c9a54c42
+  - m_GUID: dbc8bd808c427774d8c7a06b795b48a6
     m_Address: Assets/Remote/Data/Digimons/Tylomon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 6627a1b871b50374f954fcf1a252035f
+  - m_GUID: d5f584b1d84bc0f46ab7989ff1e55ee1
     m_Address: Assets/Remote/Data/Digimons/Tyranomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 0acca716df9d2e8469f882acdc1b4aa5
+  - m_GUID: 62fdfaabd2495c544a4f2af4250acd43
     m_Address: Assets/Remote/Data/Digimons/Tyranomon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: d547490bd82fcab488d50f84b781e6a5
+  - m_GUID: 66d8caeb2521ca14690f00712c2a6d2f
     m_Address: Assets/Remote/Data/Digimons/Tyrant Kabuterimon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 54ce9fdf5bb4ba845bcd93f32d20c572
+  - m_GUID: 04b63c38095961746b64f8c4f3443c33
     m_Address: Assets/Remote/Data/Digimons/Tyumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: b0b7df5d0dc234a4096e63834f66a191
+  - m_GUID: 483ca65b963a60148be6dbeaeb184651
     m_Address: Assets/Remote/Data/Digimons/Tyutyumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 3e0f3d337518a84408e5e6ea943a0d1b
+  - m_GUID: 680962e314e845443896ca160614d9bd
     m_Address: Assets/Remote/Data/Digimons/Ulforce V-dramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 4b3b18abc67316b4f96b3f73034e0bc9
+  - m_GUID: c8614b3d34e3bb349880e2d73194e6a4
     m_Address: Assets/Remote/Data/Digimons/Ulforce V-dramon Future Mode.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 3c626799a21b26343bfeff06546bd436
+  - m_GUID: d662918d2eaaf97429dd16d1e87184e7
     m_Address: Assets/Remote/Data/Digimons/Ulforce V-dramon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: bfadbd9a57a22fb46ad7fe1b81b44749
+  - m_GUID: 2bdf4cbd981bf71409469e85c67dac8f
     m_Address: Assets/Remote/Data/Digimons/Ultimate Brachiomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 6337bfb91b5d45a46a4d6c88d0eeda13
+  - m_GUID: ed33f3e81c31abe4b94f2ae542407636
     m_Address: Assets/Remote/Data/Digimons/Ultimate Chaosmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 83c928351a451ba49a589469ec417720
+  - m_GUID: eb3034045b1ffd54ba8475d2b2dc2e48
     m_Address: Assets/Remote/Data/Digimons/Umon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: c36a0793fea2bd841bc80557ff9cb74b
+  - m_GUID: 1dff2a0ddfc7ac44eae6bf8ea4b5a1d4
     m_Address: Assets/Remote/Data/Digimons/Unimon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 0ec6d134b2213094183cc18c9da167c0
+  - m_GUID: 854bb87d30b6a834599702782e05f193
     m_Address: Assets/Remote/Data/Digimons/Upamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 2fbbc4d8db48dad4996f47d4b5915d82
+  - m_GUID: d17175add596c7048bf6216a58456d7e
     m_Address: Assets/Remote/Data/Digimons/Urashimamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 68db30068a34de84297904fd9fedbb51
+  - m_GUID: 4c62aaac2f05d7a488ec8a773496b70a
     m_Address: Assets/Remote/Data/Digimons/V-dramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: e9782026a156d1a43990ae0d978623e6
+  - m_GUID: cc2414661b5d9d248b1dcbf6fb8cb37f
     m_Address: Assets/Remote/Data/Digimons/V-dramon (Black).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 1e7d4d73e426c794ba0a1e51fbbd7be3
+  - m_GUID: be28c05864f523f45bb95d810bf69446
     m_Address: Assets/Remote/Data/Digimons/V-mon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 8c37a2eefdb31ca49a7864ed014ee4a0
+  - m_GUID: 85d9b8dedb5ab804aba8219fee3c022c
     m_Address: Assets/Remote/Data/Digimons/Vademon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 0fa3f31682dd1544a89d570894109ea3
+  - m_GUID: 45aace08544a3964ea79cd705ab14257
     m_Address: Assets/Remote/Data/Digimons/Vademon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 8f1a4f138f7e1954f9ddb38f5a20b61b
+  - m_GUID: fb6a78b542dc3c8449571749ca7b6f74
     m_Address: Assets/Remote/Data/Digimons/Vajramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: a591b58f6fa689d47bc4b839664593a9
+  - m_GUID: f07ac90124434e5418351a7e04d67c6f
     m_Address: Assets/Remote/Data/Digimons/Valdurmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 5b9041a62fb9d904d9c9a7c522305161
+  - m_GUID: 360c4bc936e5a28418fd672e5f3d7d50
     m_Address: Assets/Remote/Data/Digimons/Valkyrimon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 25f2f9d3ee588aa4db53e7f3b4520c22
+  - m_GUID: b4667c80e6bacaa4e9136f7bb47e0e6e
     m_Address: Assets/Remote/Data/Digimons/Valvemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 677429e11c88e3c43ab215048102306c
+  - m_GUID: a43ac9837a22ca74b82043fc190bc023
     m_Address: Assets/Remote/Data/Digimons/Vamdemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: b1115c6e729c76a4f8f54cb43ab90a90
+  - m_GUID: e1ae6381ea337d84787d99f80e7cdd2f
     m_Address: Assets/Remote/Data/Digimons/Vamdemon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: a5d4b12c7e6325d458317665b821a1fc
+  - m_GUID: 95ff3b8be64b852498a8da21684f4673
     m_Address: Assets/Remote/Data/Digimons/Vegimon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 4186b2aa263724d4a93e2857befa3182
+  - m_GUID: 1d48e4f7e8576f448807385bda5b3518
     m_Address: Assets/Remote/Data/Digimons/Velgmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 4d237a8efab7ecd4389ce5bc8bbfde37
+  - m_GUID: cfcf8fdade4dbc345831ecfdb6a65ead
     m_Address: Assets/Remote/Data/Digimons/Venom Vamdemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: befec551a42b34548a7a33469dd638d7
+  - m_GUID: 2eb866e8996e8da46ba80c13f86d06c2
     m_Address: Assets/Remote/Data/Digimons/Venom Vamdemon Undead.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 1bdb9a1cabfccfd4b93c05b86d8f7f39
+  - m_GUID: 83885dd3ced6b05489bfe42a0545668f
     m_Address: Assets/Remote/Data/Digimons/Venusmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 7bb2447dabe21744ab3e798960a84553
+  - m_GUID: 02cfaccf7c31eec499e70d50948406c0
     m_Address: Assets/Remote/Data/Digimons/Vermillimon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: d2554783b1229f445b6b1f8b57a26421
+  - m_GUID: 78e0aa5975ce81a489d685f7a808c94c
     m_Address: Assets/Remote/Data/Digimons/Victory Greymon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 6f546633fdb39a140ba84d489b023d66
+  - m_GUID: e764cb929c34b174e837fc22e76db98b
     m_Address: Assets/Remote/Data/Digimons/Vikaralamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 888d9f01458faa34a92474439acb0bb1
+  - m_GUID: 2e86329ecacfae14ca549752100b978a
     m_Address: Assets/Remote/Data/Digimons/Vikemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 161885c2236dc1544973d0783cd59fce
+  - m_GUID: 05803a607f714394c976e4e1331b6ee2
     m_Address: Assets/Remote/Data/Digimons/Volcamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: c608cbc2f5260544fbc309b595b39793
+  - m_GUID: da945a6c105b3864fa431bbc7b0fb5fd
     m_Address: Assets/Remote/Data/Digimons/Volcanicdramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 6fd1e8673ce436b4a8230a93f4dacee4
+  - m_GUID: 3860c092e61c7b348837a45926349e6a
     m_Address: Assets/Remote/Data/Digimons/Volcdramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: b96e6b0851941594788f4e81324df839
+  - m_GUID: 8a3a6c2aba4177540904908d83aa70c3
     m_Address: Assets/Remote/Data/Digimons/Voltobautamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: d74cd8a0271a0544fbde3aebd7e5776f
+  - m_GUID: 41674d1baafa5bb499df7bdb42d7c95a
     m_Address: Assets/Remote/Data/Digimons/Vorvomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: e3791e1146d1a144895b939808e38c11
+  - m_GUID: 2dfdfc035670461448b56b526a70d509
     m_Address: Assets/Remote/Data/Digimons/Vritramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 7aa2d3667a383794bae504c8e84890bc
+  - m_GUID: 9bd05c60aea515f429466d453519eb62
     m_Address: Assets/Remote/Data/Digimons/Vulcanusmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 9bc72d2c074a1194e9c44c2660587618
+  - m_GUID: 2cdfa97045a48a44383b77fe1465e1d1
     m_Address: Assets/Remote/Data/Digimons/Vulturemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 0b6094d168e73ce4d887a67a1756aae2
+  - m_GUID: 2c3ffd61d43a9c44aaeda3147dc8ada4
     m_Address: Assets/Remote/Data/Digimons/Wanyamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 75406cbe0eb2776449420b695975dae4
+  - m_GUID: b9d41035e50e42048a2c02e6e5f6f0e9
     m_Address: Assets/Remote/Data/Digimons/War Greymon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 4af81f757ebdc7749ae915e3f2251269
+  - m_GUID: e1ac23ccab1a7724fb6a3bcb48babad3
     m_Address: Assets/Remote/Data/Digimons/War Greymon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: bce7d366e3255394099963417109f0a8
+  - m_GUID: 88529844ff710924a9501b6d66123d70
     m_Address: Assets/Remote/Data/Digimons/Waru Monzaemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 834c7d31922534c4e89700a761c2eca6
+  - m_GUID: 86593c4ddbf7e5a4dba59e9b20490cac
     m_Address: Assets/Remote/Data/Digimons/Waru Seadramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: e72e043dde1a1984cac42f904124957a
+  - m_GUID: 1e53d0a20614082489247df017850f0b
     m_Address: Assets/Remote/Data/Digimons/Waspmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: d1e3682240ad3c342870df50efa05086
+  - m_GUID: 4b24e849ff92f0149aac58e589442f97
     m_Address: Assets/Remote/Data/Digimons/Weddinmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: c9a39d93cc6d70444901ba663eb4a89c
+  - m_GUID: 3a4cbf4421f18364da33b775a44139e5
     m_Address: Assets/Remote/Data/Digimons/Wendimon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: b5b9f1e27465dd34a836f9ca84b1507b
+  - m_GUID: e1d51aa2024cd5b4ab32a2113e8e1494
     m_Address: Assets/Remote/Data/Digimons/Were Garurumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: d8b5465e41440a24398145e37b0477e3
+  - m_GUID: 317743994f3dce14fbc71be44324f592
     m_Address: Assets/Remote/Data/Digimons/Were Garurumon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 7ee6123f3e1a7734faaba09e15f77f35
+  - m_GUID: c573061acb64d154f8cf4db1f21aa291
     m_Address: Assets/Remote/Data/Digimons/Were Garurumon (Black).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 163251ae78468e94fbdadcef15521cc6
+  - m_GUID: d31dfc13b62f46941903ad405d780c2e
     m_Address: Assets/Remote/Data/Digimons/Were Garurumon Sagittarius Mode.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 20e1d6b3f9a077a4d8e76c0a5e80314f
+  - m_GUID: 51e4923fc24c1da4a9945c084574e4d5
     m_Address: Assets/Remote/Data/Digimons/Whamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 3e7794817d8d10442b1c00930790fc74
+  - m_GUID: ba09fb11a063b98488bece08edaa75e4
     m_Address: Assets/Remote/Data/Digimons/Whamon Perfect.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 666a6aabb3b9a19439c0244533401b78
+  - m_GUID: ca0475ca2ff27cf4c97464407ead4ed2
     m_Address: Assets/Remote/Data/Digimons/White Lopmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: f971cb2697c19394a8917f937bd3abcc
+  - m_GUID: 53c29549644c227469423b615c56627a
     m_Address: Assets/Remote/Data/Digimons/Wingdramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: fa58f98c9409dea489ab6a053fff43f0
+  - m_GUID: f1ddf724f24338142a1280c6fb543fe8
     m_Address: Assets/Remote/Data/Digimons/Wisemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 4c6cd1eb2083e5f41a117fc73ba72e6f
+  - m_GUID: 47a5e3b66ffcf7e459fa4a0922eb2592
     m_Address: Assets/Remote/Data/Digimons/Witchmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: eae38915f40c68b42b4e8a23ee80b46b
+  - m_GUID: 28b30b483beba7c49946a912d83b5913
     m_Address: Assets/Remote/Data/Digimons/Wizarmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 299ed42411b8caa47ba3b3fe3f760eb5
+  - m_GUID: a2c2234f91623f74c838c0a06ceab042
     m_Address: Assets/Remote/Data/Digimons/Wizarmon (X-Antibody).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 99534dd135d445a48944d12b6fa85f01
+  - m_GUID: 13c8f669a2fadd540bd56a516fac8495
     m_Address: Assets/Remote/Data/Digimons/Wolfmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 8c1927726e72bf747877a2b0d1add84f
+  - m_GUID: 0073912279690d742af67c1ce4352ab8
     m_Address: Assets/Remote/Data/Digimons/Woodmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 02ee23801ef24614d9eb9b2cdbabd4ad
+  - m_GUID: 1fbbb13199df62648bd0951b32473c11
     m_Address: Assets/Remote/Data/Digimons/Woodwoodymon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 05b6e2ae00d9c464f8fa7747c2c59373
+  - m_GUID: 499091cac4dd4404198452a541d8364e
     m_Address: Assets/Remote/Data/Digimons/Wormmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: bf9d36636ffe32c4aa6bb45de6333346
+  - m_GUID: ed9c94de7d996fe4ca8238ed5b35ef82
     m_Address: Assets/Remote/Data/Digimons/XV-mon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 56041cc2a15349447964938f0ff24215
+  - m_GUID: a65ba91e3865efb42a73b756c8109170
     m_Address: Assets/Remote/Data/Digimons/XV-mon (Black).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: f8a85042ba61d234cb875817112709d1
+  - m_GUID: 2f01b772bb0470445afc5070d2981807
     m_Address: Assets/Remote/Data/Digimons/Xiaomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 9f6711ec527f05b4aa898353a23b1fec
+  - m_GUID: 04042007c18111647980d4fce306b402
     m_Address: Assets/Remote/Data/Digimons/Xros Up Arresterdramon (Astamon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 2f524fb2a5ac27e4a9a6000c77050d21
+  - m_GUID: d044a188ff6adec4b891e8d466ce3877
     m_Address: Assets/Remote/Data/Digimons/Xros Up Arresterdramon (Blossomon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 9155960d34f3e4b439f9aadb5ca3cfdf
+  - m_GUID: 361319089d12b1f47abda067a0fd6e60
     m_Address: Assets/Remote/Data/Digimons/Xros Up Arresterdramon (Dobermon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: e974a79b4231fd344b7729e45fcde0a0
+  - m_GUID: 21c45a22e840c2f4da0d6459300b5aa5
     m_Address: Assets/Remote/Data/Digimons/Xros Up Arresterdramon (Giga Breakdramon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 632c34ab6b79f0348bd693b022bf183e
+  - m_GUID: 780bb634d3013b74d8c958d72091bbc8
     m_Address: Assets/Remote/Data/Digimons/Xros Up Arresterdramon (Metal Tyranomon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 03c76c5ddcf6d5947b578f9b4ec77feb
+  - m_GUID: df220d37192f6384d8d60630fcb55bf2
     m_Address: Assets/Remote/Data/Digimons/Xros Up Arresterdramon (Orgemon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 2e645ae0e887b334e981db650b90d0fe
+  - m_GUID: d0a774ff24c861a4b87a1ae6fa98700a
     m_Address: Assets/Remote/Data/Digimons/Xros Up Arresterdramon (Sagomon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 9da1b0c49d58bb64fbfc74f1bd4936d1
+  - m_GUID: 07b3dd1eb3d11b84a974a6fbe4cc3060
     m_Address: Assets/Remote/Data/Digimons/Xros Up Arresterdramon (Sparrowmon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 7db1d57bf786d0e45844a265ea72db91
+  - m_GUID: 34baa5bb6885d7949beb38a3f1316e35
     m_Address: Assets/Remote/Data/Digimons/Xros Up Astamon (Cerberumon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: ae67542a02d61364dba08598a2c41f2a
+  - m_GUID: 4e1a408809c0f134e8572e399cb3987a
     m_Address: Assets/Remote/Data/Digimons/Xros Up Astamon (Triceramon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: dbcec5e3160125345a5fec69c9b2b88e
+  - m_GUID: d48f892da86733e4b9e8fa7915d24614
     m_Address: Assets/Remote/Data/Digimons/Xros Up Ballistamon (Revolmon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 75d9a57d5ec241c4eb1d63b1601516ca
+  - m_GUID: 3d5da29eee5493b42882a66e816cb8e5
     m_Address: Assets/Remote/Data/Digimons/Xros Up Dorulumon (Pawn Chessmon (White)).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 79b9df20bb4f83841aaf7ffb3cc9f07d
+  - m_GUID: 060fad5eaa027e041a7b75dcdb0d348b
     m_Address: Assets/Remote/Data/Digimons/Xros Up Gumdramon (Kotemon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: ebe5904e3237d2a478c507053c5b83f8
+  - m_GUID: 32c96ffd43dbf79429ba410d2f881339
     m_Address: Assets/Remote/Data/Digimons/Xros Up Mervamon (Beelzebumon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 535d587b915c65049a8692dbed07c7fe
+  - m_GUID: 5dbcf6acdaa163647a2d7879dd1a6fba
     m_Address: Assets/Remote/Data/Digimons/Xros Up Omega Shoutmon (Dorulumon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 81f389c347557924e92c7deafbe4a23b
+  - m_GUID: 24cf20f84228bae4b87562d76011e919
     m_Address: Assets/Remote/Data/Digimons/Xros Up Opossummon (Candmon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: a7efc56aa0a8e1d4aa078112589f76d4
+  - m_GUID: a268087fec4ba2a46a33431bdff568b4
     m_Address: Assets/Remote/Data/Digimons/Xros Up Shoutmon (Chibi Kamemon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 83ccd0add5e490748baac22e98849f42
+  - m_GUID: f2c902908acd0c44e889c780ccf839d3
     m_Address: Assets/Remote/Data/Digimons/Xros Up Shoutmon (Pinochimon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 7947b2dd6fae2f84c922779b6d30f6bd
+  - m_GUID: 0f1660146d6a61f46a2f8440fa73a4c9
     m_Address: Assets/Remote/Data/Digimons/Xros Up Submarimon (Plesiomon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: ccd4d1408dc3dc74c9423aea9fbadc1d
+  - m_GUID: 3263618c0969e6a4e98b95273e313238
     m_Address: Assets/Remote/Data/Digimons/Xros Up Tuwarmon (Superstarmon).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 1549eaf596255fd4088eb6d05f087c53
+  - m_GUID: ef363d4e37945d645b2b6d14bdfbe9f4
     m_Address: Assets/Remote/Data/Digimons/Xuanwumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 0f5386c997c063e40ada183f144211a2
+  - m_GUID: de687ad55f5f50d43a7760627abb2a7a
     m_Address: Assets/Remote/Data/Digimons/Yaeger Dorulumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 74bdb0e48416aef4d857a392a0974859
+  - m_GUID: 889a06eb5dd551a4483583daaf2912f3
     m_Address: Assets/Remote/Data/Digimons/Yakiimon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: fb13c71e5ff40ac458e12474e31cdfcd
+  - m_GUID: 9a5e6b30dfa67ad45a0671f303105d6f
     m_Address: Assets/Remote/Data/Digimons/Yanmamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 2953b368de0958145b4a6332a096645e
+  - m_GUID: 365f40eb37274ea4b91091cb9fda6b06
     m_Address: Assets/Remote/Data/Digimons/Yarmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: c925993f2ab8bc54c9b30a4ec81b99d3
+  - m_GUID: 5ecf92ceaaebfd645a1910a9e28a77c9
     m_Address: Assets/Remote/Data/Digimons/Yasyamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: dbb15b5db3571f2478cf7e6ef9a6ccec
+  - m_GUID: 6e0d619a3048830448ff0514cad3f168
     m_Address: Assets/Remote/Data/Digimons/Yatagaramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 5a871babb2b3cc84da88d1dbe6af19dd
+  - m_GUID: 25fd5302ac3f96345a93e6d641616592
     m_Address: Assets/Remote/Data/Digimons/Yatagaramon (2006 Anime Version).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: a8f63a311b9cdc1468262dcd9d8a1763
+  - m_GUID: 56330f2c2e423344f8676ee6fd6c1bbc
     m_Address: Assets/Remote/Data/Digimons/Youkomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 525e2fb38b8194242b077a969bb7aac2
+  - m_GUID: 8d545099d11e37c46859816c24bcef0a
     m_Address: Assets/Remote/Data/Digimons/Yoxtu!Yoxtu!mon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 9ef96c1214721fa4d85110d2d5de2435
+  - m_GUID: 06aa75e25a6dd5d4d9ebb106bc3d56e4
     m_Address: Assets/Remote/Data/Digimons/Yuki Agumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 9918ba62ff9e7d74a9f27337a0006e2b
+  - m_GUID: 88b4791dfe71c6d4ea099f801f68a45a
     m_Address: Assets/Remote/Data/Digimons/Yuki Agumon (2006 Anime Version).asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: e54b7c5ab3581654da0b553af217f33c
+  - m_GUID: c3ef72c3afab59f44a49d07c4567c89e
     m_Address: Assets/Remote/Data/Digimons/Yukidarumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: dc8e49c44b06f8a4fa0d66d61ff789eb
+  - m_GUID: 2cd5911200f4fb4418cb49bc97100c97
     m_Address: Assets/Remote/Data/Digimons/Yukimi Botamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: f36e12db734d6dc4d9bbe8e55be44c5f
+  - m_GUID: c1baeb872b8e17044856e43aa4672075
     m_Address: Assets/Remote/Data/Digimons/Yuramon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 07f9c6e2f2d14ba42a225444c435715b
+  - m_GUID: 25b4cd6447da47c4d95294e9e2809db4
     m_Address: Assets/Remote/Data/Digimons/Z'd Garurumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 8555aa17520ad5b4586d8584de113a3a
+  - m_GUID: 62fc7bc13406df6438cda0df34934518
     m_Address: Assets/Remote/Data/Digimons/Zamielmon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 0ebda5e1b404ac24e96639a4969584e3
+  - m_GUID: 647589c6ac0d5684a946907ed7c663f5
     m_Address: Assets/Remote/Data/Digimons/Zanbamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 30a1f6363e9f8e24787d627ec49cf89e
+  - m_GUID: 39d49b34e330f0b4e8e4c2b5d15834cb
     m_Address: Assets/Remote/Data/Digimons/Zassoumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 99cffc0c10de74246a5adb71902639f9
+  - m_GUID: 89c8901b2e839834ca0b4a8a703a163d
     m_Address: Assets/Remote/Data/Digimons/Zeed Millenniumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 6e8f6e6c4883aa945b071099fc0e3602
+  - m_GUID: e032da48a2abf4940999576e4247889f
     m_Address: Assets/Remote/Data/Digimons/Zeke Greymon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 9450ea2d4e311af42a9827bcdb2c195b
+  - m_GUID: df145c7625210ff4e9c4a22a299af881
     m_Address: Assets/Remote/Data/Digimons/Zenimon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 59b0b27f3999bdf4e930c5dbb01fc82a
+  - m_GUID: d597ae65ed7162f4da49e1591f8caf9b
     m_Address: Assets/Remote/Data/Digimons/Zerimon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 08df7643e89eea54185d4340c866d62b
+  - m_GUID: 468fdd01f647f8e44858f6a7d9b87e7c
     m_Address: Assets/Remote/Data/Digimons/Zhuqiaomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 509a7175a4236fe44ba64a6503050c61
+  - m_GUID: cd0b8aa84a56b5e4bac12e28c4a12c8e
     m_Address: Assets/Remote/Data/Digimons/Zombiemon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 16ce29b879b79c049a378f7f76400ff7
+  - m_GUID: 43c07fac90158ba42a25fb8e2b10d920
     m_Address: Assets/Remote/Data/Digimons/Zubaeagermon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: a1d7201a72b10064ab87f85c2802b110
+  - m_GUID: 4e3cca9b73208f746897e4e6fc142827
     m_Address: Assets/Remote/Data/Digimons/Zubamon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: f814949e78b276642a3e3e60a47dce49
+  - m_GUID: 2c20cd22f9cedbe46bbf2fb562c61860
     m_Address: Assets/Remote/Data/Digimons/Zudomon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 6c33fdde3f5b2ea4eb94bd6f3a4d312b
+  - m_GUID: 00e7b86a91087544daf9b9b4ec616c92
     m_Address: Assets/Remote/Data/Digimons/Zurumon.asset
     m_ReadOnly: 0
     m_SerializedLabels: []

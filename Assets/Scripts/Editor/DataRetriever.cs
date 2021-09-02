@@ -17,13 +17,14 @@ public static class DataRetriever {
     const string digimonSpriteAtlasesGroupName = "Digimon Sprite Atlases";
     const string DigimonDataGroupName = "Digimon Data";
     const string DigimonListGroupName = "Digimon Data List";
+    const string WikimonBaseURL = "https://wikimon.net";
+    const string DigimonList = WikimonBaseURL + "/List_of_Digimon";
+    const string ArtDigimonsPathX = "Assets/Remote/Art/Digimons/Digimon({0})";
+    const int DigimonsPerAtlas = 16;
+
 
     [MenuItem("DigiDex/Retrieve Data")]
     public static async void RetrieveData() {
-        const string WikimonBaseURL = "https://wikimon.net";
-        const string DigimonList = WikimonBaseURL + "/List_of_Digimon";
-        const string ArtDigimonsPathX = "Assets/Remote/Art/Digimons/Digimon({0})";
-        const int DigimonsPerAtlas = 16;
         
         // TODO: Add the new images either in the last folder or on a new one depending on the wether the last folder is full
         
@@ -43,7 +44,7 @@ public static class DataRetriever {
             spriteAtlasGroup = addressablesSettings.CreateGroup(digimonSpriteAtlasesGroupName, false, false, false, null);
         }
 
-        List<Digimon> digimons = new List<Digimon>();
+        List<Digimon> digimonsWithArt = new List<Digimon>();
 
         XmlDocument digimonListSite = new XmlDocument();
         digimonListSite.Load(DigimonList);
@@ -54,7 +55,7 @@ public static class DataRetriever {
 
             if (!string.IsNullOrEmpty(digimonLinkSubFix)) {
                 string digimonNameSafe = digimonName.AddresableSafe();
-                string artPath = string.Format(ArtDigimonsPathX, digimons.Count / DigimonsPerAtlas);
+                string artPath = string.Format(ArtDigimonsPathX, digimonsWithArt.Count / DigimonsPerAtlas);
                 string digimonArtPath = artPath + "/" + digimonNameSafe + ".png";
                 string digimonDataPath = DigimonsDataPath + "/" + digimonNameSafe + ".asset";
                 string digimonLink = WikimonBaseURL + digimonLinkSubFix;
@@ -70,7 +71,8 @@ public static class DataRetriever {
                     if (!Directory.Exists(DigimonsDataPath)) {
                         Directory.CreateDirectory(DigimonsDataPath);
                     }
-                
+
+                    bool hasArt = false;
                     if (!File.Exists(digimonArtPath)) {
                         XmlNode image = digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[1]/td/div/div/a/img");
                         if (image != null) {
@@ -87,10 +89,13 @@ public static class DataRetriever {
                                         file.Write(data, 0, data.Length);
                                         file.Close();
                                         AssetDatabase.Refresh();
+                                        hasArt = true;
                                     }
                                 }
                             }
                         }
+                    } else {
+                        hasArt = true;
                     }
                     
                     Digimon digimonData = null;
@@ -119,7 +124,9 @@ public static class DataRetriever {
                         Debug.Log($"No profile found for {digimonNameSafe}");
                     }
 
-                    digimons.Add(digimonData);
+                    if (hasArt) {
+                        digimonsWithArt.Add(digimonData);
+                    }
 
                     EditorUtility.SetDirty(digimonData);
                     AssetDatabase.SaveAssets();
@@ -133,9 +140,7 @@ public static class DataRetriever {
             }
         }
 
-
-        int folderCount = Mathf.CeilToInt((float)digimons.Count / (float)DigimonsPerAtlas);
-        List<SpriteAtlas> spriteAtlases = new List<SpriteAtlas>(folderCount);
+        int folderCount = Mathf.CeilToInt((float)digimonsWithArt.Count / (float)DigimonsPerAtlas);
         for (int i = 0; i < folderCount; i++) {
             string digimonsFoldersI = string.Format(ArtDigimonsPathX, i);
             string spriteAtlasPath = digimonsFoldersI + ".spriteatlas";
@@ -145,14 +150,13 @@ public static class DataRetriever {
                 UnityEngine.Object folder = AssetDatabase.LoadAssetAtPath(digimonsFoldersI, typeof(UnityEngine.Object));
                 spriteAtlas.Add(new UnityEngine.Object[] { folder });
                 AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
-                spriteAtlases.Add(spriteAtlas);
             }
         }
         
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        SpriteAtlasUtility.PackAtlases(spriteAtlases.ToArray(), EditorUserBuildSettings.activeBuildTarget);
+        SpriteAtlasUtility.PackAllAtlases(EditorUserBuildSettings.activeBuildTarget);
     
         for (int i = 0; i < folderCount; i++) {
             string digimonsFoldersI = string.Format(ArtDigimonsPathX, i);
@@ -160,15 +164,15 @@ public static class DataRetriever {
             string spriteAtlasGUID = AssetDatabase.GUIDFromAssetPath(spriteAtlasPath).ToString();
             addressablesSettings.CreateOrMoveEntry(spriteAtlasGUID, spriteAtlasGroup);
 
-            for (int iDigimon = i * DigimonsPerAtlas; iDigimon < Mathf.Min(iDigimon + DigimonsPerAtlas, digimons.Count); ++iDigimon) {
-                digimons[iDigimon].Image = new AssetReferenceAtlasedSprite(spriteAtlasGUID);
-                digimons[iDigimon].Image.SubObjectName = digimons[iDigimon].Name.AddresableSafe();
-                EditorUtility.SetDirty(digimons[iDigimon]);
+            for (int iDigimon = i * DigimonsPerAtlas; iDigimon < Mathf.Min(iDigimon + DigimonsPerAtlas, digimonsWithArt.Count); ++iDigimon) {
+                digimonsWithArt[iDigimon].Image = new AssetReferenceAtlasedSprite(spriteAtlasGUID);
+                digimonsWithArt[iDigimon].Image.SubObjectName = digimonsWithArt[iDigimon].Name.AddresableSafe();
+                EditorUtility.SetDirty(digimonsWithArt[iDigimon]);
             }
+            
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
-
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
 
         GenerateDigimonList();
 

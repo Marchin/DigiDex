@@ -15,14 +15,14 @@ MonoBehaviour:
   m_GroupName: Digimon Sprite Atlases
   m_Data:
     m_SerializedData: []
-  m_GUID: 653e254a53bb21649bc2697666174739
+  m_GUID: f3bef557f1c11b94fb25f75f6fb901d9
   m_SerializeEntries:
-  - m_GUID: 1d54d1bf1141fb649ab2f0315f8f6774
-    m_Address: Assets/Remote/Art/Digimons/Digimon(1).spriteatlas
-    m_ReadOnly: 0
-    m_SerializedLabels: []
   - m_GUID: b834cdb1c65730d4593d6188a8bc5da1
     m_Address: Assets/Remote/Art/Digimons/Digimon(0).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 1d54d1bf1141fb649ab2f0315f8f6774
+    m_Address: Assets/Remote/Art/Digimons/Digimon(1).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
   - m_GUID: 33549247b488f4a439cc2c1b61dca623
@@ -321,52 +321,48 @@ MonoBehaviour:
     m_Address: Assets/Remote/Art/Digimons/Digimon(75).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 824c9f761ec45ff4799966ba7f9bdcd1
+  - m_GUID: 30fb671f3f539714693c1b5933597eab
     m_Address: Assets/Remote/Art/Digimons/Digimon(76).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 01eacc783c724f643acd8d774511348a
+  - m_GUID: 279f61dabed42414d82d49e21cfbe172
     m_Address: Assets/Remote/Art/Digimons/Digimon(77).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 193ae98b98ab8b947ac27afbb3c7ac58
+  - m_GUID: 75635a0aa68b5b24caefdb525dd565f9
     m_Address: Assets/Remote/Art/Digimons/Digimon(78).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: ec40cf3324d096a49bc06d108db0b25c
+  - m_GUID: 15b4a9ceb2f248f45a7ad43287e0d50b
     m_Address: Assets/Remote/Art/Digimons/Digimon(79).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: d8b16cf7e2808ca4d950b32335c8dcdd
+  - m_GUID: 3f7041aec145e3f4db458e2441ebdef6
     m_Address: Assets/Remote/Art/Digimons/Digimon(80).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 3c6e84f646c783b4397e35093f6ce21e
+  - m_GUID: e3274f628e722a54e82ba7d8ab0df445
     m_Address: Assets/Remote/Art/Digimons/Digimon(81).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 35145602e18e75549bbff6b5ab176dc5
+  - m_GUID: a2d9d8c28f189ff4aa9de9191fe6c9f9
     m_Address: Assets/Remote/Art/Digimons/Digimon(82).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 9bc7d95ad6bc79d469d9d1eb8318e8ce
+  - m_GUID: 6ae7c561aab9ce047a30193039266a78
     m_Address: Assets/Remote/Art/Digimons/Digimon(83).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 6a127e5d12a8abc48a28a8c59c3538a4
+  - m_GUID: 4fcaeb2318c98cf4e9b19586ab580dbc
     m_Address: Assets/Remote/Art/Digimons/Digimon(84).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: bfeae2f9d179864419c8a7a3bcb59567
+  - m_GUID: 26a869b73b38e384d82c2b0f29227b06
     m_Address: Assets/Remote/Art/Digimons/Digimon(85).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
-  - m_GUID: 3b395f8e91e60d741a0e06dfd78f93a0
+  - m_GUID: 7665b3e9ce33cf24a8a2cb734c661db6
     m_Address: Assets/Remote/Art/Digimons/Digimon(86).spriteatlas
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-  - m_GUID: b15119eb8ce59764c8a3ffc7108f992b
-    m_Address: Assets/Remote/Art/Digimons/Digimon(87).spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
   m_ReadOnly: 0

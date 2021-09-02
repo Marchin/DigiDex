@@ -15,12 +15,8 @@ MonoBehaviour:
   m_GroupName: Digimon Data List
   m_Data:
     m_SerializedData: []
-  m_GUID: 7de8dbd2144d2b840ad5e3bc32791000
-  m_SerializeEntries:
-  - m_GUID: b4b5bc967d2e6f446be624db64a52050
-    m_Address: Assets/Remote/Data/DigimonList.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
+  m_GUID: e920d66ce474def4aa53e0db0bfd1485
+  m_SerializeEntries: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 540ef4b002fba424d86242275961d112, type: 2}
   m_SchemaSet:
