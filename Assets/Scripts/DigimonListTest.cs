@@ -4,6 +4,7 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 using System.Linq;
+using System.Threading;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
@@ -29,31 +30,58 @@ public class DigimonListTest : MonoBehaviour {
     private float _buttonScrollLength;
     private int _currDigimonScrollIndex;
     private int _selectedDigimonIndex;
+    private CancellationTokenSource _digimonDataCTS;
+    private List<AsyncOperationHandle> _digimonDataHandles = new List<AsyncOperationHandle>();
     
     private DigimonReference _selectedDigimon;
     public DigimonReference SelectedDigimon {
         get => _selectedDigimon;
         private set {
-            // TODO: release assets
+            if (_selectedDigimon == value) {
+                return;
+            }
+
+            if (_digimonDataCTS != null) {
+                _digimonDataCTS.Cancel();
+                _digimonDataCTS.Dispose();
+            }
+            _digimonDataCTS = new CancellationTokenSource();
+
+            for (int iHandle = 0; iHandle < _digimonDataHandles.Count; ++iHandle) {
+                Addressables.Release(_digimonDataHandles[iHandle]);
+            }
+            _digimonDataHandles.Clear();
 
             _selectedDigimon = value;
-            _selectedDigimonIndex = _currDigimonList.IndexOf(SelectedDigimon);
-            RefreshButtons();
 
-            Addressables.LoadAssetAsync<Digimon>(value.Data).Completed += loadOp => {
-                if (loadOp.Status == AsyncOperationStatus.Succeeded) {
-                    Digimon digimon = loadOp.Result;
-
-                    Addressables.LoadAssetAsync<Sprite>(digimon.Image).Completed += operation => {
-                        if (operation.Status == AsyncOperationStatus.Succeeded) {
-                            _digimonImage.sprite = operation.Result;
+            _digimonImage.gameObject.SetActive(false);
+            if (_selectedDigimon != null) {
+                _selectedDigimonIndex = _currDigimonList.IndexOf(SelectedDigimon);
+                RefreshButtons();
+                var dataHandle = Addressables.LoadAssetAsync<Digimon>(value.Data);
+                _digimonDataHandles.Add(dataHandle);
+                _ = dataHandle.WithCancellation(_digimonDataCTS.Token).ContinueWith(digimon => {
+                    if (digimon != null) {
+                        if (digimon.Image.RuntimeKeyIsValid()) {
+                            var spriteHandle = Addressables.LoadAssetAsync<Sprite>(digimon.Image);
+                            _digimonDataHandles.Add(spriteHandle);
+                            _ = spriteHandle.WithCancellation(_digimonDataCTS.Token).ContinueWith(sprite => {
+                                if (sprite != null) {
+                                    _digimonImage.gameObject.SetActive(true);
+                                    _digimonImage.sprite = sprite;
+                                }
+                            });
                         }
-                    };
 
-                    _digimonName.text = digimon.Name;
-                    _digimonProfile.text = digimon.ProfileData;
-                }
-            };
+                        _digimonName.text = digimon.Name;
+                        _digimonProfile.text = digimon.ProfileData;
+                    }
+                });
+            } else {
+                _selectedDigimonIndex = 0;
+                _digimonName.text = "";
+                _digimonProfile.text = "";
+            }
         }
     }
     private bool _profileOpen = false;
