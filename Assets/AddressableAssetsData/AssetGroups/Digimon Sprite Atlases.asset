@@ -1,0 +1,375 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Digimon Sprite Atlases
+  m_EditorClassIdentifier: 
+  m_GroupName: Digimon Sprite Atlases
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 653e254a53bb21649bc2697666174739
+  m_SerializeEntries:
+  - m_GUID: 1d54d1bf1141fb649ab2f0315f8f6774
+    m_Address: Assets/Remote/Art/Digimons/Digimon(1).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: b834cdb1c65730d4593d6188a8bc5da1
+    m_Address: Assets/Remote/Art/Digimons/Digimon(0).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 33549247b488f4a439cc2c1b61dca623
+    m_Address: Assets/Remote/Art/Digimons/Digimon(2).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: f597a9deb4f2139478ea6d16b8b97ba2
+    m_Address: Assets/Remote/Art/Digimons/Digimon(3).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: eb15f1f8f7ac4784a8682d7d8c6cd9b4
+    m_Address: Assets/Remote/Art/Digimons/Digimon(4).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 1c0258a3d5e182746a4d64283b8ce1c4
+    m_Address: Assets/Remote/Art/Digimons/Digimon(5).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: c33c78c1eacb53949a026bc906ab4869
+    m_Address: Assets/Remote/Art/Digimons/Digimon(6).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2d68632ffcf30ce448495ab8f824dd2f
+    m_Address: Assets/Remote/Art/Digimons/Digimon(7).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 30290ce874cafaa49bdaf8e6811e7e1e
+    m_Address: Assets/Remote/Art/Digimons/Digimon(8).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 7ad56a925b56f1047a95374e6af92981
+    m_Address: Assets/Remote/Art/Digimons/Digimon(9).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 9b438eea71aa3e341acf9f85502b8b1e
+    m_Address: Assets/Remote/Art/Digimons/Digimon(10).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 749f5b1afb729044ebbfb4df963cbb93
+    m_Address: Assets/Remote/Art/Digimons/Digimon(11).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 948de82b3f8b24a43871b349cca48456
+    m_Address: Assets/Remote/Art/Digimons/Digimon(12).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 91e3fc0aeb109bf41ac64666ade919b3
+    m_Address: Assets/Remote/Art/Digimons/Digimon(13).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 86ee2eb9992097c46be451a3d37f6d5d
+    m_Address: Assets/Remote/Art/Digimons/Digimon(14).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 180cc87eaba6209418e9b98e3f1f06e7
+    m_Address: Assets/Remote/Art/Digimons/Digimon(15).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: bd904c9e1fc02834db65846bdf8a2869
+    m_Address: Assets/Remote/Art/Digimons/Digimon(16).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 00cd25801a54a1946b2a5271a6c378ed
+    m_Address: Assets/Remote/Art/Digimons/Digimon(17).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2c1d75d62f9a84d419bc3d126647f9be
+    m_Address: Assets/Remote/Art/Digimons/Digimon(18).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: c91de8b6322ccb44e8700c60b69e5f52
+    m_Address: Assets/Remote/Art/Digimons/Digimon(19).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2f503d7c1f23f1e4d835be03ea2fdd92
+    m_Address: Assets/Remote/Art/Digimons/Digimon(20).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e916ebfe48da8c944b65763f084d20d8
+    m_Address: Assets/Remote/Art/Digimons/Digimon(21).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e037da7efbe75dc4aad76bb51312f5fb
+    m_Address: Assets/Remote/Art/Digimons/Digimon(22).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e734e5e3f399b65438ea6fae25e59680
+    m_Address: Assets/Remote/Art/Digimons/Digimon(23).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 1f59be5f96ef00142b414f63be4fa31f
+    m_Address: Assets/Remote/Art/Digimons/Digimon(24).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 8fb8655874ff14d408f8e8ac4ae92cb6
+    m_Address: Assets/Remote/Art/Digimons/Digimon(25).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: caf7b6259372dec45ad192e67793b9a2
+    m_Address: Assets/Remote/Art/Digimons/Digimon(26).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 0b6418caab531af49a3c1dcd257f3685
+    m_Address: Assets/Remote/Art/Digimons/Digimon(27).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 0b621df2cf07de24e902ae5d0e417062
+    m_Address: Assets/Remote/Art/Digimons/Digimon(28).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: ec526fa72b1c8104fbb62d398725f607
+    m_Address: Assets/Remote/Art/Digimons/Digimon(29).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 60d22e438cb50b5459c3c7a5d78feda3
+    m_Address: Assets/Remote/Art/Digimons/Digimon(30).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: a7cc61507e1694444809757646d07493
+    m_Address: Assets/Remote/Art/Digimons/Digimon(31).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: aca69cdb4ebd3324f8168778c7d9c046
+    m_Address: Assets/Remote/Art/Digimons/Digimon(32).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: efb3cd9e4ec22534eade91ebfce17ad5
+    m_Address: Assets/Remote/Art/Digimons/Digimon(33).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: aabe562daa663b84a8ae804c3645accd
+    m_Address: Assets/Remote/Art/Digimons/Digimon(34).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: d9f04a2dfd92e1a48a912f466a1bd57c
+    m_Address: Assets/Remote/Art/Digimons/Digimon(35).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: ed766c66d4fda4641a45cbf973a3b34d
+    m_Address: Assets/Remote/Art/Digimons/Digimon(36).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: c008f72148d94664c92cb22d204ccbd0
+    m_Address: Assets/Remote/Art/Digimons/Digimon(37).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 6c29b09752f4eec46be2f65d9967deb5
+    m_Address: Assets/Remote/Art/Digimons/Digimon(38).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: ae107e2670ccad44b89622eb443ffe00
+    m_Address: Assets/Remote/Art/Digimons/Digimon(39).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: cdb06004812434849a308ab57ccd41cd
+    m_Address: Assets/Remote/Art/Digimons/Digimon(40).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: d3e99e42ff88b72428623d436562b668
+    m_Address: Assets/Remote/Art/Digimons/Digimon(41).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: a5b5c3d1cd67a9448b2eb5d8a393f165
+    m_Address: Assets/Remote/Art/Digimons/Digimon(42).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 826f62fd788a7f344a9f46e5828c609b
+    m_Address: Assets/Remote/Art/Digimons/Digimon(43).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 4f29df94b302d4b49a29d3fa07a03924
+    m_Address: Assets/Remote/Art/Digimons/Digimon(44).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 82261c478b8aa25479f2fa298d4f786f
+    m_Address: Assets/Remote/Art/Digimons/Digimon(45).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 5f007a91a39b20740be25e87d77b07f2
+    m_Address: Assets/Remote/Art/Digimons/Digimon(46).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: c745ba31e6f78b846b746766e9c3afae
+    m_Address: Assets/Remote/Art/Digimons/Digimon(47).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: a4b7283d55d6e484fb36a4e97f4f7d43
+    m_Address: Assets/Remote/Art/Digimons/Digimon(48).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 284590901b95ef14380dcff7116ef926
+    m_Address: Assets/Remote/Art/Digimons/Digimon(49).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 7b25809884e33d1488c379f7fff3e229
+    m_Address: Assets/Remote/Art/Digimons/Digimon(50).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e72f556cfbfed8c4fb916af21c8ae711
+    m_Address: Assets/Remote/Art/Digimons/Digimon(51).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 74a5089cb3cb1e647980c3a1d2dde8db
+    m_Address: Assets/Remote/Art/Digimons/Digimon(52).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e6fe448ff5f8dc14ab8802a8cc1bf78a
+    m_Address: Assets/Remote/Art/Digimons/Digimon(53).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: ed1fce91a6f5fb14ab79194ee6d01c6a
+    m_Address: Assets/Remote/Art/Digimons/Digimon(54).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 3d2bda01ad9d5b94a8af9d96d6c9eb9f
+    m_Address: Assets/Remote/Art/Digimons/Digimon(55).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: f5aacac36f922204c8c0d001f3032f4c
+    m_Address: Assets/Remote/Art/Digimons/Digimon(56).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 51cb06bcdf941ee46b6f8540f2685709
+    m_Address: Assets/Remote/Art/Digimons/Digimon(57).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 96a8ff05a0299af47b975d98c23b682d
+    m_Address: Assets/Remote/Art/Digimons/Digimon(58).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: cbf5026601c34c8419916ebc933451a8
+    m_Address: Assets/Remote/Art/Digimons/Digimon(59).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: fa232d1948cdd9442bdb0c21777adaaf
+    m_Address: Assets/Remote/Art/Digimons/Digimon(60).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: a5fcd5825be91c64893934e87e8dc341
+    m_Address: Assets/Remote/Art/Digimons/Digimon(61).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: cde0be563b5a1fb4ca483deb5e3f0769
+    m_Address: Assets/Remote/Art/Digimons/Digimon(62).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 033848609b98dea4d8e3e211f2de30a7
+    m_Address: Assets/Remote/Art/Digimons/Digimon(63).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2080968fda08a0e4b83b49d80d409538
+    m_Address: Assets/Remote/Art/Digimons/Digimon(64).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: c908a72d3ad64fa4f848810b9d5ac83b
+    m_Address: Assets/Remote/Art/Digimons/Digimon(65).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 1a3decb4065c0574598a88ed293bd803
+    m_Address: Assets/Remote/Art/Digimons/Digimon(66).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 84822ad9969662f4abf1291d3edb88d9
+    m_Address: Assets/Remote/Art/Digimons/Digimon(67).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 411ec5dc02bab484b813ddde5538c246
+    m_Address: Assets/Remote/Art/Digimons/Digimon(68).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: d5a8af206e65e0a4c9b8f0b6c7af4a3c
+    m_Address: Assets/Remote/Art/Digimons/Digimon(69).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 3e2f7ef05f1ae394a9b6306ebc17242a
+    m_Address: Assets/Remote/Art/Digimons/Digimon(70).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 33cfa32f6320ed24cbb5cc018c2a11ee
+    m_Address: Assets/Remote/Art/Digimons/Digimon(71).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 86a2ec58ae6a2b944acd05a60645e23b
+    m_Address: Assets/Remote/Art/Digimons/Digimon(72).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2244085fce59e384896ef4fdcd247032
+    m_Address: Assets/Remote/Art/Digimons/Digimon(73).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 80ad9f1d9e9d2474986d0757fe13310e
+    m_Address: Assets/Remote/Art/Digimons/Digimon(74).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e08ae5d8e1369f348bdccd38011b222b
+    m_Address: Assets/Remote/Art/Digimons/Digimon(75).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 824c9f761ec45ff4799966ba7f9bdcd1
+    m_Address: Assets/Remote/Art/Digimons/Digimon(76).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 01eacc783c724f643acd8d774511348a
+    m_Address: Assets/Remote/Art/Digimons/Digimon(77).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 193ae98b98ab8b947ac27afbb3c7ac58
+    m_Address: Assets/Remote/Art/Digimons/Digimon(78).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: ec40cf3324d096a49bc06d108db0b25c
+    m_Address: Assets/Remote/Art/Digimons/Digimon(79).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: d8b16cf7e2808ca4d950b32335c8dcdd
+    m_Address: Assets/Remote/Art/Digimons/Digimon(80).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 3c6e84f646c783b4397e35093f6ce21e
+    m_Address: Assets/Remote/Art/Digimons/Digimon(81).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 35145602e18e75549bbff6b5ab176dc5
+    m_Address: Assets/Remote/Art/Digimons/Digimon(82).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 9bc7d95ad6bc79d469d9d1eb8318e8ce
+    m_Address: Assets/Remote/Art/Digimons/Digimon(83).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 6a127e5d12a8abc48a28a8c59c3538a4
+    m_Address: Assets/Remote/Art/Digimons/Digimon(84).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: bfeae2f9d179864419c8a7a3bcb59567
+    m_Address: Assets/Remote/Art/Digimons/Digimon(85).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 3b395f8e91e60d741a0e06dfd78f93a0
+    m_Address: Assets/Remote/Art/Digimons/Digimon(86).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: b15119eb8ce59764c8a3ffc7108f992b
+    m_Address: Assets/Remote/Art/Digimons/Digimon(87).spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 540ef4b002fba424d86242275961d112, type: 2}
+  m_SchemaSet:
+    m_Schemas: []

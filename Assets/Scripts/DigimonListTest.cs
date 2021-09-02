@@ -1,5 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 using System.Linq;
 using System.Collections.Generic;
@@ -28,19 +30,34 @@ public class DigimonListTest : MonoBehaviour {
     private int _currDigimonScrollIndex;
     private int _selectedDigimonIndex;
     
-    private Digimon _selectedDigimon;
-    public Digimon SelectedDigimon {
+    private DigimonReference _selectedDigimon;
+    public DigimonReference SelectedDigimon {
         get => _selectedDigimon;
         private set {
+            // TODO: release assets
+
             _selectedDigimon = value;
-            _digimonImage.sprite = _selectedDigimon.Image;
-            _digimonName.text = _selectedDigimon.Name;
-            _digimonProfile.text = _selectedDigimon.ProfileData;
             _selectedDigimonIndex = _currDigimonList.IndexOf(SelectedDigimon);
+            RefreshButtons();
+
+            Addressables.LoadAssetAsync<Digimon>(value.Data).Completed += loadOp => {
+                if (loadOp.Status == AsyncOperationStatus.Succeeded) {
+                    Digimon digimon = loadOp.Result;
+
+                    Addressables.LoadAssetAsync<Sprite>(digimon.Image).Completed += operation => {
+                        if (operation.Status == AsyncOperationStatus.Succeeded) {
+                            _digimonImage.sprite = operation.Result;
+                        }
+                    };
+
+                    _digimonName.text = digimon.Name;
+                    _digimonProfile.text = digimon.ProfileData;
+                }
+            };
         }
     }
     private bool _profileOpen = false;
-    private List<Digimon> _currDigimonList;
+    private List<DigimonReference> _currDigimonList;
 
     private async void Start() {
 
@@ -80,9 +97,7 @@ public class DigimonListTest : MonoBehaviour {
             _profileOpen = !_profileOpen;
         });
 
-        _digimonImage.sprite = _digimonList.Digimons[0].Image;
-        _digimonName.text = _digimonList.Digimons[0].Name;
-        _digimonProfile.text = _digimonList.Digimons[0].ProfileData;
+        SelectedDigimon = _digimonList.Digimons[0];
 
         _scrollRect.onValueChanged.AddListener(OnScroll);
 
@@ -98,7 +113,7 @@ public class DigimonListTest : MonoBehaviour {
         } else if (_currDigimonList.Count > 0) {
             SelectedDigimon = _currDigimonList[0];
         } else {
-            // SelectedDigimon = null;
+            SelectedDigimon = null;
         }
 
         _scrollRect.normalizedPosition = Vector2.up;
@@ -121,12 +136,11 @@ public class DigimonListTest : MonoBehaviour {
         _currDigimonScrollIndex = Mathf.Min(_currDigimonScrollIndex, Mathf.Max(_currDigimonList.Count - _digimonButtons.Length, 0)); // TODO: account for buttons > digimon
         for (int iDigimon = _currDigimonScrollIndex, iButton = 0; iButton < _digimonButtons.Length; iDigimon++, iButton++) {
             if (iButton < _currDigimonList.Count) {
-                _digimonButtonsTexts[iButton].text = _currDigimonList[iDigimon].Name;
+                _digimonButtonsTexts[iButton].text = _currDigimonList[iDigimon].Name as string;
                 int currentIndex = iDigimon;
                 _digimonButtons[iButton].onClick.RemoveAllListeners();
                 _digimonButtons[iButton].onClick.AddListener(() => {
                     SelectedDigimon = _currDigimonList[currentIndex];
-                    RefreshButtons();
                 });
                 _digimonButtons[iButton].gameObject.SetActive(true);
             } else {
