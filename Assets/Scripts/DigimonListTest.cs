@@ -62,8 +62,8 @@ public class DigimonListTest : MonoBehaviour {
                 _digimonDataHandles.Add(dataHandle);
                 _ = dataHandle.WithCancellation(_digimonDataCTS.Token).ContinueWith(digimon => {
                     if (digimon != null) {
-                        if (digimon.Image.RuntimeKeyIsValid()) {
-                            var spriteHandle = Addressables.LoadAssetAsync<Sprite>(digimon.Image);
+                        if (digimon.Sprite.RuntimeKeyIsValid()) {
+                            var spriteHandle = Addressables.LoadAssetAsync<Sprite>(digimon.Sprite);
                             _digimonDataHandles.Add(spriteHandle);
                             _ = spriteHandle.WithCancellation(_digimonDataCTS.Token).ContinueWith(sprite => {
                                 if (sprite != null) {
