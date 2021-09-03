@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.AddressableAssets;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class DigimonReference {
@@ -16,5 +17,6 @@ public class Digimon : ScriptableObject {
     public string Name;
     public string ProfileData;
     public AssetReferenceAtlasedSprite Sprite;
+    public List<int> FieldIDs;
     public string LinkSubFix;
 }

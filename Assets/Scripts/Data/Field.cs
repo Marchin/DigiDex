@@ -4,6 +4,7 @@ using UnityEngine.AddressableAssets;
 [System.Serializable]
 public class FieldReference {
     public int ID;
+    public string Name;
     public AssetReferenceField Data;
 }
 
