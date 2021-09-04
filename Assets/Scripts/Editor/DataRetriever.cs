@@ -226,6 +226,7 @@ public static class DataRetriever {
         }
 
         GenerateDigimonList();
+        GetEvolutions();
 
         Debug.Log("Data Fetched");
     }
@@ -386,7 +387,7 @@ public static class DataRetriever {
         SpriteAtlasUtility.PackAllAtlases(EditorUserBuildSettings.activeBuildTarget);
     }
 
-    [MenuItem("DigiDex/Couple Digimons With Fields")]
+    // [MenuItem("DigiDex/Couple Digimons With Fields")]
     public static void CoupleDigimonFieldData() {
         DigimonDatabase digimonDB = GetDigimonDatabase();
         
@@ -558,5 +559,59 @@ public static class DataRetriever {
             string levelDataPath = levelsDataPath + "/" + levels[i].Name + ".asset";
             addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(levelDataPath).ToString(), listGroup);
         }
+    }
+    
+    [MenuItem("DigiDex/Get Evolutions")]
+    public static void GetEvolutions() {
+        DigimonDatabase digimonDB = GetDigimonDatabase();
+        
+        var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
+        for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
+            Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[iDigimon], typeof(Digimon)) as Digimon;
+            string digimonLink = WikimonBaseURL + digimonData.LinkSubFix;
+            
+            digimonData.PreEvolutionIDs?.Clear();
+            digimonData.EvolutionIDs?.Clear();
+
+            XmlDocument digimonSite = new XmlDocument();
+            digimonSite.Load(digimonLink);
+            
+            XmlNodeList preEvolutionsHeader = digimonSite.SelectNodes("/html/body/div/div/div/div/div/div/h2/span[@id='Evolves_From']");
+            // Check if there're digimons to be parsed
+            if (preEvolutionsHeader?.Item(0)?.ParentNode.NextSibling.Name == "ul") {
+                XmlNodeList preEvolutions = preEvolutionsHeader.Item(0).ParentNode.NextSibling.SelectNodes("li/a[1]");
+                for (int iField = 0; iField < preEvolutions.Count; ++iField) {
+                    string name = preEvolutions.Item(iField).InnerText;
+                    if (name.StartsWith("Any ")) {
+                        continue;
+                    }
+                    int digimonIndex = digimonDB.Digimons.FindIndex(d => d.Name == name);
+                    if (digimonIndex >= 0) {
+                        digimonData.PreEvolutionIDs.Add(digimonIndex);
+                    }
+                }
+            }
+            
+            
+            XmlNodeList evolutionsHeader = digimonSite.SelectNodes("/html/body/div/div/div/div/div/div/h2/span[@id='Evolves_To']");
+            // Check if there're digimons to be parsed
+            if (evolutionsHeader?.Item(0)?.ParentNode.NextSibling.Name == "ul") {
+                XmlNodeList evolutions = evolutionsHeader.Item(0).ParentNode.NextSibling.SelectNodes("li/a[1]");
+                for (int iField = 0; iField < evolutions.Count; ++iField) {
+                    string name = evolutions.Item(iField).InnerText;
+                    if (name.StartsWith("Any ")) {
+                        continue;
+                    }
+                    int digimonIndex = digimonDB.Digimons.FindIndex(d => d.Name == name);
+                    if (digimonIndex >= 0) {
+                        digimonData.EvolutionIDs.Add(digimonIndex);
+                    }
+                }
+            }
+            EditorUtility.SetDirty(digimonData);
+        }
+
+        AssetDatabase.SaveAssets();
+        Debug.Log("Evolutions retrieved");
     }
 }

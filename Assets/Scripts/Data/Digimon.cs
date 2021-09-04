@@ -21,5 +21,7 @@ public class Digimon : ScriptableObject {
     public List<int> FieldIDs;
     public List<int> TypeIDs;
     public List<int> LevelIDs;
+    public List<int> PreEvolutionIDs;
+    public List<int> EvolutionIDs;
     public string LinkSubFix;
 }
