@@ -23,7 +23,7 @@ public class DigimonListTest : MonoBehaviour {
     [SerializeField] private int _maxButtons = default;
     [SerializeField] private Button _profileButton = default;
     [SerializeField] private Animator _profileAnimator = default;
-    [SerializeField] private DigimonList _digimonList = default;
+    [SerializeField] private DigimonDatabase _digimonBase = default;
     private Button[] _digimonButtons;
     private TextMeshProUGUI[] _digimonButtonsTexts;
     private float _buttonLenght;
@@ -89,7 +89,7 @@ public class DigimonListTest : MonoBehaviour {
 
     private async void Start() {
 
-        if (_digimonList == null) {
+        if (_digimonBase == null) {
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.ExitPlaymode();
 #else
@@ -98,11 +98,11 @@ public class DigimonListTest : MonoBehaviour {
             return;
         }
 
-        _currDigimonList = _digimonList.Digimons;
+        _currDigimonList = _digimonBase.Digimons;
 
         _searchInput.onValueChanged.AddListener(OnInputChanged);
 
-        int buttonCount = Mathf.Min(_digimonList.Digimons.Count, _maxButtons);
+        int buttonCount = Mathf.Min(_digimonBase.Digimons.Count, _maxButtons);
         for (int i = 0; i < buttonCount; i++) {
             Instantiate(_buttonTemplate, transform);
         }
@@ -125,7 +125,7 @@ public class DigimonListTest : MonoBehaviour {
             _profileOpen = !_profileOpen;
         });
 
-        SelectedDigimon = _digimonList.Digimons[0];
+        SelectedDigimon = _digimonBase.Digimons[0];
 
         _scrollRect.onValueChanged.AddListener(OnScroll);
 
@@ -134,7 +134,7 @@ public class DigimonListTest : MonoBehaviour {
     }
 
     private void OnInputChanged(string query) {
-        _currDigimonList = _digimonList.Digimons.Where(digimon => digimon.Name.ToLower().Contains(query.ToLower())).ToList();
+        _currDigimonList = _digimonBase.Digimons.Where(digimon => digimon.Name.ToLower().Contains(query.ToLower())).ToList();
 
         if (_currDigimonList.Contains(SelectedDigimon)) {
             _selectedDigimonIndex = _currDigimonList.IndexOf(SelectedDigimon);

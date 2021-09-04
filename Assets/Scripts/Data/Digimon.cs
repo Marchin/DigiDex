@@ -17,6 +17,9 @@ public class Digimon : ScriptableObject {
     public string Name;
     public string ProfileData;
     public AssetReferenceAtlasedSprite Sprite;
+    public List<int> AttributeIDs;
     public List<int> FieldIDs;
+    public List<int> TypeIDs;
+    public List<int> LevelIDs;
     public string LinkSubFix;
 }

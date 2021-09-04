@@ -19,14 +19,17 @@ public static class DataRetriever {
     const string DigimonSpriteAtlasesGroupName = "Digimon Sprite Atlases";
     const string GeneralSpriteAtlasesGroupName = "General Sprite Atlases";
     const string DigimonDataGroupName = "Digimon Data";
-    const string DigimonListGroupName = "Digimon Data List";
+    const string DigimonDBGroupName = "Digimon Database";
     const string WikimonBaseURL = "https://wikimon.net";
     const string DigimonListURL = WikimonBaseURL + "/List_of_Digimon";
     const string FieldListURL = WikimonBaseURL + "/Field";
+    const string AttributeListURL = WikimonBaseURL + "/Attribute";
+    const string TypeListURL = WikimonBaseURL + "/Type";
+    const string LevelListURL = WikimonBaseURL + "/Evolution_Stage";
     const int DigimonsPerAtlas = 16;
     const string ArtDigimonsPathX = ArtPath + "Digimons/Digimon({0})";
     const string DigimonsDataPath = DataPath + "Digimons";
-    const string DigimonListPath = DataPath + "DigimonList.asset";
+    const string DigimonDBPath = DataPath + "Digimon Database.asset";
     const string FieldsArtPath = ArtPath + "Fields";
     const string FieldsDataPath = DataPath + "Fields";
 
@@ -42,7 +45,11 @@ public static class DataRetriever {
 
     [MenuItem("DigiDex/Retrieve Data")]
     public static async void RetrieveData() {
-        
+        GenerateFieldList();
+        GenerateAttributeList();
+        GenerateTypeList();
+        GenerateLevelList();
+
         // TODO: Add the new images either in the last folder or on a new one depending on the wether the last folder is full
         
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
@@ -54,6 +61,8 @@ public static class DataRetriever {
         var dataGroup = GetOrAddAddressableGroup(DigimonDataGroupName);
 
         var spriteAtlasGroup = GetOrAddAddressableGroup(DigimonSpriteAtlasesGroupName);
+
+        DigimonDatabase digimonDB = GetDigimonDatabase();
 
         List<Digimon> digimonsWithArt = new List<Digimon>();
 
@@ -138,6 +147,38 @@ public static class DataRetriever {
                     if (hasArt) {
                         digimonsWithArt.Add(digimonData);
                     }
+                    
+                    digimonData.AttributeIDs?.Clear();
+                    digimonData.FieldIDs?.Clear();
+                    digimonData.TypeIDs?.Clear();
+                    digimonData.LevelIDs?.Clear();
+                    XmlNodeList properties = digimonSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[5]/div[1]/ul/li/a");
+                    for (int iProperties = 0; iProperties < properties.Count; ++iProperties) {
+                        string attributeLessName = properties.Item(iProperties).InnerText.Replace(" Attribute", string.Empty);
+                        int attributeIndex = digimonDB.Attributes.FindIndex(a => a.Name == attributeLessName);
+                        if (attributeIndex >= 0) {
+                            digimonData.AttributeIDs.Add(attributeIndex);
+                            continue;
+                        }
+                        string fieldLessName = properties.Item(iProperties).InnerText.Replace(" Field", string.Empty);
+                        int fieldIndex = digimonDB.Fields.FindIndex(f => f.Name == fieldLessName);
+                        if (fieldIndex >= 0) {
+                            digimonData.FieldIDs.Add(fieldIndex);
+                            continue;
+                        }
+                        string typeLessName = properties.Item(iProperties).InnerText.Replace(" Type", string.Empty);
+                        int typeIndex = digimonDB.Types.FindIndex(f => f.Name == typeLessName);
+                        if (typeIndex >= 0) {
+                            digimonData.TypeIDs.Add(typeIndex);
+                            continue;
+                        }
+                        string levelLessName = properties.Item(iProperties).InnerText.Replace(" Level", string.Empty);
+                        int levelIndex = digimonDB.Levels.FindIndex(f => f.Name == levelLessName);
+                        if (levelIndex >= 0) {
+                            digimonData.LevelIDs.Add(levelIndex);
+                            continue;
+                        }
+                    }
 
                     EditorUtility.SetDirty(digimonData);
                     AssetDatabase.SaveAssets();
@@ -185,8 +226,6 @@ public static class DataRetriever {
         }
 
         GenerateDigimonList();
-        GenerateFieldList();
-        CoupleDigimonFieldData();
 
         Debug.Log("Data Fetched");
     }
@@ -204,7 +243,7 @@ public static class DataRetriever {
             File.Delete("Assets/Remote.meta");
         }
         var settings = AddressableAssetSettingsDefaultObject.Settings;
-        var groups = settings.groups.FindAll(g => g.Name == DigimonListGroupName || g.Name == DigimonDataGroupName || g.Name == DigimonSpriteAtlasesGroupName);
+        var groups = settings.groups.FindAll(g => g.Name == DigimonDBGroupName || g.Name == DigimonDataGroupName || g.Name == DigimonSpriteAtlasesGroupName);
         foreach (var group in groups) {
             settings.RemoveGroup(group);
         }
@@ -214,36 +253,36 @@ public static class DataRetriever {
     [MenuItem("DigiDex/Generate Digimon List Asset File")]
     public static void GenerateDigimonList() {
         AssetDatabase.Refresh();
-        DigimonList digimonList = GetDigimonList();
-        digimonList.Digimons = new List<DigimonReference>();
+        DigimonDatabase digimonDB = GetDigimonDatabase();
+        digimonDB.Digimons = new List<DigimonReference>();
         var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
         for (int i = 0; i < paths.Length; i++) {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[i], typeof(Digimon)) as Digimon;
-            digimonList.Digimons.Add(new DigimonReference { Name = digimonData.Name, Data = new AssetReferenceDigimon(AssetDatabase.GUIDFromAssetPath(paths[i]).ToString()) });
+            digimonDB.Digimons.Add(new DigimonReference { Name = digimonData.Name, Data = new AssetReferenceDigimon(AssetDatabase.GUIDFromAssetPath(paths[i]).ToString()) });
         }
-        EditorUtility.SetDirty(digimonList);
+        EditorUtility.SetDirty(digimonDB);
         AssetDatabase.SaveAssets();
         
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
-        var digimonListGroup = GetOrAddAddressableGroup(DigimonListGroupName);
-        addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(DigimonListPath).ToString(), digimonListGroup);
+        var digimonDBGroup = GetOrAddAddressableGroup(DigimonDBGroupName);
+        addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(DigimonDBPath).ToString(), digimonDBGroup);
 
         Debug.Log("List Generated");
     }
 
-    public static DigimonList GetDigimonList() {
-        DigimonList digimonList = null;
-        if (!File.Exists(DigimonListPath)) {
-            digimonList = ScriptableObject.CreateInstance<DigimonList>();
-            AssetDatabase.CreateAsset(digimonList, DigimonListPath);
+    public static DigimonDatabase GetDigimonDatabase() {
+        DigimonDatabase digimonDB = null;
+        if (!File.Exists(DigimonDBPath)) {
+            digimonDB = ScriptableObject.CreateInstance<DigimonDatabase>();
+            AssetDatabase.CreateAsset(digimonDB, DigimonDBPath);
         } else {
-            digimonList = AssetDatabase.LoadAssetAtPath(DigimonListPath, typeof(DigimonList)) as DigimonList;
+            digimonDB = AssetDatabase.LoadAssetAtPath(DigimonDBPath, typeof(DigimonDatabase)) as DigimonDatabase;
         }
 
-        return digimonList;
+        return digimonDB;
     }
 
-    [MenuItem("DigiDex/Generate Fields List")]
+    [MenuItem("DigiDex/Generate Field List")]
     public async static void GenerateFieldList() {
         XmlDocument fieldSite = new XmlDocument();
         fieldSite.Load(FieldListURL);
@@ -255,7 +294,7 @@ public static class DataRetriever {
 
         List<Field> fields = new List<Field>();
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
-        var listGroup = GetOrAddAddressableGroup(DigimonListGroupName);
+        var listGroup = GetOrAddAddressableGroup(DigimonDBGroupName);
         for (int i = 1; i < table.Count; i++) {
             XmlNode fieldData = table.Item(i);
             string fieldName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
@@ -335,13 +374,13 @@ public static class DataRetriever {
 
         AssetDatabase.SaveAssets();
 
-        DigimonList digimonList = GetDigimonList();
-        digimonList.Fields = new List<FieldReference>();
+        DigimonDatabase digimonDB = GetDigimonDatabase();
+        digimonDB.Fields = new List<FieldReference>();
         for (int i = 0; i < fields.Count; i++) {
             string fieldDataPath = fieldsDataPath + "/" + fields[i].Name + ".asset";
-            digimonList.Fields.Add(new FieldReference { ID = digimonList.Fields.Count, Name = fields[i].Name, Data = new AssetReferenceField(AssetDatabase.GUIDFromAssetPath(fieldDataPath).ToString()) });
+            digimonDB.Fields.Add(new FieldReference { Name = fields[i].Name, Data = new AssetReferenceField(AssetDatabase.GUIDFromAssetPath(fieldDataPath).ToString()) });
         }
-        EditorUtility.SetDirty(digimonList);
+        EditorUtility.SetDirty(digimonDB);
         AssetDatabase.SaveAssets();
 
         SpriteAtlasUtility.PackAllAtlases(EditorUserBuildSettings.activeBuildTarget);
@@ -349,7 +388,7 @@ public static class DataRetriever {
 
     [MenuItem("DigiDex/Couple Digimons With Fields")]
     public static void CoupleDigimonFieldData() {
-        DigimonList digimonList = GetDigimonList();
+        DigimonDatabase digimonDB = GetDigimonDatabase();
         
         var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
         for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
@@ -363,7 +402,7 @@ public static class DataRetriever {
 
             XmlNodeList fields = digimonSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[2]/th/a");
             for (int iField = 0; iField < fields.Count; ++iField) {
-                int fieldIndex = digimonList.Fields.FindIndex(f => f.Name == fields.Item(iField).Attributes.GetNamedItem("title").InnerText.Replace("Category:", string.Empty));
+                int fieldIndex = digimonDB.Fields.FindIndex(f => f.Name == fields.Item(iField).Attributes.GetNamedItem("title").InnerText.Replace("Category:", string.Empty));
                 if (fieldIndex >= 0) {
                     digimonData.FieldIDs.Add(fieldIndex);
                 }
@@ -372,5 +411,152 @@ public static class DataRetriever {
             EditorUtility.SetDirty(digimonData);
         }
         AssetDatabase.SaveAssets();
+    }
+
+    [MenuItem("DigiDex/Generate Attribute List")]
+    public static void GenerateAttributeList() {
+        XmlDocument attributeSite = new XmlDocument();
+        attributeSite.Load(AttributeListURL);
+        XmlNodeList table = attributeSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table/tbody/tr/td/a");
+        string attributesDataPath = DataPath + "Attributes";
+        if (!Directory.Exists(attributesDataPath)) {
+            Directory.CreateDirectory(attributesDataPath);
+        }
+
+        List<Attribute> attributes = new List<Attribute>();
+        var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
+        var listGroup = GetOrAddAddressableGroup(DigimonDBGroupName);
+        for (int i = 1; i < table.Count; i++) {
+            XmlNode fieldData = table.Item(i);
+            string attributeName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
+
+            if (!string.IsNullOrEmpty(attributeName)) {
+                Attribute attribute = null;
+                string attributeDataPath = attributesDataPath + "/" + attributeName + ".asset";
+                if (!File.Exists(attributeDataPath)) {
+                    attribute = ScriptableObject.CreateInstance<Attribute>();
+                    AssetDatabase.CreateAsset(attribute, attributeDataPath);
+                } else {
+                    attribute = AssetDatabase.LoadAssetAtPath(attributeDataPath, typeof(Attribute)) as Attribute;
+                }
+
+                attribute.Name = attributeName;
+                EditorUtility.SetDirty(attribute);
+                attributes.Add(attribute);
+            }
+        }
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        for (int i = 0; i < attributes.Count; i++) {
+            string attributeDataPath = attributesDataPath + "/" + attributes[i].Name + ".asset";
+            addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(attributeDataPath).ToString(), listGroup);
+        }
+
+        AssetDatabase.Refresh();
+
+        DigimonDatabase digimonDB = GetDigimonDatabase();
+        digimonDB.Attributes = new List<AttributeReference>();
+        for (int i = 0; i < attributes.Count; i++) {
+            string attributeDataPath = attributesDataPath + "/" + attributes[i].Name + ".asset";
+            digimonDB.Attributes.Add(new AttributeReference { Name = attributes[i].Name, Data = new AssetReferenceAttribute(AssetDatabase.GUIDFromAssetPath(attributeDataPath).ToString()) });
+        }
+        EditorUtility.SetDirty(digimonDB);
+        AssetDatabase.SaveAssets();
+    }
+
+    [MenuItem("DigiDex/Generate Type List")]
+    public static void GenerateTypeList() {
+        XmlDocument typeSite = new XmlDocument();
+        typeSite.Load(TypeListURL);
+        XmlNodeList table = typeSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table/tbody/tr/td[1]/b/a");
+        string typesDataPath = DataPath + "Types";
+        if (!Directory.Exists(typesDataPath)) {
+            Directory.CreateDirectory(typesDataPath);
+        }
+
+        List<Type> types = new List<Type>();
+        var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
+        var listGroup = GetOrAddAddressableGroup(DigimonDBGroupName);
+        for (int i = 0; i < table.Count; i++) {
+            XmlNode fieldData = table.Item(i);
+            string typeName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
+
+            if (!string.IsNullOrEmpty(typeName)) {
+                Type type = null;
+                string typeDataPath = typesDataPath + "/" + typeName + ".asset";
+                if (!File.Exists(typeDataPath)) {
+                    type = ScriptableObject.CreateInstance<Type>();
+                    AssetDatabase.CreateAsset(type, typeDataPath);
+                } else {
+                    type = AssetDatabase.LoadAssetAtPath(typeDataPath, typeof(Type)) as Type;
+                }
+
+                type.Name = typeName;
+                EditorUtility.SetDirty(type);
+                types.Add(type);
+            }
+        }
+        DigimonDatabase digimonDB = GetDigimonDatabase();
+        digimonDB.Types = types;
+        EditorUtility.SetDirty(digimonDB);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        for (int i = 0; i < types.Count; i++) {
+            string typeDataPath = typesDataPath + "/" + types[i].Name + ".asset";
+            addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(typeDataPath).ToString(), listGroup);
+        }
+    }
+
+    [MenuItem("DigiDex/Generate Level List")]
+    public static void GenerateLevelList() {
+        XmlDocument levelSite = new XmlDocument();
+        levelSite.Load(LevelListURL);
+        XmlNodeList table = levelSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable']/tbody/tr/td[1]/a");
+        string levelsDataPath = DataPath + "Levels";
+        if (!Directory.Exists(levelsDataPath)) {
+            Directory.CreateDirectory(levelsDataPath);
+        }
+
+        List<Level> levels = new List<Level>();
+        var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
+        var listGroup = GetOrAddAddressableGroup(DigimonDBGroupName);
+        for (int i = 0; i < table.Count; i++) {
+            XmlNode fieldData = table.Item(i);
+            string levelName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
+
+            if (levelName == "Digitama" || levelName == "Super Ultimate") {
+                continue;
+            }
+
+            if (!string.IsNullOrEmpty(levelName)) {
+                Level level = null;
+                string levelDataPath = levelsDataPath + "/" + levelName + ".asset";
+                if (!File.Exists(levelDataPath)) {
+                    level = ScriptableObject.CreateInstance<Level>();
+                    AssetDatabase.CreateAsset(level, levelDataPath);
+                } else {
+                    level = AssetDatabase.LoadAssetAtPath(levelDataPath, typeof(Level)) as Level;
+                }
+
+                level.Name = levelName;
+                EditorUtility.SetDirty(level);
+                levels.Add(level);
+            }
+        }
+        DigimonDatabase digimonDB = GetDigimonDatabase();
+        digimonDB.Levels = levels;
+        EditorUtility.SetDirty(digimonDB);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        for (int i = 0; i < levels.Count; i++) {
+            string levelDataPath = levelsDataPath + "/" + levels[i].Name + ".asset";
+            addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(levelDataPath).ToString(), listGroup);
+        }
     }
 }
