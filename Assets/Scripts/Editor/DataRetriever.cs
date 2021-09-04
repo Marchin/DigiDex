@@ -570,45 +570,61 @@ public static class DataRetriever {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[iDigimon], typeof(Digimon)) as Digimon;
             string digimonLink = WikimonBaseURL + digimonData.LinkSubFix;
             
-            digimonData.PreEvolutionIDs?.Clear();
-            digimonData.EvolutionIDs?.Clear();
-
             XmlDocument digimonSite = new XmlDocument();
             digimonSite.Load(digimonLink);
-            
-            XmlNodeList preEvolutionsHeader = digimonSite.SelectNodes("/html/body/div/div/div/div/div/div/h2/span[@id='Evolves_From']");
-            // Check if there're digimons to be parsed
-            if (preEvolutionsHeader?.Item(0)?.ParentNode.NextSibling.Name == "ul") {
-                XmlNodeList preEvolutions = preEvolutionsHeader.Item(0).ParentNode.NextSibling.SelectNodes("li/a[1]");
-                for (int iField = 0; iField < preEvolutions.Count; ++iField) {
-                    string name = preEvolutions.Item(iField).InnerText;
-                    if (name.StartsWith("Any ")) {
-                        continue;
-                    }
-                    int digimonIndex = digimonDB.Digimons.FindIndex(d => d.Name == name);
-                    if (digimonIndex >= 0) {
-                        digimonData.PreEvolutionIDs.Add(digimonIndex);
-                    }
-                }
-            }
-            
-            
-            XmlNodeList evolutionsHeader = digimonSite.SelectNodes("/html/body/div/div/div/div/div/div/h2/span[@id='Evolves_To']");
-            // Check if there're digimons to be parsed
-            if (evolutionsHeader?.Item(0)?.ParentNode.NextSibling.Name == "ul") {
-                XmlNodeList evolutions = evolutionsHeader.Item(0).ParentNode.NextSibling.SelectNodes("li/a[1]");
-                for (int iField = 0; iField < evolutions.Count; ++iField) {
-                    string name = evolutions.Item(iField).InnerText;
-                    if (name.StartsWith("Any ")) {
-                        continue;
-                    }
-                    int digimonIndex = digimonDB.Digimons.FindIndex(d => d.Name == name);
-                    if (digimonIndex >= 0) {
-                        digimonData.EvolutionIDs.Add(digimonIndex);
-                    }
-                }
-            }
+
+            digimonData.PreEvolutions = ParseEvolutionList("Evolves_From");
+            digimonData.Evolutions = ParseEvolutionList("Evolves_To");
+
             EditorUtility.SetDirty(digimonData);
+
+
+            ////////////////////////////////
+            // Function Helpers
+            ////////////////////////////////
+
+            List<Evolution> ParseEvolutionList(string headerName) {
+                List<Evolution> evolutions = new List<Evolution>();
+                XmlNodeList header = digimonSite.SelectNodes($"/html/body/div/div/div/div/div/div/h2/span[@id='{headerName}']");
+                // Check if there're digimons to be parsed
+                if (header?.Item(0)?.ParentNode.NextSibling.Name == "ul") {
+                    evolutions.AddRange(ParseSubList(header, "li/b/a[1]", EvolutionType.Main));
+                    evolutions.AddRange(ParseSubList(header, "li/a[1]"));
+                }
+
+                return evolutions;
+
+            }
+        
+            List<Evolution> ParseSubList(XmlNodeList header, string accessor, EvolutionType additionalFlags = EvolutionType.Regular) {
+                List<Evolution> result = new List<Evolution>();
+                XmlNodeList evolutions = header.Item(0).ParentNode.NextSibling.SelectNodes(accessor);
+                for (int iField = 0; iField < evolutions.Count; ++iField) {
+                    EvolutionType evolutionType = additionalFlags;
+
+                    XmlNode node = evolutions.Item(iField);
+                    string name = node.InnerText;
+                    if (name == "Omegamon") {
+                        Debug.Log("here");
+                    }
+
+                    XmlNode detailsNode = additionalFlags.HasFlag(EvolutionType.Main) ? node.ParentNode : node;
+                    if (detailsNode.NextSibling?.NextSibling?.InnerText == "Warp Evolution") {
+                        evolutionType |= EvolutionType.Warp;
+                    }
+                    if (name.StartsWith("Any ")) {
+                        continue;
+                    }
+                    int digimonIndex = digimonDB.Digimons.FindIndex(d => d.Name == name);
+                    if (digimonIndex >= 0) {
+
+                        Evolution evolution = new Evolution { DigimonID = digimonIndex, Type = evolutionType };
+                        result.Add(evolution);
+                    }
+                }
+
+                return result;
+            }
         }
 
         AssetDatabase.SaveAssets();
