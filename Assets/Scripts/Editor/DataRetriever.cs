@@ -71,18 +71,30 @@ public static class DataRetriever {
         XmlNodeList table = digimonListSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable']/tbody/tr/td[1]/a");
         for (int i = 0; i < table.Count; i++) {
             string digimonLinkSubFix = table.Item(i)?.Attributes.Item(0)?.InnerText ?? "";
-            string digimonName = table.Item(i)?.InnerText.Trim();
 
             if (!string.IsNullOrEmpty(digimonLinkSubFix)) {
-                string digimonNameSafe = digimonName.AddresableSafe();
-                string artPath = string.Format(ArtDigimonsPathX, digimonsWithArt.Count / DigimonsPerAtlas);
-                string digimonArtPath = artPath + "/" + digimonNameSafe + ".png";
-                string digimonDataPath = DigimonsDataPath + "/" + digimonNameSafe + ".asset";
-                string digimonLink = WikimonBaseURL + digimonLinkSubFix;
-
                 try {
+                    string digimonLink = WikimonBaseURL + digimonLinkSubFix;
+
                     XmlDocument digimonSite = new XmlDocument();
                     digimonSite.Load(digimonLink);
+
+                    // Sometimes name variants are used for the list, we look for the name used in the profile
+                    XmlNode redirectNode = digimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
+                    while (redirectNode != null) {
+                        string newLinkSubFix = redirectNode.Attributes.GetNamedItem("href").InnerText;
+                        Debug.Log($"Redirecting from {digimonLinkSubFix} to {newLinkSubFix}");
+                        digimonLinkSubFix = newLinkSubFix;
+                        digimonLink = WikimonBaseURL + digimonLinkSubFix;
+                        digimonSite.Load(digimonLink);
+                        redirectNode = digimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
+                    }
+                    
+                    string artPath = string.Format(ArtDigimonsPathX, digimonsWithArt.Count / DigimonsPerAtlas);
+                    string digimonName = digimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
+                    string digimonNameSafe = digimonName.AddresableSafe();
+                    string digimonArtPath = artPath + "/" + digimonNameSafe + ".png";
+                    string digimonDataPath = DigimonsDataPath + "/" + digimonNameSafe + ".asset";
 
                     if (!Directory.Exists(artPath)) {
                         Directory.CreateDirectory(artPath);
@@ -148,10 +160,10 @@ public static class DataRetriever {
                         digimonsWithArt.Add(digimonData);
                     }
                     
-                    digimonData.AttributeIDs?.Clear();
-                    digimonData.FieldIDs?.Clear();
-                    digimonData.TypeIDs?.Clear();
-                    digimonData.LevelIDs?.Clear();
+                    digimonData.AttributeIDs = new List<int>();
+                    digimonData.FieldIDs = new List<int>();
+                    digimonData.TypeIDs = new List<int>();
+                    digimonData.LevelIDs = new List<int>();
                     XmlNodeList properties = digimonSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[5]/div[1]/ul/li/a");
                     for (int iProperties = 0; iProperties < properties.Count; ++iProperties) {
                         string attributeLessName = properties.Item(iProperties).InnerText.Replace(" Attribute", string.Empty);
@@ -186,8 +198,6 @@ public static class DataRetriever {
                     addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(digimonDataPath).ToString(), dataGroup);
                 } catch (Exception ex) {
                     Debug.Log($"{digimonLinkSubFix} - {ex.Message} \n {ex.StackTrace}");
-                } finally {
-                    
                 }
             }
         }
@@ -215,10 +225,15 @@ public static class DataRetriever {
             string spriteAtlasGUID = AssetDatabase.GUIDFromAssetPath(spriteAtlasPath).ToString();
             addressablesSettings.CreateOrMoveEntry(spriteAtlasGUID, spriteAtlasGroup);
 
-            for (int iDigimon = i * DigimonsPerAtlas; iDigimon < Mathf.Min(iDigimon + DigimonsPerAtlas, digimonsWithArt.Count); ++iDigimon) {
+            int max = Mathf.Min((i + 1) * DigimonsPerAtlas, digimonsWithArt.Count);
+            for (int iDigimon = i * DigimonsPerAtlas; iDigimon < max; ++iDigimon) {
                 digimonsWithArt[iDigimon].Sprite = new AssetReferenceAtlasedSprite(spriteAtlasGUID);
                 digimonsWithArt[iDigimon].Sprite.SubObjectName = digimonsWithArt[iDigimon].Name.AddresableSafe();
-                EditorUtility.SetDirty(digimonsWithArt[iDigimon]);
+                try {
+                    EditorUtility.SetDirty(digimonsWithArt[iDigimon]);
+                } catch (Exception ex) {
+                    Debug.Log($"{iDigimon}(asset null: {digimonsWithArt[iDigimon] == null}) - {ex.Message} \n {ex.StackTrace}");
+                }
             }
             
             AssetDatabase.SaveAssets();
@@ -566,17 +581,21 @@ public static class DataRetriever {
         DigimonDatabase digimonDB = GetDigimonDatabase();
         
         var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
-        for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
+        for (int iDigimon = 1314; iDigimon < 1315; iDigimon++) {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[iDigimon], typeof(Digimon)) as Digimon;
             string digimonLink = WikimonBaseURL + digimonData.LinkSubFix;
             
             XmlDocument digimonSite = new XmlDocument();
-            digimonSite.Load(digimonLink);
+            try {
+                digimonSite.Load(digimonLink);
 
-            digimonData.PreEvolutions = ParseEvolutionList("Evolves_From");
-            digimonData.Evolutions = ParseEvolutionList("Evolves_To");
+                digimonData.PreEvolutions = ParseEvolutionList("Evolves_From");
+                digimonData.Evolutions = ParseEvolutionList("Evolves_To");
 
-            EditorUtility.SetDirty(digimonData);
+                EditorUtility.SetDirty(digimonData);
+            } catch (Exception ex) {
+                Debug.Log($"{digimonData.Name} - {ex.Message} \n {ex.StackTrace}");
+            }
 
 
             ////////////////////////////////
@@ -585,45 +604,205 @@ public static class DataRetriever {
 
             List<Evolution> ParseEvolutionList(string headerName) {
                 List<Evolution> evolutions = new List<Evolution>();
+
                 XmlNodeList header = digimonSite.SelectNodes($"/html/body/div/div/div/div/div/div/h2/span[@id='{headerName}']");
                 // Check if there're digimons to be parsed
                 if (header?.Item(0)?.ParentNode.NextSibling.Name == "ul") {
-                    evolutions.AddRange(ParseSubList(header, "li/b/a[1]", EvolutionType.Main));
-                    evolutions.AddRange(ParseSubList(header, "li/a[1]"));
+                    XmlNodeList evolutionsNode = header.Item(0).ParentNode.NextSibling.SelectNodes("li");
+                    for (int iField = 0; iField < evolutionsNode.Count; ++iField) {
+                        XmlNode digimonNode = evolutionsNode.Item(iField).FirstChild;
+                        string name = digimonNode.InnerText;
+                        if (name.StartsWith("Any ")) {
+                            continue;
+                        }
+
+                        var auxNode = digimonNode.Name == "b"? digimonNode.FirstChild : digimonNode;
+                        string fuseDigimonLinkSubFix = WikimonBaseURL + auxNode.Attributes.GetNamedItem("href").InnerText;
+                        
+                        int digimonIndex = digimonDB.Digimons.FindIndex(d => d.Name == name);
+
+                        if (digimonIndex < 0) {
+                            // Sometimes name variants are used for the list, we look for the name used in the profile
+                            XmlDocument fuseDigimonSite = new XmlDocument();
+                            try {
+                                fuseDigimonSite.Load(fuseDigimonLinkSubFix);
+                                name = fuseDigimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
+                                XmlNode redirectNode = fuseDigimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
+                                while (redirectNode != null) {
+                                    string newLinkSubFix = redirectNode.Attributes.GetNamedItem("href").InnerText;
+                                    Debug.Log($"Redirecting from {fuseDigimonLinkSubFix} to {newLinkSubFix}");
+                                    fuseDigimonLinkSubFix = newLinkSubFix;
+                                    fuseDigimonSite.Load(fuseDigimonLinkSubFix);
+                                    name = fuseDigimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
+                                    redirectNode = fuseDigimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
+                                }
+                            } catch (Exception ex) {
+                                Debug.Log($"{name} - {ex.Message} \n {ex.StackTrace}");
+                            }
+
+                            digimonIndex = digimonDB.Digimons.FindIndex(d => d.Name == name);
+                        }
+
+                        if (digimonIndex >= 0) {
+                            List<Evolution> evolutionMethods = new List<Evolution>();
+
+                            EvolutionType baseEvolutionType = EvolutionType.Regular;
+                            if (digimonNode.Name == "b") {
+                                baseEvolutionType = EvolutionType.Main;
+                            }
+                            
+                            Evolution method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType, FusionIDs = new int[0] };
+
+                            bool isWarp = false;
+                            bool oneOrMoreOptionals = false;
+
+                            XmlNode siblingNode = digimonNode.NextSibling;
+                            while (siblingNode != null) {
+                                if (siblingNode.InnerText == "Warp Evolution") {
+                                    isWarp = true;
+                                } else if (siblingNode.InnerText.Contains("with")) {
+                                    bool isOptional = siblingNode.InnerText.Contains("without") ||
+                                        (siblingNode.Name == "b" && siblingNode.NextSibling.InnerText.Contains("without"));
+                                    
+                                    if (isOptional) {
+                                        // The first optional means that the digimon can evolve with the base element alone and we always record it
+                                        // Otherwise we only record the method if it has any changes from the base element
+                                        if (!oneOrMoreOptionals || (method.Type != baseEvolutionType)) {
+                                            evolutionMethods.Add(method);
+                                            oneOrMoreOptionals = true;
+                                        }
+                                        method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                        
+                                        if (siblingNode.Name == "b") {
+                                            // skip "without" since we already parsed it
+                                            siblingNode = siblingNode.NextSibling;
+                                        }
+                                    }
+                                    
+                                    // Start reading components
+                                    siblingNode = siblingNode?.NextSibling;
+                                    
+                                    List<(int id, bool isMain)> fusionIDs = new List<(int id, bool isMain)>();
+                                    bool recordFusionsTogether = false;
+                                    bool recordFusionsSeparated = false;
+
+                                    while (siblingNode != null) {
+                                        if (siblingNode.InnerText.Contains("Digimental")) {
+                                            // Record fusion in the case of DigimonA(with DigimonB or NotDigimon)
+                                            RecordConcatenatedFusions();
+                                            method.Type |= EvolutionType.Armor;
+                                            CheckMain(ref method, siblingNode);
+                                            evolutionMethods.Add(method);
+                                            method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                        } else if (siblingNode.InnerText.Contains("Spirit")) {
+                                            // Record fusion in the case of DigimonA(with DigimonB or NotDigimon)
+                                            RecordConcatenatedFusions();
+                                            method.Type |= EvolutionType.Spirit;
+                                            CheckMain(ref method, siblingNode);
+                                            evolutionMethods.Add(method);
+                                            method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                        } else if (siblingNode.InnerText.Trim() == "Slide Evolution") {
+                                            // Record fusion in the case of DigimonA(with DigimonB or NotDigimon)
+                                            RecordConcatenatedFusions();
+                                            method.Type |= EvolutionType.Side;
+                                            CheckMain(ref method, siblingNode);
+                                            evolutionMethods.Add(method);
+                                            method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                        } else if (siblingNode.Name == "b" || siblingNode.Name == "a") {
+                                            int fusionIndex = digimonDB.Digimons.FindIndex(d => d.Name == siblingNode.InnerText);
+                                            if (fusionIndex > 0) {
+                                                method.Type |= EvolutionType.Fusion;
+                                                fusionIDs.Add((fusionIndex, siblingNode.Name == "b"));
+                                            }
+                                            RecordConcatenatedFusions();
+                                        } else if (siblingNode.InnerText.Contains("or")) {
+                                            if (fusionIDs.Count > 0) {
+                                                recordFusionsSeparated = true;
+                                            }
+                                        } else if (siblingNode.InnerText.Contains("and")) {
+                                            if (fusionIDs.Count > 0) {
+                                                recordFusionsTogether = true;
+                                            }
+                                        } else if (siblingNode.InnerText.Contains(')')) {
+                                            if (method.Type != baseEvolutionType) {
+                                                // Record fusion in the case of DigimonA(with DigimonB or NotDigimon)
+                                                RecordConcatenatedFusions();
+                                                RecordFuseRemanents();
+                                                evolutionMethods.Add(method);
+                                                method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                            }
+                                            break;
+                                        }
+
+                                        siblingNode = siblingNode.NextSibling;
+
+                                        void CheckMain(ref Evolution evo, XmlNode node) {
+                                            if (node.Name != "b") {
+                                                evo.Type &= ~EvolutionType.Main;
+                                            }
+                                        }
+
+                                        void RecordConcatenatedFusions() {
+                                            if (recordFusionsTogether) {
+                                                if (fusionIDs.Count > 0) {
+                                                    method.FusionIDs = fusionIDs.Select(tuple => tuple.id).ToArray();
+                                                    if (!fusionIDs[0].isMain) {
+                                                        method.Type &= ~EvolutionType.Main;
+                                                    }
+                                                    fusionIDs.Clear();
+                                                    evolutionMethods.Add(method);
+                                                    method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                                }
+                                                recordFusionsTogether = false;
+                                            }
+                                            if (recordFusionsSeparated) {
+                                                for (int iFusionID = 0; iFusionID < fusionIDs.Count; ++iFusionID) {
+                                                    method.FusionIDs = new int[] { fusionIDs[iFusionID].id };
+                                                    method.Type = baseEvolutionType;
+                                                    if (!fusionIDs[iFusionID].isMain) {
+                                                        method.Type &= ~EvolutionType.Main;
+                                                    }
+                                                    method.Type |= EvolutionType.Fusion;
+                                                    evolutionMethods.Add(method);
+                                                    method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType | EvolutionType.Fusion };
+                                                }
+                                                fusionIDs.Clear();
+                                                recordFusionsSeparated = false;
+                                            }
+                                        }
+                                    }
+
+                                    RecordFuseRemanents();
+
+                                    void RecordFuseRemanents() {
+                                        if (fusionIDs.Count > 0) {
+                                            method.FusionIDs = fusionIDs.Select(tuple => tuple.id).ToArray();
+                                            if (!fusionIDs[0].isMain) {
+                                                method.Type &= ~EvolutionType.Main;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                siblingNode = siblingNode?.NextSibling;
+                            }
+
+                            if (evolutionMethods.Count == 0 || (method.Type != baseEvolutionType)) {
+                                evolutionMethods.Add(method);
+                            }
+
+                            for (int iMethod = 0; iMethod < evolutionMethods.Count; ++iMethod) {
+                                // Warp means the an evolution stage gets skipped independent of the method
+                                if (isWarp) {
+                                    evolutionMethods[iMethod].Type |= EvolutionType.Warp;
+                                }
+                                evolutions.Add(evolutionMethods[iMethod]);
+                            }
+                        }
+                    }
                 }
 
-                return evolutions;
-
-            }
-        
-            List<Evolution> ParseSubList(XmlNodeList header, string accessor, EvolutionType additionalFlags = EvolutionType.Regular) {
-                List<Evolution> result = new List<Evolution>();
-                XmlNodeList evolutions = header.Item(0).ParentNode.NextSibling.SelectNodes(accessor);
-                for (int iField = 0; iField < evolutions.Count; ++iField) {
-                    EvolutionType evolutionType = additionalFlags;
-
-                    XmlNode node = evolutions.Item(iField);
-                    string name = node.InnerText;
-                    if (name == "Omegamon") {
-                        Debug.Log("here");
-                    }
-
-                    XmlNode detailsNode = additionalFlags.HasFlag(EvolutionType.Main) ? node.ParentNode : node;
-                    if (detailsNode.NextSibling?.NextSibling?.InnerText == "Warp Evolution") {
-                        evolutionType |= EvolutionType.Warp;
-                    }
-                    if (name.StartsWith("Any ")) {
-                        continue;
-                    }
-                    int digimonIndex = digimonDB.Digimons.FindIndex(d => d.Name == name);
-                    if (digimonIndex >= 0) {
-
-                        Evolution evolution = new Evolution { DigimonID = digimonIndex, Type = evolutionType };
-                        result.Add(evolution);
-                    }
-                }
-
-                return result;
+                return evolutions.Distinct().ToList();
             }
         }
 
