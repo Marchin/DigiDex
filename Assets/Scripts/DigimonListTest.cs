@@ -5,6 +5,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 using System.Linq;
 using System.Threading;
+using System.Globalization;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
@@ -143,7 +144,10 @@ public class DigimonListTest : MonoBehaviour {
     }
 
     private void OnInputChanged(string query) {
-        _currDigimonList = _digimonDB.Digimons.Where(digimon => digimon.Name.ToLower().Contains(query.ToLower())).ToList();
+        _currDigimonList = _digimonDB.Digimons
+            .Where(digimon => digimon.Name.ToLower().Contains(query.ToLower()))
+            .OrderByDescending(d => d.Name.StartsWith(query, true, CultureInfo.InvariantCulture))
+            .ToList();
 
         if (_currDigimonList.Contains(SelectedDigimon)) {
             _selectedDigimonIndex = _currDigimonList.IndexOf(SelectedDigimon);

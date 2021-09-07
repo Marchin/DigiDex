@@ -271,7 +271,7 @@ public static class DataRetriever {
         AssetDatabase.Refresh();
         DigimonDatabase digimonDB = GetDigimonDatabase();
         digimonDB.Digimons = new List<DigimonReference>();
-        var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
+        var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path.Replace(".asset", string.Empty)).ToArray();
         for (int i = 0; i < paths.Length; i++) {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[i], typeof(Digimon)) as Digimon;
             digimonDB.Digimons.Add(new DigimonReference { Name = digimonData.Name, Data = new AssetReferenceDigimon(AssetDatabase.GUIDFromAssetPath(paths[i]).ToString()) });
