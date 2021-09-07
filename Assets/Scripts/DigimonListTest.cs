@@ -14,6 +14,8 @@ public class DigimonListTest : MonoBehaviour {
     [SerializeField] private TextMeshProUGUI _digimonProfile = default;
     [SerializeField] private TMP_InputField _searchInput = default;
     [SerializeField] private CustomScrollRect _scrollRect = default;
+    [SerializeField] private CustomScrollRect _infoScroll = default;
+    [SerializeField] private InformationRowList _info = default;
     [SerializeField] private VerticalLayoutGroup _layoutGroup = default;
     [SerializeField] private RectTransform _buttonTemplate = default;
     [SerializeField] private Sprite _regularButton = default;
@@ -23,7 +25,7 @@ public class DigimonListTest : MonoBehaviour {
     [SerializeField] private int _maxButtons = default;
     [SerializeField] private Button _profileButton = default;
     [SerializeField] private Animator _profileAnimator = default;
-    [SerializeField] private DigimonDatabase _digimonBase = default;
+    [SerializeField] private DigimonDatabase _digimonDB = default;
     private Button[] _digimonButtons;
     private TextMeshProUGUI[] _digimonButtonsTexts;
     private float _buttonLenght;
@@ -75,6 +77,13 @@ public class DigimonListTest : MonoBehaviour {
 
                         _digimonName.text = digimon.Name;
                         _digimonProfile.text = digimon.ProfileData;
+
+                        _info.gameObject.SetActive(false);
+                        _digimonDB.ExtractDigimonData(digimon).ContinueWith(data => {
+                            _info.gameObject.SetActive(true);
+                            _info.Populate(data);
+                            UniTask.DelayFrame(1).ContinueWith(() => _infoScroll.normalizedPosition = Vector2.up).Forget();
+                        }).Forget();
                     }
                 });
             } else {
@@ -89,7 +98,7 @@ public class DigimonListTest : MonoBehaviour {
 
     private async void Start() {
 
-        if (_digimonBase == null) {
+        if (_digimonDB == null) {
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.ExitPlaymode();
 #else
@@ -98,21 +107,21 @@ public class DigimonListTest : MonoBehaviour {
             return;
         }
 
-        _currDigimonList = _digimonBase.Digimons;
+        _currDigimonList = _digimonDB.Digimons;
 
         _searchInput.onValueChanged.AddListener(OnInputChanged);
 
-        int buttonCount = Mathf.Min(_digimonBase.Digimons.Count, _maxButtons);
+        int buttonCount = Mathf.Min(_digimonDB.Digimons.Count, _maxButtons);
         for (int i = 0; i < buttonCount; i++) {
-            Instantiate(_buttonTemplate, transform);
+            Instantiate(_buttonTemplate, _scrollRect.content);
         }
 
         await UniTask.DelayFrame(1);
 
         _buttonLenght = _buttonTemplate.sizeDelta.y;
         _buttonTemplate.gameObject.SetActive(false);
-        _digimonButtons = GetComponentsInChildren<Button>();
-        _digimonButtonsTexts = GetComponentsInChildren<TextMeshProUGUI>();
+        _digimonButtons = _scrollRect.content.GetComponentsInChildren<Button>();
+        _digimonButtonsTexts = _scrollRect.content.GetComponentsInChildren<TextMeshProUGUI>();
 
         PopulateButtons();
 
@@ -125,7 +134,7 @@ public class DigimonListTest : MonoBehaviour {
             _profileOpen = !_profileOpen;
         });
 
-        SelectedDigimon = _digimonBase.Digimons[0];
+        SelectedDigimon = _digimonDB.Digimons[0];
 
         _scrollRect.onValueChanged.AddListener(OnScroll);
 
@@ -134,7 +143,7 @@ public class DigimonListTest : MonoBehaviour {
     }
 
     private void OnInputChanged(string query) {
-        _currDigimonList = _digimonBase.Digimons.Where(digimon => digimon.Name.ToLower().Contains(query.ToLower())).ToList();
+        _currDigimonList = _digimonDB.Digimons.Where(digimon => digimon.Name.ToLower().Contains(query.ToLower())).ToList();
 
         if (_currDigimonList.Contains(SelectedDigimon)) {
             _selectedDigimonIndex = _currDigimonList.IndexOf(SelectedDigimon);
@@ -180,14 +189,14 @@ public class DigimonListTest : MonoBehaviour {
     }
 
     private void RefreshButtons() {
-        for (int iButton = 0; iButton < _digimonButtons.Length; iButton++) {
-            if ((iButton + _currDigimonScrollIndex) == _selectedDigimonIndex) {
-                _digimonButtonsTexts[iButton].color = _selectedColor;
-                _digimonButtons[iButton].image.sprite = _selectedButton;
-            } else {
-                _digimonButtonsTexts[iButton].color = _regularColor;
-                _digimonButtons[iButton].image.sprite = _regularButton;
-            }
-        }
+        // for (int iButton = 0; iButton < _digimonButtons.Length; iButton++) {
+        //     if ((iButton + _currDigimonScrollIndex) == _selectedDigimonIndex) {
+        //         _digimonButtonsTexts[iButton].color = _selectedColor;
+        //         _digimonButtons[iButton].image.sprite = _selectedButton;
+        //     } else {
+        //         _digimonButtonsTexts[iButton].color = _regularColor;
+        //         _digimonButtons[iButton].image.sprite = _regularButton;
+        //     }
+        // }
     }
 }
