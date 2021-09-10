@@ -16,8 +16,15 @@ public class DigimonDatabase : ScriptableObject {
         if (digimon != null) {
             information.Add(new InformationData { Prefix = "Name", Content = digimon.Name });
 
+            if (digimon.LevelIDs.Count > 0) {
+                information.Add(new InformationData { Prefix = "Level" });
+                for (int iLevel = 0; iLevel < digimon.LevelIDs.Count; ++iLevel) {
+                    information.Add(new InformationData { Content = Levels[digimon.LevelIDs[iLevel]].Name, IndentLevel = 1 });
+                }
+            }
+
             if (digimon.AttributeIDs.Count > 0) {
-                information.Add(new InformationData { Prefix = "Attributes" });
+                information.Add(new InformationData { Prefix = "Attribute" });
                 for (int iAttribute = 0; iAttribute < digimon.AttributeIDs.Count; ++iAttribute) {
                     information.Add(new InformationData { Content = Attributes[digimon.AttributeIDs[iAttribute]].Name, IndentLevel = 1 });
                 }
@@ -31,7 +38,7 @@ public class DigimonDatabase : ScriptableObject {
             }
 
             if (digimon.FieldIDs.Count > 0) {
-                information.Add(new InformationData { Prefix = "Fields" });
+                information.Add(new InformationData { Prefix = "Field" });
                 for (int iField = 0; iField < digimon.FieldIDs.Count; ++iField) {
                     Field field = await Addressables.LoadAssetAsync<Field>(Fields[digimon.FieldIDs[iField]].Data);
                     information.Add(new InformationData { Content = field.Name, SpriteReference = field.Sprite, IndentLevel = 1 });

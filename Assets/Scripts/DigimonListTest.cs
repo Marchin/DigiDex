@@ -18,12 +18,18 @@ public class DigimonListTest : MonoBehaviour {
     [SerializeField] private TextMeshProUGUI _digimonProfile = default;
     [SerializeField] private TMP_InputField _searchInput = default;
     [SerializeField] private CustomScrollRect _scrollRect = default;
+    [SerializeField] private Color _unselectedColor = default;
+    [SerializeField] private Color _selectedColor = default;
     [SerializeField] private CustomScrollRect _infoScroll = default;
     [SerializeField] private InformationRowList _info = default;
     [SerializeField] private VerticalLayoutGroup _layoutGroup = default;
     [SerializeField] private RectTransform _buttonTemplate = default;
     [SerializeField] private int _maxButtons = default;
     [SerializeField] private Button _profileButton = default;
+    [SerializeField] private Toggle _dataToggle = default;
+    [SerializeField] private Toggle _profileToggle = default;
+    [SerializeField] private RectTransform _dataContent = default;
+    [SerializeField] private RectTransform _profileContent = default;
     [SerializeField] private Animator _profileAnimator = default;
     [SerializeField] private DigimonDatabase _digimonDB = default;
     private Button[] _digimonButtons;
@@ -133,6 +139,9 @@ public class DigimonListTest : MonoBehaviour {
             _fixingListPosition = false;
         };
         _scrollRect.OnEndDragEvent += () => _fixingListPosition = !IsEmpty;
+
+        _dataToggle.onValueChanged.AddListener(isOn => _dataContent.gameObject.SetActive(isOn));
+        _profileToggle.onValueChanged.AddListener(isOn => _profileContent.gameObject.SetActive(isOn));
 
         // Wait for button population
         await UniTask.DelayFrame(1);
@@ -264,7 +273,7 @@ public class DigimonListTest : MonoBehaviour {
     private void RefreshButtons() {
         for (int iButton = 0; iButton < _digimonButtons.Length; iButton++) {
             _digimonButtons[iButton].image.color = iButton == CurrButtonIndex ?
-                Color.cyan : Color.white;
+                _selectedColor : _unselectedColor;
         }
     }
 }
