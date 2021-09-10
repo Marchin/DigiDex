@@ -4311,21 +4311,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cd764b635189624e9473248ba7d3cef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _scrollAnimationOffset: 550
-  _scrollAnimationScale: 0.2
-  _scrollCenteringSpeedMul: 2
   _digimonImage: {fileID: 683139492}
   _digimonName: {fileID: 46564888}
   _digimonProfile: {fileID: 1360305737}
   _searchInput: {fileID: 62246232}
-  _scrollRect: {fileID: 2125015454}
-  _unselectedColor: {r: 0.08566215, g: 0.3373865, b: 0.7264151, a: 1}
-  _selectedColor: {r: 0, g: 0.7490196, b: 1, a: 1}
   _infoScroll: {fileID: 759249732}
   _info: {fileID: 1083999111}
-  _layoutGroup: {fileID: 1347699359}
-  _buttonTemplate: {fileID: 571132386}
-  _maxButtons: 10
   _profileButton: {fileID: 279299009}
   _dataToggle: {fileID: 644860689}
   _profileToggle: {fileID: 516291700}
@@ -4333,6 +4324,7 @@ MonoBehaviour:
   _profileContent: {fileID: 1939184818}
   _profileAnimator: {fileID: 654693351}
   _digimonDB: {fileID: 11400000, guid: 2f1b7e33f551f134aa7eac5555d3f7d5, type: 2}
+  _animatedScroll: {fileID: 2125015457}
 --- !u!1 &1734029227
 GameObject:
   m_ObjectHideFlags: 0
@@ -5219,6 +5211,7 @@ GameObject:
   - component: {fileID: 2125015456}
   - component: {fileID: 2125015455}
   - component: {fileID: 2125015454}
+  - component: {fileID: 2125015457}
   m_Layer: 5
   m_Name: Digimon List
   m_TagString: Untagged
@@ -5316,3 +5309,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2125015452}
   m_CullTransparentMesh: 1
+--- !u!114 &2125015457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2125015452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9222646aed6d03d4dba9d0e55f2ee8bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _scrollAnimationOffset: 550
+  _scrollAnimationScale: 0.2
+  _scrollCenteringSpeedMul: 2
+  _scrollRect: {fileID: 2125015454}
+  _unselectedColor: {r: 0, g: 0.33932102, b: 0.6886792, a: 1}
+  _selectedColor: {r: 0, g: 0.7095475, b: 1, a: 1}
+  _layoutGroup: {fileID: 1347699359}
+  _buttonTemplate: {fileID: 571132386}
+  _maxButtons: 10
