@@ -18,8 +18,9 @@ public static class DataRetriever {
     const string DataPath = "Assets/Remote/Data/";
     const string DigimonSpriteAtlasesGroupName = "Digimon Sprite Atlases";
     const string GeneralSpriteAtlasesGroupName = "General Sprite Atlases";
+    const string DigimonListGroupName = "Digimon List";
     const string DigimonDataGroupName = "Digimon Data";
-    const string DigimonDBGroupName = "Digimon Database";
+    const string DBGroupName = "Databases";
     const string WikimonBaseURL = "https://wikimon.net";
     const string DigimonListURL = WikimonBaseURL + "/List_of_Digimon";
     const string FieldListURL = WikimonBaseURL + "/Field";
@@ -29,6 +30,7 @@ public static class DataRetriever {
     const int DigimonsPerAtlas = 16;
     const string ArtDigimonsPathX = ArtPath + "Digimons/Digimon({0})";
     const string DigimonsDataPath = DataPath + "Digimons";
+    const string CentralDBPath = DataPath + "Central Database.asset";
     const string DigimonDBPath = DataPath + "Digimon Database.asset";
     const string FieldsArtPath = ArtPath + "Fields";
     const string FieldsDataPath = DataPath + "Fields";
@@ -58,7 +60,7 @@ public static class DataRetriever {
             Directory.CreateDirectory(DigimonsDataPath);
         }
 
-        var dataGroup = GetOrAddAddressableGroup(DigimonDataGroupName);
+        var dataGroup = GetOrAddAddressableGroup(DigimonListGroupName);
 
         var spriteAtlasGroup = GetOrAddAddressableGroup(DigimonSpriteAtlasesGroupName);
 
@@ -259,7 +261,11 @@ public static class DataRetriever {
             File.Delete("Assets/Remote.meta");
         }
         var settings = AddressableAssetSettingsDefaultObject.Settings;
-        var groups = settings.groups.FindAll(g => g.Name == DigimonDBGroupName || g.Name == DigimonDataGroupName || g.Name == DigimonSpriteAtlasesGroupName);
+        var groups = settings.groups.FindAll(
+            g => g.Name == DBGroupName || 
+            g.Name == DigimonListGroupName || 
+            g.Name == DigimonDataGroupName || 
+            g.Name == DigimonSpriteAtlasesGroupName);
         foreach (var group in groups) {
             settings.RemoveGroup(group);
         }
@@ -276,26 +282,47 @@ public static class DataRetriever {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[i], typeof(Digimon)) as Digimon;
             digimonDB.Digimons.Add(new DigimonReference { Name = digimonData.Name, Data = new AssetReferenceDigimon(AssetDatabase.GUIDFromAssetPath(paths[i]).ToString()) });
         }
+        
+        CentralDatabase centralDB = GetCentralDatabase();
+        centralDB.DigimonDB = digimonDB;
+
+        EditorUtility.SetDirty(centralDB);
         EditorUtility.SetDirty(digimonDB);
         AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
         
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
-        var digimonDBGroup = GetOrAddAddressableGroup(DigimonDBGroupName);
-        addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(DigimonDBPath).ToString(), digimonDBGroup);
+        var dbGroup = GetOrAddAddressableGroup(DBGroupName);
+        addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(DigimonDBPath).ToString(), dbGroup);
+        addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(CentralDBPath).ToString(), dbGroup);
+
 
         Debug.Log("List Generated");
     }
 
+    public static CentralDatabase GetCentralDatabase() {
+        CentralDatabase centralDB = GetOrCreateScriptableObject<CentralDatabase>(CentralDBPath);
+
+        return centralDB;
+    }
+
     public static DigimonDatabase GetDigimonDatabase() {
-        DigimonDatabase digimonDB = null;
-        if (!File.Exists(DigimonDBPath)) {
-            digimonDB = ScriptableObject.CreateInstance<DigimonDatabase>();
-            AssetDatabase.CreateAsset(digimonDB, DigimonDBPath);
-        } else {
-            digimonDB = AssetDatabase.LoadAssetAtPath(DigimonDBPath, typeof(DigimonDatabase)) as DigimonDatabase;
-        }
+        DigimonDatabase digimonDB = GetOrCreateScriptableObject<DigimonDatabase>(DigimonDBPath);
 
         return digimonDB;
+    }
+
+    public static T GetOrCreateScriptableObject<T>(string path) where T : ScriptableObject {
+        T scriptableObj = null;
+        if (!File.Exists(DigimonDBPath)) {
+            scriptableObj = ScriptableObject.CreateInstance<T>();
+            AssetDatabase.CreateAsset(scriptableObj, path);
+        } else {
+            scriptableObj = AssetDatabase.LoadAssetAtPath(path, typeof(T)) as T;
+        }
+
+        return scriptableObj;
+
     }
 
     [MenuItem("DigiDex/Generate Field List")]
@@ -310,7 +337,7 @@ public static class DataRetriever {
 
         List<Field> fields = new List<Field>();
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
-        var listGroup = GetOrAddAddressableGroup(DigimonDBGroupName);
+        var listGroup = GetOrAddAddressableGroup(DigimonDataGroupName);
         for (int i = 1; i < table.Count; i++) {
             XmlNode fieldData = table.Item(i);
             string fieldName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
@@ -441,7 +468,7 @@ public static class DataRetriever {
 
         List<Attribute> attributes = new List<Attribute>();
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
-        var listGroup = GetOrAddAddressableGroup(DigimonDBGroupName);
+        var listGroup = GetOrAddAddressableGroup(DigimonDataGroupName);
         for (int i = 1; i < table.Count; i++) {
             XmlNode fieldData = table.Item(i);
             string attributeName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
@@ -494,7 +521,7 @@ public static class DataRetriever {
 
         List<Type> types = new List<Type>();
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
-        var listGroup = GetOrAddAddressableGroup(DigimonDBGroupName);
+        var listGroup = GetOrAddAddressableGroup(DigimonDataGroupName);
         for (int i = 0; i < table.Count; i++) {
             XmlNode fieldData = table.Item(i);
             string typeName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
@@ -539,7 +566,7 @@ public static class DataRetriever {
 
         List<Level> levels = new List<Level>();
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
-        var listGroup = GetOrAddAddressableGroup(DigimonDBGroupName);
+        var listGroup = GetOrAddAddressableGroup(DigimonDataGroupName);
         for (int i = 0; i < table.Count; i++) {
             XmlNode fieldData = table.Item(i);
             string levelName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";

@@ -1,11 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public interface IDataElement<T> {
+public interface IDataUIElement<T> {
     void Populate(T data);
 }
 
-public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataElement<D> {
+public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElement<D> {
     [SerializeField] private T _template = default;
     [SerializeField] private RectTransform _root = default;
 	private List<T> _elements = new List<T>();

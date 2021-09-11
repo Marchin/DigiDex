@@ -7,13 +7,13 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using Cysharp.Threading.Tasks;
 
 public class InformationData {
+    public int IndentLevel;
     public string Prefix;
     public string Content;
     public AssetReferenceAtlasedSprite SpriteReference;
-    public int IndentLevel;
 }
 
-public class InformationRow : MonoBehaviour, IDataElement<InformationData> {
+public class InformationRow : MonoBehaviour, IDataUIElement<InformationData> {
     [SerializeField] private float _indentWidth = default;
     [SerializeField] private LayoutElement _indent = default;
     [SerializeField] private GameObject _imageSeparator = default;

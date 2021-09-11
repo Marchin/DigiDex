@@ -119,7 +119,6 @@ public class ButtonScrollList : MonoBehaviour {
 
                 if (Mathf.Abs(viewportCenter.y - selectedButtonPos.y) < 30f) {
                     OnSelected?.Invoke(_currButtonIndex + _currElementScrollIndex);
-                    // _profileButton.gameObject.SetActive(true);
                     if (Mathf.Abs(viewportCenter.y - selectedButtonPos.y) < 2f) {
                         _fixingListPosition = false;
                     }

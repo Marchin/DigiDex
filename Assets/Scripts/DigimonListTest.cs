@@ -22,8 +22,9 @@ public class DigimonListTest : MonoBehaviour {
     [SerializeField] private RectTransform _dataContent = default;
     [SerializeField] private RectTransform _profileContent = default;
     [SerializeField] private Animator _profileAnimator = default;
-    [SerializeField] private DigimonDatabase _digimonDB = default;
+    [SerializeField] private CentralDatabase _centralDB = default;
     [SerializeField] private ButtonScrollList _animatedScroll = default;
+    private DigimonDatabase DigimonDB => _centralDB.DigimonDB;
     private CancellationTokenSource _digimonDataCTS;
     private List<AsyncOperationHandle> _digimonDataHandles = new List<AsyncOperationHandle>();
     private List<DigimonReference> _currDigimonList;
@@ -72,7 +73,7 @@ public class DigimonListTest : MonoBehaviour {
                         _digimonProfile.text = digimon.ProfileData;
 
                         _info.gameObject.SetActive(false);
-                        _digimonDB.ExtractDigimonData(digimon).ContinueWith(data => {
+                        digimon.ExtractInformationData(_centralDB).ContinueWith(data => {
                             _info.gameObject.SetActive(true);
                             _info.Populate(data);
                             UniTask.DelayFrame(1).ContinueWith(() => _infoScroll.normalizedPosition = Vector2.up).Forget();
@@ -87,7 +88,7 @@ public class DigimonListTest : MonoBehaviour {
     }
 
     private void Start() {
-        if (_digimonDB == null) {
+        if (DigimonDB == null) {
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.ExitPlaymode();
 #else
@@ -96,7 +97,7 @@ public class DigimonListTest : MonoBehaviour {
             return;
         }
 
-        _currDigimonList = _digimonDB.Digimons;
+        _currDigimonList = DigimonDB.Digimons;
         _animatedScroll.Initialize(
             nameList: _currDigimonList.Select(d => d.Name).ToList(),
             onSelected: (index) => {
@@ -122,6 +123,7 @@ public class DigimonListTest : MonoBehaviour {
                 _animatedScroll.ScrollEnabled = true;
                 _profileAnimator.SetTrigger("Fade Out");
             } else {
+                _dataToggle.isOn = true;
                 _animatedScroll.ScrollEnabled = false;
                 _profileAnimator.SetTrigger("Fade In");
             }
@@ -130,7 +132,7 @@ public class DigimonListTest : MonoBehaviour {
     }
 
     private void OnInputChanged(string query) {
-        _currDigimonList = _digimonDB.Digimons
+        _currDigimonList = DigimonDB.Digimons
             .Where(digimon => digimon.Name.ToLower().Contains(query.ToLower()))
             .OrderByDescending(d => d.Name.StartsWith(query, true, CultureInfo.InvariantCulture))
             .ToList();
