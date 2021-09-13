@@ -85,7 +85,7 @@ public class DigimonListTest : MonoBehaviour {
         }
     }
 
-    private void Start() {
+    private async void Start() {
         if (DigimonDB == null) {
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.ExitPlaymode();
@@ -94,6 +94,8 @@ public class DigimonListTest : MonoBehaviour {
 #endif
             return;
         }
+
+        await Addressables.InitializeAsync();
 
         _currDigimonList = _filteredDigimonList = DigimonDB.Digimons;
         _animatedScroll.Initialize(
