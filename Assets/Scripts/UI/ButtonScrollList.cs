@@ -23,9 +23,10 @@ public class ButtonScrollList : MonoBehaviour {
     private int _currElementScrollIndex;
     public Button CurrenButton => _buttons[_currButtonIndex];
     private bool _fixingListPosition = false;
-    private Action<int> OnSelected;
+    private Action<int> OnConfirmed;
     public event Action OnBeginDrag;
     public event Action OnEndDrag;
+    public event Action<int> OnSelectedButtonChanged;
     public bool IsEmpty => _namesList.Count == 0;
     public bool ScrollEnabled {
         get => _scrollRect.enabled;
@@ -37,18 +38,19 @@ public class ButtonScrollList : MonoBehaviour {
         set {
             if (_currButtonIndex != value) {
                 _currButtonIndex = value;
+                OnSelectedButtonChanged?.Invoke(value);
                 RefreshButtons();
             }
         }
     }
 
-    public async void Initialize(List<string> nameList, Action<int> onSelected) {
+    public async void Initialize(List<string> nameList, Action<int> onConfirmed) {
         if (nameList == null) {
             Debug.LogError("List of names is null");
             return;
         }
 
-        OnSelected = onSelected;
+        OnConfirmed = onConfirmed;
 
         _namesList = nameList;
 
@@ -79,7 +81,7 @@ public class ButtonScrollList : MonoBehaviour {
 
         PopulateButtons();
 
-        OnSelected?.Invoke(0);
+        OnConfirmed?.Invoke(0);
 
         _scrollRect.onValueChanged.AddListener(OnScroll);
 
@@ -98,18 +100,19 @@ public class ButtonScrollList : MonoBehaviour {
         }
         _namesList = nameList;
 
-        if (_namesList.Count > 0) {
-            OnSelected?.Invoke(0);
-        } else {
-            OnSelected?.Invoke(-1);
-        }
-
         ResetScroll();
+        AnimateButtons();
+
+        if (_namesList.Count > 0) {
+            OnConfirmed?.Invoke(0);
+        } else {
+            OnConfirmed?.Invoke(-1);
+        }
     }
 
     private void Update() {
         if (_fixingListPosition) {
-            if (Mathf.Abs(_scrollRect.velocity.y) < 20f) {
+            if (Mathf.Abs(_scrollRect.velocity.y) < 40f) {
                 Vector2 viewportCenter = _scrollRect.viewport.transform.position;
                 Vector2 selectedButtonPos = CurrenButton.transform
                     .TransformPoint((CurrenButton.transform as RectTransform).rect.center);
@@ -117,8 +120,8 @@ public class ButtonScrollList : MonoBehaviour {
                     _scrollRect.velocity = _scrollCenteringSpeedMul * Vector2.up * (viewportCenter.y - selectedButtonPos.y);
                 }
 
-                if (Mathf.Abs(viewportCenter.y - selectedButtonPos.y) < 30f) {
-                    OnSelected?.Invoke(_currButtonIndex + _currElementScrollIndex);
+                if (Mathf.Abs(viewportCenter.y - selectedButtonPos.y) < 80f) {
+                    OnConfirmed?.Invoke(_currButtonIndex + _currElementScrollIndex);
                     if (Mathf.Abs(viewportCenter.y - selectedButtonPos.y) < 2f) {
                         _fixingListPosition = false;
                     }
@@ -150,6 +153,7 @@ public class ButtonScrollList : MonoBehaviour {
         float minT = float.MaxValue;
         Vector2 viewportCenter = _scrollRect.viewport.transform.position;
         Vector2 selectedButtonPos = Vector2.zero;
+        int currButtonIndex = 0;
         for (int iButton = 0; iButton < _buttons.Length; iButton++) {
             Vector2 button = _buttons[iButton].transform.TransformPoint((_buttons[iButton].transform as RectTransform).rect.center);
             float t = Mathf.Abs(viewportCenter.y - button.y) / _scrollRect.viewport.rect.height;
@@ -159,9 +163,10 @@ public class ButtonScrollList : MonoBehaviour {
             if (minT > t) {
                 selectedButtonPos = button;
                 minT = t;
-                CurrButtonIndex = iButton;
+                currButtonIndex = iButton;
             }
         }
+        CurrButtonIndex = currButtonIndex;
     }
 
     private void PopulateButtons() {

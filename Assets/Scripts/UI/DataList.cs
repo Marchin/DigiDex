@@ -9,6 +9,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
     [SerializeField] private T _template = default;
     [SerializeField] private RectTransform _root = default;
 	private List<T> _elements = new List<T>();
+    public IReadOnlyList<T> Elements => _elements;
 	private List<T> _pool = new List<T>();
 
     private void Start() {

@@ -20,6 +20,7 @@ public static class DataRetriever {
     const string GeneralSpriteAtlasesGroupName = "General Sprite Atlases";
     const string DigimonListGroupName = "Digimon List";
     const string DigimonDataGroupName = "Digimon Data";
+    const string DigimonEvolutionDataGroupName = "Digimon Evolution Data";
     const string DBGroupName = "Databases";
     const string WikimonBaseURL = "https://wikimon.net";
     const string DigimonListURL = WikimonBaseURL + "/List_of_Digimon";
@@ -30,6 +31,7 @@ public static class DataRetriever {
     const int DigimonsPerAtlas = 16;
     const string ArtDigimonsPathX = ArtPath + "Digimons/Digimon({0})";
     const string DigimonsDataPath = DataPath + "Digimons";
+    const string DigimonEvolutionsDataPath = DataPath + "Digimons/Evolutions";
     const string CentralDBPath = DataPath + "Central Database.asset";
     const string DigimonDBPath = DataPath + "Digimon Database.asset";
     const string FieldsArtPath = ArtPath + "Fields";
@@ -47,10 +49,10 @@ public static class DataRetriever {
 
     [MenuItem("DigiDex/Retrieve Data")]
     public static async void RetrieveData() {
-        GenerateFieldList();
-        GenerateAttributeList();
-        GenerateTypeList();
-        GenerateLevelList();
+        // GenerateFieldList();
+        // GenerateAttributeList();
+        // GenerateTypeList();
+        // GenerateLevelList();
 
         // TODO: Add the new images either in the last folder or on a new one depending on the wether the last folder is full
         
@@ -276,11 +278,12 @@ public static class DataRetriever {
     public static void GenerateDigimonList() {
         AssetDatabase.Refresh();
         DigimonDatabase digimonDB = GetDigimonDatabase();
-        digimonDB.Digimons = new List<DigimonReference>();
+        digimonDB.Digimons = new List<Digimon>();
         var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path.Replace(".asset", string.Empty)).ToArray();
         for (int i = 0; i < paths.Length; i++) {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[i], typeof(Digimon)) as Digimon;
-            digimonDB.Digimons.Add(new DigimonReference { Name = digimonData.Name, Data = new AssetReferenceDigimon(AssetDatabase.GUIDFromAssetPath(paths[i]).ToString()) });
+            digimonDB.Digimons.Add(digimonData);
+            //digimonDB.Digimons.Add(new DigimonReference { Name = digimonData.Name, Data = new AssetReferenceDigimon(AssetDatabase.GUIDFromAssetPath(paths[i]).ToString()) });
         }
         
         CentralDatabase centralDB = GetCentralDatabase();
@@ -295,7 +298,6 @@ public static class DataRetriever {
         var dbGroup = GetOrAddAddressableGroup(DBGroupName);
         addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(DigimonDBPath).ToString(), dbGroup);
         addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(CentralDBPath).ToString(), dbGroup);
-
 
         Debug.Log("List Generated");
     }
@@ -314,9 +316,11 @@ public static class DataRetriever {
 
     public static T GetOrCreateScriptableObject<T>(string path) where T : ScriptableObject {
         T scriptableObj = null;
-        if (!File.Exists(DigimonDBPath)) {
+        if (!File.Exists(path)) {
             scriptableObj = ScriptableObject.CreateInstance<T>();
             AssetDatabase.CreateAsset(scriptableObj, path);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         } else {
             scriptableObj = AssetDatabase.LoadAssetAtPath(path, typeof(T)) as T;
         }
@@ -429,7 +433,7 @@ public static class DataRetriever {
         SpriteAtlasUtility.PackAllAtlases(EditorUserBuildSettings.activeBuildTarget);
     }
 
-    // [MenuItem("DigiDex/Couple Digimons With Fields")]
+    [MenuItem("DigiDex/Couple Digimons With Properties")]
     public static void CoupleDigimonFieldData() {
         DigimonDatabase digimonDB = GetDigimonDatabase();
         
@@ -438,16 +442,39 @@ public static class DataRetriever {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[iDigimon], typeof(Digimon)) as Digimon;
             string digimonLink = WikimonBaseURL + digimonData.LinkSubFix;
 
-            digimonData.FieldIDs = new List<int>();
 
             XmlDocument digimonSite = new XmlDocument();
             digimonSite.Load(digimonLink);
 
-            XmlNodeList fields = digimonSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[2]/th/a");
-            for (int iField = 0; iField < fields.Count; ++iField) {
-                int fieldIndex = digimonDB.Fields.FindIndex(f => f.Name == fields.Item(iField).Attributes.GetNamedItem("title").InnerText.Replace("Category:", string.Empty));
+            digimonData.AttributeIDs = new List<int>();
+            digimonData.FieldIDs = new List<int>();
+            digimonData.TypeIDs = new List<int>();
+            digimonData.LevelIDs = new List<int>();
+            XmlNodeList properties = digimonSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[5]/div[1]/ul/li/a");
+            for (int iProperties = 0; iProperties < properties.Count; ++iProperties) {
+                string attributeLessName = properties.Item(iProperties).InnerText.Replace(" Attribute", string.Empty);
+                int attributeIndex = digimonDB.Attributes.FindIndex(a => a.Name == attributeLessName);
+                if (attributeIndex >= 0) {
+                    digimonData.AttributeIDs.Add(attributeIndex);
+                    continue;
+                }
+                string fieldLessName = properties.Item(iProperties).InnerText.Replace(" Field", string.Empty);
+                int fieldIndex = digimonDB.Fields.FindIndex(f => f.Name == fieldLessName);
                 if (fieldIndex >= 0) {
                     digimonData.FieldIDs.Add(fieldIndex);
+                    continue;
+                }
+                string typeLessName = properties.Item(iProperties).InnerText.Replace(" Type", string.Empty);
+                int typeIndex = digimonDB.Types.FindIndex(f => f.Name == typeLessName);
+                if (typeIndex >= 0) {
+                    digimonData.TypeIDs.Add(typeIndex);
+                    continue;
+                }
+                string levelLessName = properties.Item(iProperties).InnerText.Replace(" Level", string.Empty);
+                int levelIndex = digimonDB.Levels.FindIndex(f => f.Name == levelLessName);
+                if (levelIndex >= 0) {
+                    digimonData.LevelIDs.Add(levelIndex);
+                    continue;
                 }
             }
 
@@ -469,7 +496,7 @@ public static class DataRetriever {
         List<Attribute> attributes = new List<Attribute>();
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
         var listGroup = GetOrAddAddressableGroup(DigimonDataGroupName);
-        for (int i = 1; i < table.Count; i++) {
+        for (int i = 0; i < table.Count; i++) {
             XmlNode fieldData = table.Item(i);
             string attributeName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
 
@@ -606,19 +633,29 @@ public static class DataRetriever {
     [MenuItem("DigiDex/Get Evolutions")]
     public static void GetEvolutions() {
         DigimonDatabase digimonDB = GetDigimonDatabase();
-        
+
+        if (!Directory.Exists(DigimonEvolutionsDataPath)) {
+            Directory.CreateDirectory(DigimonEvolutionsDataPath);
+        }
+
         var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
-        for (int iDigimon = 1314; iDigimon < 1315; iDigimon++) {
+        for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[iDigimon], typeof(Digimon)) as Digimon;
             string digimonLink = WikimonBaseURL + digimonData.LinkSubFix;
+
+            string evolutionDataPath = $"{DigimonEvolutionsDataPath}/{digimonData.Name.AddresableSafe()} Evolutions.asset";
+            EvolutionData evolutionData = GetOrCreateScriptableObject<EvolutionData>(evolutionDataPath);
             
             XmlDocument digimonSite = new XmlDocument();
             try {
                 digimonSite.Load(digimonLink);
 
-                digimonData.PreEvolutions = ParseEvolutionList("Evolves_From");
-                digimonData.Evolutions = ParseEvolutionList("Evolves_To");
+                evolutionData.PreEvolutions = ParseEvolutionList("Evolves_From");
+                evolutionData.Evolutions = ParseEvolutionList("Evolves_To");
 
+                digimonData.EvolutionData = new AssetReferenceEvolutionData(AssetDatabase.GUIDFromAssetPath(evolutionDataPath).ToString());
+
+                EditorUtility.SetDirty(evolutionData);
                 EditorUtility.SetDirty(digimonData);
             } catch (Exception ex) {
                 Debug.Log($"{digimonData.Name} - {ex.Message} \n {ex.StackTrace}");
@@ -644,22 +681,22 @@ public static class DataRetriever {
                         }
 
                         var auxNode = digimonNode.Name == "b"? digimonNode.FirstChild : digimonNode;
-                        string fuseDigimonLinkSubFix = WikimonBaseURL + auxNode.Attributes.GetNamedItem("href").InnerText;
                         
                         int digimonIndex = digimonDB.Digimons.FindIndex(d => d.Name == name);
+                        string fuseDigimonLinkSubFix = auxNode?.Attributes?.GetNamedItem("href")?.InnerText;
 
-                        if (digimonIndex < 0) {
+                        if (digimonIndex < 0 && !string.IsNullOrEmpty(fuseDigimonLinkSubFix)) {
                             // Sometimes name variants are used for the list, we look for the name used in the profile
                             XmlDocument fuseDigimonSite = new XmlDocument();
                             try {
-                                fuseDigimonSite.Load(fuseDigimonLinkSubFix);
+                                fuseDigimonSite.Load(WikimonBaseURL + fuseDigimonLinkSubFix);
                                 name = fuseDigimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
                                 XmlNode redirectNode = fuseDigimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
                                 while (redirectNode != null) {
                                     string newLinkSubFix = redirectNode.Attributes.GetNamedItem("href").InnerText;
                                     Debug.Log($"Redirecting from {fuseDigimonLinkSubFix} to {newLinkSubFix}");
                                     fuseDigimonLinkSubFix = newLinkSubFix;
-                                    fuseDigimonSite.Load(fuseDigimonLinkSubFix);
+                                    fuseDigimonSite.Load(WikimonBaseURL + fuseDigimonLinkSubFix);
                                     name = fuseDigimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
                                     redirectNode = fuseDigimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
                                 }
@@ -834,6 +871,15 @@ public static class DataRetriever {
         }
 
         AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
+        var evolutionPaths = Directory.GetFiles(DigimonEvolutionsDataPath, "*.asset").OrderBy(path => path).ToArray();
+        AddressableAssetGroup group = GetOrAddAddressableGroup(DigimonEvolutionDataGroupName);
+        for (int iEvolutionPath = 0; iEvolutionPath < evolutionPaths.Length; ++iEvolutionPath) {
+            settings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(evolutionPaths[iEvolutionPath]).ToString(), group);
+        }
+
         Debug.Log("Evolutions retrieved");
     }
 }

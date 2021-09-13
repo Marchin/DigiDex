@@ -22,11 +22,10 @@ public class Digimon : ScriptableObject, IDataObject {
     public List<int> FieldIDs;
     public List<int> TypeIDs;
     public List<int> LevelIDs;
-    public List<Evolution> PreEvolutions;
-    public List<Evolution> Evolutions;
+    public AssetReferenceEvolutionData EvolutionData;
     public string LinkSubFix;
 
-    
+    // TODO: Release asset handle calls
     public async UniTask<List<InformationData>> ExtractInformationData(CentralDatabase centralDB) {
         List<InformationData> information = new List<InformationData>();
         
