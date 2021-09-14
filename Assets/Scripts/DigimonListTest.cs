@@ -75,12 +75,9 @@ public class DigimonListTest : MonoBehaviour {
                 _digimonName.text = _selectedDigimon.Name;
                 _digimonProfile.text = _selectedDigimon.ProfileData;
 
-                _info.gameObject.SetActive(false);
-                _selectedDigimon.ExtractInformationData(_centralDB).ContinueWith(data => {
-                    _info.gameObject.SetActive(true);
-                    _info.Populate(data);
-                    UniTask.DelayFrame(1).ContinueWith(() => _infoScroll.normalizedPosition = Vector2.up).Forget();
-                }).Forget();
+                List<InformationData> informationData = _selectedDigimon.ExtractInformationData(_centralDB);
+                _info.Populate(informationData);
+                UniTask.DelayFrame(1).ContinueWith(() => _infoScroll.normalizedPosition = Vector2.up).Forget();
             }
         }
     }

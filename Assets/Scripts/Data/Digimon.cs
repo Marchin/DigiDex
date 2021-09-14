@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.AddressableAssets;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 
 [System.Serializable]
 public class DigimonReference {
@@ -25,8 +24,7 @@ public class Digimon : ScriptableObject, IDataObject {
     public AssetReferenceEvolutionData EvolutionData;
     public string LinkSubFix;
 
-    // TODO: Release asset handle calls
-    public async UniTask<List<InformationData>> ExtractInformationData(CentralDatabase centralDB) {
+    public List<InformationData> ExtractInformationData(CentralDatabase centralDB) {
         List<InformationData> information = new List<InformationData>();
         
         DigimonDatabase digimonDB = centralDB.DigimonDB;
@@ -56,8 +54,7 @@ public class Digimon : ScriptableObject, IDataObject {
         if (FieldIDs.Count > 0) {
             information.Add(new InformationData { Prefix = "Field" });
             for (int iField = 0; iField < FieldIDs.Count; ++iField) {
-                Field field = await Addressables.LoadAssetAsync<Field>(digimonDB.Fields[FieldIDs[iField]].Data);
-                information.Add(new InformationData { Content = field.Name, SpriteReference = field.Sprite, IndentLevel = 1 });
+                information.Add(new InformationData { Content = digimonDB.Fields[FieldIDs[iField]].Name, SpriteReference = digimonDB.Fields[FieldIDs[iField]].Sprite, IndentLevel = 1 });
             }
         }
 

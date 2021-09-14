@@ -418,18 +418,13 @@ public static class DataRetriever {
                 field.Sprite.SubObjectName = fieldName.AddresableSafe();
             }
         }
-
-        AssetDatabase.SaveAssets();
-
+        
         DigimonDatabase digimonDB = GetDigimonDatabase();
-        digimonDB.Fields = new List<FieldReference>();
-        for (int i = 0; i < fields.Count; i++) {
-            string fieldDataPath = fieldsDataPath + "/" + fields[i].Name + ".asset";
-            digimonDB.Fields.Add(new FieldReference { Name = fields[i].Name, Data = new AssetReferenceField(AssetDatabase.GUIDFromAssetPath(fieldDataPath).ToString()) });
-        }
+        digimonDB.Fields = fields;
         EditorUtility.SetDirty(digimonDB);
-        AssetDatabase.SaveAssets();
 
+        AssetDatabase.SaveAssets();
+        
         SpriteAtlasUtility.PackAllAtlases(EditorUserBuildSettings.activeBuildTarget);
     }
 
@@ -527,11 +522,7 @@ public static class DataRetriever {
         AssetDatabase.Refresh();
 
         DigimonDatabase digimonDB = GetDigimonDatabase();
-        digimonDB.Attributes = new List<AttributeReference>();
-        for (int i = 0; i < attributes.Count; i++) {
-            string attributeDataPath = attributesDataPath + "/" + attributes[i].Name + ".asset";
-            digimonDB.Attributes.Add(new AttributeReference { Name = attributes[i].Name, Data = new AssetReferenceAttribute(AssetDatabase.GUIDFromAssetPath(attributeDataPath).ToString()) });
-        }
+        digimonDB.Attributes = attributes;
         EditorUtility.SetDirty(digimonDB);
         AssetDatabase.SaveAssets();
     }
