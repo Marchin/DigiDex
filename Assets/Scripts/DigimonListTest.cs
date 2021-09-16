@@ -27,8 +27,10 @@ public class DigimonListTest : MonoBehaviour {
     [SerializeField] private CentralDatabase _centralDB = default;
     [SerializeField] private ButtonScrollList _animatedScroll = default;
     [SerializeField] private FilterPopup _filterPopup = default;
+    [SerializeField] private EvolutionsPopup _evolutionsPopup = default;
+    [SerializeField] private Button _evolutionButton = default;
     [SerializeField] private Button _filterButton = default;
-    private DigimonDatabase DigimonDB => _centralDB.DigimonDB;
+    public DigimonDatabase DigimonDB => _centralDB.DigimonDB;
     private CancellationTokenSource _digimonDataCTS;
     private List<AsyncOperationHandle> _digimonDataHandles = new List<AsyncOperationHandle>();
     private List<Digimon> _filteredDigimonList;
@@ -36,7 +38,10 @@ public class DigimonListTest : MonoBehaviour {
     private List<FilterData> _filters;
     private bool _profileOpen = false;
     private string _lastQuery = "";
+    private static DigimonListTest _instance;
+    public static DigimonListTest Instance => _instance;
     
+    private EvolutionData _currEvolutionData;
     private Digimon _selectedDigimon;
     public Digimon SelectedDigimon {
         get => _selectedDigimon;
@@ -72,6 +77,17 @@ public class DigimonListTest : MonoBehaviour {
                     }).Forget();
                 }
 
+                if (_selectedDigimon.EvolutionData.RuntimeKeyIsValid()) {
+                    var evolutionHandle = Addressables.LoadAssetAsync<EvolutionData>(_selectedDigimon.EvolutionData);
+                    _digimonDataHandles.Add(evolutionHandle);
+                    evolutionHandle.WithCancellation(_digimonDataCTS.Token).ContinueWith(evolutionData => {
+                        if (evolutionData != null) {
+                            _evolutionButton.gameObject.SetActive(true);
+                            _currEvolutionData = evolutionData;
+                        }
+                    });
+                }
+
                 _digimonName.text = _selectedDigimon.Name;
                 _digimonProfile.text = _selectedDigimon.ProfileData;
 
@@ -79,6 +95,14 @@ public class DigimonListTest : MonoBehaviour {
                 _info.Populate(informationData);
                 UniTask.DelayFrame(1).ContinueWith(() => _infoScroll.normalizedPosition = Vector2.up).Forget();
             }
+        }
+    }
+
+    private void Awake() {
+        if (_instance != null && _instance != this) {
+            Destroy(this);
+        } else {
+            _instance = this;
         }
     }
 
@@ -161,9 +185,14 @@ public class DigimonListTest : MonoBehaviour {
             RefreshList();
         });
         _filterPopup.gameObject.SetActive(false);
+        _evolutionsPopup.gameObject.SetActive(false);
         _filterButton.onClick.AddListener(() => _filterPopup.Show(_filters));
+        _evolutionButton.onClick.AddListener(() => _evolutionsPopup.Show(SelectedDigimon, _currEvolutionData));
 
-        _animatedScroll.OnSelectedButtonChanged += _ => _profileButton.gameObject.SetActive(false);
+        _animatedScroll.OnSelectedButtonChanged += _ => {
+            _profileButton.gameObject.SetActive(false);
+            _evolutionButton.gameObject.SetActive(false);
+        };
 
         _searchInput.onValueChanged.AddListener(OnInputChanged);
         _clearSearch.onClick.AddListener(() => _searchInput.text = "");
