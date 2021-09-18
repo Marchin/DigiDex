@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 public interface IDataUIElement<T> {
@@ -10,6 +11,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
     [SerializeField] private RectTransform _root = default;
 	private List<T> _elements = new List<T>();
     public IReadOnlyList<T> Elements => _elements;
+    public event Action<List<D>> OnPopulate;
 	private List<T> _pool = new List<T>();
 
     private void Start() {
@@ -33,6 +35,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
                 _pool.Remove(element);
             } else {
                 element = Instantiate(_template, _root);
+                element.name = $"{_template.name} ({_elements.Count})";
                 _elements.Add(element);
             }
             element.Populate(data[index]);
@@ -44,6 +47,8 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
             _pool.Add(_elements[_elements.Count - 1]);
             _elements.RemoveAt(_elements.Count - 1);
         }
+
+        OnPopulate?.Invoke(data);
     }
 
     public void Clear() {

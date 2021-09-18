@@ -80,7 +80,8 @@ public class DigimonListTest : MonoBehaviour {
                     _digimonDataHandles.Add(evolutionHandle);
                     evolutionHandle.WithCancellation(_digimonDataCTS.Token).ContinueWith(evolutionData => {
                         if (evolutionData != null) {
-                            _evolutionButton.gameObject.SetActive(evolutionData.PreEvolutions.Count > 0 || evolutionData.Evolutions.Count > 0);
+                            _evolutionButton.gameObject.SetActive(true);
+                            _evolutionButton.interactable = (evolutionData.PreEvolutions.Count > 0 || evolutionData.Evolutions.Count > 0);
                             _currEvolutionData = evolutionData;
                         }
                     });

@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -23,7 +24,7 @@ public class FilterData {
     }
 }
 
-public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData> {
+public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPointerEnterHandler, IPointerExitHandler {
     [SerializeField] private Button _button = default;
     [SerializeField] private TextMeshProUGUI _label = default;
     private FilterData _filterData;
@@ -34,6 +35,7 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData> {
                 return;
             }
 
+            _filterData.List.LastCaller = this;
             if (_filterData.List.LastCaller == this && _filterData.List.gameObject.activeSelf) {
                 _filterData.List.gameObject.SetActive(false);
             } else {
@@ -58,9 +60,8 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData> {
 
                 _filterData.List.Populate(_filterData.Elements);
                 _filterData.List.gameObject.SetActive(true);
+                _filterData.List.ResetScroll();
             }
-
-            _filterData.List.LastCaller = this;
         });
     }
 
@@ -81,6 +82,18 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData> {
             if (activeFilters > 0) {
                 _label.text += $" ({activeFilters})";
             }
+        }
+    }
+    
+    public void OnPointerEnter(PointerEventData eventData) {
+        if (_filterData.List.LastCaller == this) {
+            _filterData.List.IsMouseOut = false;
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData) {
+        if (_filterData.List.LastCaller == this) {
+            _filterData.List.IsMouseOut = true;
         }
     }
 }

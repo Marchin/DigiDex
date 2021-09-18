@@ -32,6 +32,7 @@ public class FilterPopup : Popup {
     }
 
     public void Populate(List<FilterData> filters, Action<List<FilterData>> applyCallback) {
+        ApplyCallback = applyCallback;
         _filters = new List<FilterData>(filters.Count);
         for (int iFilter = 0; iFilter < filters.Count; ++iFilter) {
             _filters.Add(filters[iFilter].Clone());
