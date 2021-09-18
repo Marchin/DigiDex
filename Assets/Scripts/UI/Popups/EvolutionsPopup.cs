@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 
-public class EvolutionsPopup : MonoBehaviour {
+public class EvolutionsPopup : Popup {
     [SerializeField] private TextMeshProUGUI _sourceDigimonName = default;
     [SerializeField] private Image _sourceDigimonImage = default;
     [SerializeField] private Image _inspectedDigimonImage = default;
@@ -40,7 +40,7 @@ public class EvolutionsPopup : MonoBehaviour {
         _closeButton.onClick.AddListener(() => gameObject.SetActive(false));
     }
 
-    public void Show(Digimon digimon, EvolutionData evolutionData) {
+    public void Populate(Digimon digimon, EvolutionData evolutionData) {
         gameObject.SetActive(true);
         _sourceDigimonName.text = digimon.Name;
 

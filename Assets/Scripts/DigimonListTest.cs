@@ -26,8 +26,6 @@ public class DigimonListTest : MonoBehaviour {
     [SerializeField] private Animator _profileAnimator = default;
     [SerializeField] private CentralDatabase _centralDB = default;
     [SerializeField] private ButtonScrollList _animatedScroll = default;
-    [SerializeField] private FilterPopup _filterPopup = default;
-    [SerializeField] private EvolutionsPopup _evolutionsPopup = default;
     [SerializeField] private Button _evolutionButton = default;
     [SerializeField] private Button _filterButton = default;
     public DigimonDatabase DigimonDB => _centralDB.DigimonDB;
@@ -82,7 +80,7 @@ public class DigimonListTest : MonoBehaviour {
                     _digimonDataHandles.Add(evolutionHandle);
                     evolutionHandle.WithCancellation(_digimonDataCTS.Token).ContinueWith(evolutionData => {
                         if (evolutionData != null) {
-                            _evolutionButton.gameObject.SetActive(true);
+                            _evolutionButton.gameObject.SetActive(evolutionData.PreEvolutions.Count > 0 || evolutionData.Evolutions.Count > 0);
                             _currEvolutionData = evolutionData;
                         }
                     });
@@ -108,16 +106,11 @@ public class DigimonListTest : MonoBehaviour {
 
     private async void Start() {
         if (DigimonDB == null) {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.ExitPlaymode();
-#else
-            Application.Quit();
-#endif
+            UnityUtils.Quit();
             return;
         }
 
         await Addressables.InitializeAsync();
-
         _currDigimonList = _filteredDigimonList = DigimonDB.Digimons;
         _animatedScroll.Initialize(
             nameList: _currDigimonList.Select(d => d.Name).ToList(),
@@ -135,59 +128,63 @@ public class DigimonListTest : MonoBehaviour {
         _clearSearch.gameObject.SetActive(false);
 
         _filters = DigimonDB.RetrieveFilterData();
-        _filterPopup.Initialize(filters => {
-            _filters = filters;
-            Dictionary<string, FilterData> filtersDict = filters.ToDictionary(filter => filter.Name);
-            List<int> requiredFields = filtersDict["Fields"].Elements
-                .Where(e => e.State == FilterState.Required)
-                .Select(e => filtersDict["Fields"].Elements.IndexOf(e))
-                .ToList();
-            List<int> excludedFields = filtersDict["Fields"].Elements
-                .Where(e => e.State == FilterState.Excluded)
-                .Select(e => filtersDict["Fields"].Elements.IndexOf(e))
-                .ToList();
-            List<int> requiredAttributes = filtersDict["Attributes"].Elements
-                .Where(e => e.State == FilterState.Required)
-                .Select(e => filtersDict["Attributes"].Elements.IndexOf(e))
-                .ToList();
-            List<int> excludedAttributes = filtersDict["Attributes"].Elements
-                .Where(e => e.State == FilterState.Excluded)
-                .Select(e => filtersDict["Attributes"].Elements.IndexOf(e))
-                .ToList();
-            List<int> requiredLevels = filtersDict["Levels"].Elements
-                .Where(e => e.State == FilterState.Required)
-                .Select(e => filtersDict["Levels"].Elements.IndexOf(e))
-                .ToList();
-            List<int> excludedLevels = filtersDict["Levels"].Elements
-                .Where(e => e.State == FilterState.Excluded)
-                .Select(e => filtersDict["Levels"].Elements.IndexOf(e))
-                .ToList();
-            List<int> requiredTypes = filtersDict["Types"].Elements
-                .Where(e => e.State == FilterState.Required)
-                .Select(e => filtersDict["Types"].Elements.IndexOf(e))
-                .ToList();
-            List<int> excludedTypes = filtersDict["Types"].Elements
-                .Where(e => e.State == FilterState.Excluded)
-                .Select(e => filtersDict["Types"].Elements.IndexOf(e))
-                .ToList();
+        _filterButton.onClick.AddListener(async () => {
+            var popup = await PopupManager.Instance.GetOrLoadPopup<FilterPopup>();
+            popup.Populate(_filters, filters => {
+                _filters = filters;
+                Dictionary<string, FilterData> filtersDict = filters.ToDictionary(filter => filter.Name);
+                List<int> requiredFields = filtersDict["Fields"].Elements
+                    .Where(e => e.State == FilterState.Required)
+                    .Select(e => filtersDict["Fields"].Elements.IndexOf(e))
+                    .ToList();
+                List<int> excludedFields = filtersDict["Fields"].Elements
+                    .Where(e => e.State == FilterState.Excluded)
+                    .Select(e => filtersDict["Fields"].Elements.IndexOf(e))
+                    .ToList();
+                List<int> requiredAttributes = filtersDict["Attributes"].Elements
+                    .Where(e => e.State == FilterState.Required)
+                    .Select(e => filtersDict["Attributes"].Elements.IndexOf(e))
+                    .ToList();
+                List<int> excludedAttributes = filtersDict["Attributes"].Elements
+                    .Where(e => e.State == FilterState.Excluded)
+                    .Select(e => filtersDict["Attributes"].Elements.IndexOf(e))
+                    .ToList();
+                List<int> requiredLevels = filtersDict["Levels"].Elements
+                    .Where(e => e.State == FilterState.Required)
+                    .Select(e => filtersDict["Levels"].Elements.IndexOf(e))
+                    .ToList();
+                List<int> excludedLevels = filtersDict["Levels"].Elements
+                    .Where(e => e.State == FilterState.Excluded)
+                    .Select(e => filtersDict["Levels"].Elements.IndexOf(e))
+                    .ToList();
+                List<int> requiredTypes = filtersDict["Types"].Elements
+                    .Where(e => e.State == FilterState.Required)
+                    .Select(e => filtersDict["Types"].Elements.IndexOf(e))
+                    .ToList();
+                List<int> excludedTypes = filtersDict["Types"].Elements
+                    .Where(e => e.State == FilterState.Excluded)
+                    .Select(e => filtersDict["Types"].Elements.IndexOf(e))
+                    .ToList();
 
-            _filteredDigimonList = DigimonDB.Digimons
-                .Where(digimon => (requiredFields.Except(digimon.FieldIDs).Count() == 0) &&
-                    !excludedFields.Any(index => digimon.FieldIDs.Contains(index)))
-                .Where(digimon => (requiredAttributes.Except(digimon.AttributeIDs).Count() == 0) &&
-                    (!excludedAttributes.Any(index => digimon.AttributeIDs.Contains(index))))
-                .Where(digimon => (requiredLevels.Except(digimon.LevelIDs).Count() == 0) &&
-                    (!excludedLevels.Any(index => digimon.LevelIDs.Contains(index))))
-                .Where(digimon => (requiredTypes.Except(digimon.TypeIDs).Count() == 0) &&
-                    (excludedTypes.Count == 0 || !excludedTypes.Any(index => digimon.TypeIDs.Contains(index))))
-                .ToList();
-            
-            RefreshList();
+                _filteredDigimonList = DigimonDB.Digimons
+                    .Where(digimon => (requiredFields.Except(digimon.FieldIDs).Count() == 0) &&
+                        !excludedFields.Any(index => digimon.FieldIDs.Contains(index)))
+                    .Where(digimon => (requiredAttributes.Except(digimon.AttributeIDs).Count() == 0) &&
+                        (!excludedAttributes.Any(index => digimon.AttributeIDs.Contains(index))))
+                    .Where(digimon => (requiredLevels.Except(digimon.LevelIDs).Count() == 0) &&
+                        (!excludedLevels.Any(index => digimon.LevelIDs.Contains(index))))
+                    .Where(digimon => (requiredTypes.Except(digimon.TypeIDs).Count() == 0) &&
+                        (excludedTypes.Count == 0 || !excludedTypes.Any(index => digimon.TypeIDs.Contains(index))))
+                    .ToList();
+                
+                RefreshList();
+            });
         });
-        _filterPopup.gameObject.SetActive(false);
-        _evolutionsPopup.gameObject.SetActive(false);
-        _filterButton.onClick.AddListener(() => _filterPopup.Show(_filters));
-        _evolutionButton.onClick.AddListener(() => _evolutionsPopup.Show(SelectedDigimon, _currEvolutionData));
+
+        _evolutionButton.onClick.AddListener(async () => {
+            var popup = await PopupManager.Instance.GetOrLoadPopup<EvolutionsPopup>();
+            popup.Populate(SelectedDigimon, _currEvolutionData);
+        });
 
         _animatedScroll.OnSelectedButtonChanged += _ => {
             _profileButton.gameObject.SetActive(false);
@@ -228,4 +225,9 @@ public class DigimonListTest : MonoBehaviour {
         RefreshList();
     }
 
+    private void Update() {
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            PopupManager.Instance.Back();
+        }
+    }
 }

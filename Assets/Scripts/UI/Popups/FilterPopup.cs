@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
 
-public class FilterPopup : MonoBehaviour {
+public class FilterPopup : Popup {
     [SerializeField] private Button _applyButton = default;
     [SerializeField] private Button _clearButton = default;
     [SerializeField] private Button _closeButton = default;
@@ -13,7 +13,7 @@ public class FilterPopup : MonoBehaviour {
     private Action<List<FilterData>> ApplyCallback;
 
     private void Awake() {
-        _closeButton.onClick.AddListener(() => { gameObject.SetActive(false); });
+        _closeButton.onClick.AddListener(() => { PopupManager.Instance.Back(); });
         _applyButton.onClick.AddListener(() => {
             ApplyCallback?.Invoke(_filters);
             gameObject.SetActive(false);
@@ -31,11 +31,7 @@ public class FilterPopup : MonoBehaviour {
         });
     }
 
-    public void Initialize(Action<List<FilterData>> applyCallback) {
-        ApplyCallback = applyCallback;
-    }
-
-    public void Show(List<FilterData> filters) {
+    public void Populate(List<FilterData> filters, Action<List<FilterData>> applyCallback) {
         _filters = new List<FilterData>(filters.Count);
         for (int iFilter = 0; iFilter < filters.Count; ++iFilter) {
             _filters.Add(filters[iFilter].Clone());
