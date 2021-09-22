@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public class FilterPopup : Popup {
@@ -9,36 +10,54 @@ public class FilterPopup : Popup {
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private FilterDataList _filterList = default;
     [SerializeField] private FilterEntryList _filterEntriesList = default;
-    private List<FilterData> _filters;
-    private Action<List<FilterData>> ApplyCallback;
+    [SerializeField] private ToggleList _toggleList = default;
+    private Dictionary<string, FilterData> _filters;
+    private Dictionary<string, ToggleData> _toggles;
+    private Action<Dictionary<string, FilterData>, Dictionary<string, ToggleData>> ApplyCallback;
 
     private void Awake() {
         _closeButton.onClick.AddListener(() => { PopupManager.Instance.Back(); });
         _applyButton.onClick.AddListener(() => {
-            ApplyCallback?.Invoke(_filters);
+            ApplyCallback?.Invoke(_filters, _toggles);
             gameObject.SetActive(false);
         });
         _clearButton.onClick.AddListener(() => {
             if (_filters != null) {
-                for (int iFilter = 0; iFilter < _filters.Count; ++iFilter) {
-                    for (int iElement = 0; iElement < _filters[iFilter].Elements.Count; ++iElement) {
-                        _filters[iFilter].Elements[iElement].State = FilterState.None;
+                foreach (var filter in _filters) {
+                    foreach (var element in filter.Value.Elements) {
+                        element.State = FilterState.None;
                     }
-                    _filterList.Elements[iFilter].RefreshLabel();
                 }
+            }
+            if (_toggles != null) {
+                foreach (var toggle in _toggles) {
+                    toggle.Value.IsOn = false;
+                }
+                _toggleList.Populate(_toggles.Values.ToList());
             }
             _filterEntriesList.gameObject.SetActive(false);
         });
     }
 
-    public void Populate(List<FilterData> filters, Action<List<FilterData>> applyCallback) {
+    public void Populate(Dictionary<string, FilterData> filters, Dictionary<string, ToggleData> toggles, Action<Dictionary<string, FilterData>, Dictionary<string, ToggleData>> applyCallback) {
         ApplyCallback = applyCallback;
-        _filters = new List<FilterData>(filters.Count);
-        for (int iFilter = 0; iFilter < filters.Count; ++iFilter) {
-            _filters.Add(filters[iFilter].Clone());
-            _filters[iFilter].List = _filterEntriesList;
+
+        if (filters != null) {
+            _filters = new Dictionary<string, FilterData>(filters.Count);
+            foreach (var filter in filters) {
+                filter.Value.List = _filterEntriesList;
+                _filters.Add(filter.Key, filter.Value.Clone());
+            }
+            _filterList.Populate(_filters.Values.ToList());
         }
-        _filterList.Populate(_filters);
+
+        if (toggles != null) {
+            _toggles = new Dictionary<string, ToggleData>(toggles.Count);
+            foreach (var toggle in toggles) {
+                _toggles.Add(toggle.Key, toggle.Value.Clone());
+            }
+            _toggleList.Populate(_toggles.Values.ToList());
+        }
 
         _filterEntriesList.gameObject.SetActive(false);
         gameObject.SetActive(true);

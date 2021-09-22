@@ -3,6 +3,7 @@ using System.IO;
 using System.Xml;
 using System.Linq;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.U2D;
@@ -28,7 +29,7 @@ public static class DataRetriever {
     const string AttributeListURL = WikimonBaseURL + "/Attribute";
     const string TypeListURL = WikimonBaseURL + "/Type";
     const string LevelListURL = WikimonBaseURL + "/Evolution_Stage";
-    const int DigimonsPerAtlas = 16;
+    const int DigimonsPerAtlas = 4;
     const string ArtDigimonsPathX = ArtPath + "Digimons/Digimon({0})";
     const string DigimonsDataPath = DataPath + "Digimons";
     const string DigimonEvolutionsDataPath = DataPath + "Digimons/Evolutions";
@@ -49,10 +50,10 @@ public static class DataRetriever {
 
     [MenuItem("DigiDex/Retrieve Data")]
     public static async void RetrieveData() {
-        // GenerateFieldList();
-        // GenerateAttributeList();
-        // GenerateTypeList();
-        // GenerateLevelList();
+        GenerateFieldList();
+        GenerateAttributeList();
+        GenerateTypeList();
+        GenerateLevelList();
 
         // TODO: Add the new images either in the last folder or on a new one depending on the wether the last folder is full
         
@@ -143,6 +144,7 @@ public static class DataRetriever {
                     }
 
                     digimonData.LinkSubFix = digimonLinkSubFix;
+                    digimonData.Hash = Hash128.Compute(digimonData.LinkSubFix);
                     digimonData.Name = digimonName;
 
                     XmlNode profileNode = digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td") ??
@@ -660,7 +662,7 @@ public static class DataRetriever {
             List<Evolution> ParseEvolutionList(string headerName) {
                 List<Evolution> evolutions = new List<Evolution>();
 
-                XmlNodeList header = digimonSite.SelectNodes($"/html/body/div/div/div/div/div/div/h2/span[@id='{headerName}']");
+                    XmlNodeList header = digimonSite.SelectNodes($"/html/body/div/div/div/div/div/div/h2/span[@id='{headerName}']");
                 // Check if there're digimons to be parsed
                 if (header?.Item(0)?.ParentNode.NextSibling.Name == "ul") {
                     XmlNodeList evolutionsNode = header.Item(0).ParentNode.NextSibling.SelectNodes("li");
@@ -872,5 +874,16 @@ public static class DataRetriever {
         }
 
         Debug.Log("Evolutions retrieved");
+    }
+
+    [MenuItem("DigiDex/Generate Digimon Hashes")]
+    public static void GenerateDigimonHashes() {
+        var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
+        for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
+            Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[iDigimon], typeof(Digimon)) as Digimon;
+            digimonData.Hash = Hash128.Compute(digimonData.LinkSubFix);
+            EditorUtility.SetDirty(digimonData);
+        }
+        AssetDatabase.SaveAssets();
     }
 }

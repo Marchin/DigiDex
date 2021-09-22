@@ -101,7 +101,6 @@ public class ButtonScrollList : MonoBehaviour {
         _namesList = nameList;
 
         ResetScroll();
-        AnimateButtons();
 
         if (_namesList.Count > 0) {
             OnConfirmed?.Invoke(0);
@@ -132,7 +131,10 @@ public class ButtonScrollList : MonoBehaviour {
 
     private void OnScroll(Vector2 newPos) {
         int newScrollIndex = _currElementScrollIndex;
-        if (_currElementScrollIndex < (_namesList.Count - _buttons.Length) && _scrollRect.velocity.y > 0f && newPos.y < ((_buttonReuseScrollPoint))) {
+        if (_currElementScrollIndex < (_namesList.Count - _buttons.Length) &&
+            _scrollRect.velocity.y > 0f &&
+            newPos.y < ((_buttonReuseScrollPoint))
+        ) {
             newScrollIndex++;
             CurrButtonIndex--;
             _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y + _buttonNormalizedLenght);
@@ -192,9 +194,15 @@ public class ButtonScrollList : MonoBehaviour {
         }
     }
 
-    public void ResetScroll() {
+    public async void ResetScroll() {
+        _scrollRect.enabled = false;
         _scrollRect.normalizedPosition = Vector2.up;
         _currElementScrollIndex = 0;
         PopulateButtons();
+
+        await UniTask.DelayFrame(2);
+
+        _scrollRect.enabled = true;
+        AnimateButtons();
     }
 }

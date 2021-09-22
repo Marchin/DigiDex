@@ -22,7 +22,10 @@ public class Digimon : ScriptableObject, IDataObject {
     public List<int> TypeIDs;
     public List<int> LevelIDs;
     public AssetReferenceEvolutionData EvolutionData;
+    public Hash128 Hash;
+#if UNITY_EDITOR
     public string LinkSubFix;
+#endif
 
     public List<InformationData> ExtractInformationData(CentralDatabase centralDB) {
         List<InformationData> information = new List<InformationData>();
