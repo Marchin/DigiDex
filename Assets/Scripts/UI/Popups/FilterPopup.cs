@@ -12,8 +12,8 @@ public class FilterPopup : Popup {
     [SerializeField] private FilterEntryList _filterEntriesList = default;
     [SerializeField] private ToggleList _toggleList = default;
     private Dictionary<string, FilterData> _filters;
-    private Dictionary<string, ToggleData> _toggles;
-    private Action<Dictionary<string, FilterData>, Dictionary<string, ToggleData>> ApplyCallback;
+    private Dictionary<string, ToggleFilterData> _toggles;
+    private Action<Dictionary<string, FilterData>, Dictionary<string, ToggleFilterData>> ApplyCallback;
 
     private void Awake() {
         _closeButton.onClick.AddListener(() => { PopupManager.Instance.Back(); });
@@ -33,13 +33,17 @@ public class FilterPopup : Popup {
                 foreach (var toggle in _toggles) {
                     toggle.Value.IsOn = false;
                 }
-                _toggleList.Populate(_toggles.Values.ToList());
+                _toggleList.Populate(_toggles.Values);
             }
             _filterEntriesList.gameObject.SetActive(false);
         });
     }
 
-    public void Populate(Dictionary<string, FilterData> filters, Dictionary<string, ToggleData> toggles, Action<Dictionary<string, FilterData>, Dictionary<string, ToggleData>> applyCallback) {
+    public void Populate(
+        Dictionary<string, FilterData> filters,
+        Dictionary<string, ToggleFilterData> toggles,
+        Action<Dictionary<string, FilterData>, Dictionary<string, ToggleFilterData>> applyCallback
+    ) {
         ApplyCallback = applyCallback;
 
         if (filters != null) {
@@ -52,9 +56,9 @@ public class FilterPopup : Popup {
         }
 
         if (toggles != null) {
-            _toggles = new Dictionary<string, ToggleData>(toggles.Count);
+            _toggles = new Dictionary<string, ToggleFilterData>(toggles.Count);
             foreach (var toggle in toggles) {
-                _toggles.Add(toggle.Key, toggle.Value.Clone());
+                _toggles.Add(toggle.Key, toggle.Value.Clone() as ToggleFilterData);
             }
             _toggleList.Populate(_toggles.Values.ToList());
         }

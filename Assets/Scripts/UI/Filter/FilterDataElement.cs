@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -9,18 +10,63 @@ public class FilterData {
     public string Name;
     public List<FilterEntryData> Elements;
     public FilterEntryList List;
+    private Func<IDataObject, List<int>> _getFilteringComponent;
+
+    public FilterData(string name, Func<IDataObject, List<int>> getFilteringComponent) {
+        Name = name;
+        _getFilteringComponent = getFilteringComponent;
+    }
 
     public FilterData Clone() {
-        FilterData newFilter = new FilterData();
+        FilterData newFilter = new FilterData(Name, _getFilteringComponent);
 
-        newFilter.Name = Name;
+        newFilter.List = this.List;
         newFilter.Elements = new List<FilterEntryData>(Elements.Count);
         for (int iElement = 0; iElement < Elements.Count; ++iElement) {
             newFilter.Elements.Add(Elements[iElement].Clone());
         }
-        newFilter.List = List;
 
         return newFilter;
+    }
+
+    public List<T> Apply<T>(List<T> list) where T : IDataObject {
+        List<int> requiredLevels = this.Elements
+            .Where(e => e.State == FilterState.Required)
+            .Select(e => this.Elements.IndexOf(e))
+            .ToList();
+        List<int> excludedLevels = this.Elements
+            .Where(e => e.State == FilterState.Excluded)
+            .Select(e => this.Elements.IndexOf(e))
+            .ToList();
+
+        var filteredList = list
+            .Where(element => {
+                List<int> filteringComponent = _getFilteringComponent?.Invoke(element);
+
+                return (requiredLevels.Except(filteringComponent).Count() == 0) &&
+                    !excludedLevels.Any(index => filteringComponent.Contains(index));
+            }).ToList();
+
+        return filteredList;
+    }
+}
+
+public class ToggleFilterData : ToggleData {
+    public Func<IEnumerable<IDataObject>, bool, IEnumerable<IDataObject>> _filterAction;
+
+    public ToggleFilterData(string name, Func<IEnumerable<IDataObject>, bool, IEnumerable<IDataObject>> filterAction) : base(name) {
+        _filterAction = filterAction;
+    }
+
+    public override object Clone() {
+        return this.MemberwiseClone();
+    }
+
+    public IEnumerable<T> Apply<T>(IEnumerable<T> list) where T : IDataObject {
+        // TODO: See if we can do something better with the casting
+        var filteredList = _filterAction?.Invoke(list.Cast<IDataObject>(), IsOn).Cast<T>();
+
+        return filteredList;
     }
 }
 

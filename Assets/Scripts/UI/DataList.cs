@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 public interface IDataUIElement<T> {
@@ -16,6 +17,10 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
 
     private void Start() {
         _template.gameObject.SetActive(false);
+    }
+
+    public void Populate(IEnumerable<D> data) {
+        Populate(data?.ToList());
     }
 
     public void Populate(List<D> data) {

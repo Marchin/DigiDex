@@ -7,7 +7,7 @@ public interface IDataObject {
 
 public interface IDataDabase {
     Dictionary<string, FilterData> RetrieveFiltersData();
-    Dictionary<string, ToggleData> RetrieveTogglesData();
+    Dictionary<string, ToggleFilterData> RetrieveTogglesData();
 }
 
 public class CentralDatabase : ScriptableObject {

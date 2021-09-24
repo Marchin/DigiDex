@@ -101,12 +101,6 @@ public class ButtonScrollList : MonoBehaviour {
         _namesList = nameList;
 
         ResetScroll();
-
-        if (_namesList.Count > 0) {
-            OnConfirmed?.Invoke(0);
-        } else {
-            OnConfirmed?.Invoke(-1);
-        }
     }
 
     private void Update() {
@@ -204,5 +198,11 @@ public class ButtonScrollList : MonoBehaviour {
 
         _scrollRect.enabled = true;
         AnimateButtons();
+        
+        if (_namesList.Count > 0) {
+            OnConfirmed?.Invoke(0);
+        } else {
+            OnConfirmed?.Invoke(-1);
+        }
     }
 }

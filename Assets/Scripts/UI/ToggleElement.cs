@@ -1,13 +1,18 @@
 using TMPro;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ToggleData {
+public class ToggleData : ICloneable {
     public string Name;
     public bool IsOn;
 
-    public ToggleData Clone() {
-        return this.MemberwiseClone() as ToggleData;
+    public ToggleData(string name) {
+        Name = name;
+    }
+
+    public virtual object Clone() {
+        return this.MemberwiseClone();
     }
 }
 

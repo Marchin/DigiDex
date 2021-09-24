@@ -35,13 +35,12 @@ public class DigimonListTest : MonoBehaviour {
     private List<Digimon> _filteredDigimonList;
     private List<Digimon> _currDigimonList;
     private Dictionary<string, FilterData> _filters;
-    private Dictionary<string, ToggleData> _toggles;
+    private Dictionary<string, ToggleFilterData> _toggles;
     private bool _profileOpen = false;
     private string _lastQuery = "";
     private static DigimonListTest _instance;
     public static DigimonListTest Instance => _instance;
     private Dictionary<Hash128, Digimon> _digimonDict;
-    private HashSet<Hash128> _favoriteDigimons;
     
     private EvolutionData _currEvolutionData;
     private Digimon _selectedDigimon;
@@ -93,7 +92,7 @@ public class DigimonListTest : MonoBehaviour {
 
                 _digimonName.text = _selectedDigimon.Name;
                 _digimonProfile.text = _selectedDigimon.ProfileData;
-                _favoriteButton.isOn = _favoriteDigimons.Contains(_selectedDigimon.Hash);
+                _favoriteButton.isOn = DigimonDB.FavoriteDigimons.Contains(_selectedDigimon.Hash);
 
                 List<InformationData> informationData = _selectedDigimon.ExtractInformationData(_centralDB);
                 _info.Populate(informationData);
@@ -133,7 +132,6 @@ public class DigimonListTest : MonoBehaviour {
         );
 
         _digimonDict = DigimonDB.Digimons.ToDictionary(d => d.Hash);
-        _favoriteDigimons = DigimonDB.LoadFavorites();
 
         _clearSearch.gameObject.SetActive(false);
 
@@ -144,68 +142,16 @@ public class DigimonListTest : MonoBehaviour {
             popup.Populate(_filters, _toggles, (filters , toggles) => {
                 _filters = filters;
                 _toggles = toggles;
-                List<int> requiredFields = _filters[DigimonDatabase.FieldsFilter].Elements
-                    .Where(e => e.State == FilterState.Required)
-                    .Select(e => _filters[DigimonDatabase.FieldsFilter].Elements.IndexOf(e))
-                    .ToList();
-                List<int> excludedFields = _filters[DigimonDatabase.FieldsFilter].Elements
-                    .Where(e => e.State == FilterState.Excluded)
-                    .Select(e => _filters[DigimonDatabase.FieldsFilter].Elements.IndexOf(e))
-                    .ToList();
-                List<int> requiredAttributes = _filters[DigimonDatabase.AttributesFilter].Elements
-                    .Where(e => e.State == FilterState.Required)
-                    .Select(e => _filters[DigimonDatabase.AttributesFilter].Elements.IndexOf(e))
-                    .ToList();
-                List<int> excludedAttributes = _filters[DigimonDatabase.AttributesFilter].Elements
-                    .Where(e => e.State == FilterState.Excluded)
-                    .Select(e => _filters[DigimonDatabase.AttributesFilter].Elements.IndexOf(e))
-                    .ToList();
-                List<int> requiredLevels = _filters[DigimonDatabase.LevelsFilter].Elements
-                    .Where(e => e.State == FilterState.Required)
-                    .Select(e => _filters[DigimonDatabase.LevelsFilter].Elements.IndexOf(e))
-                    .ToList();
-                List<int> excludedLevels = _filters[DigimonDatabase.LevelsFilter].Elements
-                    .Where(e => e.State == FilterState.Excluded)
-                    .Select(e => _filters[DigimonDatabase.LevelsFilter].Elements.IndexOf(e))
-                    .ToList();
-                List<int> requiredTypes = _filters[DigimonDatabase.TypesFilter].Elements
-                    .Where(e => e.State == FilterState.Required)
-                    .Select(e => _filters[DigimonDatabase.TypesFilter].Elements.IndexOf(e))
-                    .ToList();
-                List<int> excludedTypes = _filters[DigimonDatabase.TypesFilter].Elements
-                    .Where(e => e.State == FilterState.Excluded)
-                    .Select(e => _filters[DigimonDatabase.TypesFilter].Elements.IndexOf(e))
-                    .ToList();
 
                 _filteredDigimonList = new List<Digimon>(DigimonDB.Digimons);
 
                 foreach (var toggle in toggles) {
-                    switch (toggle.Key) {
-                        case DigimonDatabase.FavoritesToggle: {
-                           if (toggle.Value.IsOn) {
-                                _filteredDigimonList = _filteredDigimonList
-                                    .Where(d => _favoriteDigimons.Contains(d.Hash))
-                                    .ToList();
-                            }
-                        } break;
-                        case DigimonDatabase.ReverseToggle: {
-                           if (toggle.Value.IsOn) {
-                                _filteredDigimonList.Reverse();
-                            }
-                        } break;
-                    }
+                    _filteredDigimonList = toggle.Value.Apply<Digimon>(_filteredDigimonList).ToList();
                 }
 
-                _filteredDigimonList = _filteredDigimonList
-                    .Where(digimon => (requiredFields.Except(digimon.FieldIDs).Count() == 0) &&
-                        !excludedFields.Any(index => digimon.FieldIDs.Contains(index)))
-                    .Where(digimon => (requiredAttributes.Except(digimon.AttributeIDs).Count() == 0) &&
-                        (!excludedAttributes.Any(index => digimon.AttributeIDs.Contains(index))))
-                    .Where(digimon => (requiredLevels.Except(digimon.LevelIDs).Count() == 0) &&
-                        (!excludedLevels.Any(index => digimon.LevelIDs.Contains(index))))
-                    .Where(digimon => (requiredTypes.Except(digimon.TypeIDs).Count() == 0) &&
-                        (excludedTypes.Count == 0 || !excludedTypes.Any(index => digimon.TypeIDs.Contains(index))))
-                    .ToList();
+                foreach (var filter in filters) {
+                    _filteredDigimonList = filter.Value.Apply(_filteredDigimonList);
+                }
                 
                 RefreshList();
             });
@@ -242,19 +188,15 @@ public class DigimonListTest : MonoBehaviour {
 
         _favoriteButton.onValueChanged.AddListener(isOn => {
             if (isOn) {
-                _favoriteDigimons.Add(SelectedDigimon.Hash);
+                DigimonDB.FavoriteDigimons.Add(SelectedDigimon.Hash);
             } else {
-                _favoriteDigimons.Remove(SelectedDigimon.Hash);
+                DigimonDB.FavoriteDigimons.Remove(SelectedDigimon.Hash);
                 if (_toggles[DigimonDatabase.FavoritesToggle].IsOn) {
                     _filteredDigimonList.Remove(SelectedDigimon);
                     RefreshList();
                 }
             }
         });
-    }
-
-    private void OnApplicationQuit() {
-        DigimonDB.SaveFavorites(_favoriteDigimons);
     }
 
     private void RefreshList() {
