@@ -28,6 +28,7 @@ public class FilterPopup : Popup {
                         element.State = FilterState.None;
                     }
                 }
+                _filterList.Populate(_filters.Values);
             }
             if (_toggles != null) {
                 foreach (var toggle in _toggles) {
