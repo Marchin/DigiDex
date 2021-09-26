@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -9,6 +10,18 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     private List<Popup> _stack = new List<Popup>();
     private List<AsyncOperationHandle<GameObject>> _handles = new List<AsyncOperationHandle<GameObject>>();
     private GameObject _parentCanvas;
+    public Popup ActivePopup {
+        get {
+            foreach (var popup in _stack) {
+                if (popup.gameObject.activeSelf) {
+                    return popup;
+                }
+            }
+
+            return null;
+        }
+    }
+    public event Action OnStackChange;
     
     private void Awake() {
         SceneManager.activeSceneChanged += (prev, next) => {
@@ -31,6 +44,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 popup = _stack[0] as T;
                 popup.gameObject.SetActive(true);
             } else {
+                _stack[0].OnClose();
                 _stack.RemoveAt(0);
                 Addressables.ReleaseInstance(_handles[0]);
                 _handles.RemoveAt(0);
@@ -39,21 +53,26 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
 
         if (popup == null) {
             var handle = Addressables.InstantiateAsync(typeof(T).Name, _parentCanvas.transform);
-            _handles.Add(handle);
+            _handles.Insert(0, handle);
             popup = (await handle).GetComponent<T>();
-            _stack.Add(popup);
+            _stack.Insert(0, popup);
         }
 
+        OnStackChange?.Invoke();
 
         return popup;
     }
 
     public void Back() {
-        foreach (var popup in _stack) {
-            if (popup.gameObject.activeSelf) {
-                popup.gameObject.SetActive(false);
-                break;
+        if (_stack.Count > 0) {
+            foreach (var popup in _stack) {
+                if (popup.gameObject.activeSelf) {
+                    popup.OnClose();
+                    popup.gameObject.SetActive(false);
+                    break;
+                }
             }
+            OnStackChange?.Invoke();
         }
     }
 }

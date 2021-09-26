@@ -19,7 +19,7 @@ public class FilterPopup : Popup {
         _closeButton.onClick.AddListener(() => { PopupManager.Instance.Back(); });
         _applyButton.onClick.AddListener(() => {
             ApplyCallback?.Invoke(_filters, _toggles);
-            gameObject.SetActive(false);
+            PopupManager.Instance.Back();
         });
         _clearButton.onClick.AddListener(() => {
             if (_filters != null) {

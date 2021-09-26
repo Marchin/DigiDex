@@ -10,9 +10,9 @@ public class FilterData {
     public string Name;
     public List<FilterEntryData> Elements;
     public FilterEntryList List;
-    private Func<IDataObject, List<int>> _getFilteringComponent;
+    private Func<IDataEntry, List<int>> _getFilteringComponent;
 
-    public FilterData(string name, Func<IDataObject, List<int>> getFilteringComponent) {
+    public FilterData(string name, Func<IDataEntry, List<int>> getFilteringComponent) {
         Name = name;
         _getFilteringComponent = getFilteringComponent;
     }
@@ -29,7 +29,7 @@ public class FilterData {
         return newFilter;
     }
 
-    public List<T> Apply<T>(List<T> list) where T : IDataObject {
+    public IEnumerable<T> Apply<T>(IEnumerable<T> list) where T : IDataEntry {
         List<int> requiredLevels = this.Elements
             .Where(e => e.State == FilterState.Required)
             .Select(e => this.Elements.IndexOf(e))
@@ -45,16 +45,16 @@ public class FilterData {
 
                 return (requiredLevels.Except(filteringComponent).Count() == 0) &&
                     !excludedLevels.Any(index => filteringComponent.Contains(index));
-            }).ToList();
+            });
 
         return filteredList;
     }
 }
 
 public class ToggleFilterData : ToggleData {
-    public Func<IEnumerable<IDataObject>, bool, IEnumerable<IDataObject>> _filterAction;
+    public Func<IEnumerable<IDataEntry>, bool, IEnumerable<IDataEntry>> _filterAction;
 
-    public ToggleFilterData(string name, Func<IEnumerable<IDataObject>, bool, IEnumerable<IDataObject>> filterAction) : base(name) {
+    public ToggleFilterData(string name, Func<IEnumerable<IDataEntry>, bool, IEnumerable<IDataEntry>> filterAction) : base(name) {
         _filterAction = filterAction;
     }
 
@@ -62,9 +62,9 @@ public class ToggleFilterData : ToggleData {
         return this.MemberwiseClone();
     }
 
-    public IEnumerable<T> Apply<T>(IEnumerable<T> list) where T : IDataObject {
+    public IEnumerable<T> Apply<T>(IEnumerable<T> list) where T : IDataEntry {
         // TODO: See if we can do something better with the casting
-        var filteredList = _filterAction?.Invoke(list.Cast<IDataObject>(), IsOn).Cast<T>();
+        var filteredList = _filterAction?.Invoke(list.Cast<IDataEntry>(), IsOn).Cast<T>();
 
         return filteredList;
     }

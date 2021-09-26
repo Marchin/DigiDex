@@ -9,9 +9,9 @@ using System.Threading;
 using System.Collections.Generic;
 
 public class EvolutionsPopup : Popup {
-    [SerializeField] private TextMeshProUGUI _sourceDigimonName = default;
-    [SerializeField] private Image _sourceDigimonImage = default;
-    [SerializeField] private Image _inspectedDigimonImage = default;
+    [SerializeField] private TextMeshProUGUI _sourceEntryName = default;
+    [SerializeField] private Image _sourceEntryImage = default;
+    [SerializeField] private Image _inspectedEntryImage = default;
     [SerializeField] private EvolutionList _evolutionList = default;
     [SerializeField] private Toggle _from = default;
     [SerializeField] private Toggle _to = default;
@@ -26,23 +26,23 @@ public class EvolutionsPopup : Popup {
             if (isOn && _evolutionData != null) {
                 _evolutionList.Populate(_evolutionData.PreEvolutions);
                 for (int i = 0; i < _evolutionList.Elements.Count; ++i) {
-                    _evolutionList.Elements[i].OnPressed = digimon => OnDigimonSelected(digimon);
+                    _evolutionList.Elements[i].OnPressed = entry => OnEntrySelected(entry);
                 }
-                OnDigimonSelected(DigimonListTest.Instance.DigimonDB.Digimons[_evolutionData.PreEvolutions[0].DigimonID]);
+                OnEntrySelected(_evolutionData.PreEvolutions[0].Entry.FetchEntry());
             }
         });
         _to.onValueChanged.AddListener(isOn => {
             if (isOn && _evolutionData != null) {
                 _evolutionList.Populate(_evolutionData.Evolutions);
-                OnDigimonSelected(DigimonListTest.Instance.DigimonDB.Digimons[_evolutionData.Evolutions[0].DigimonID]);
+                OnEntrySelected(_evolutionData.Evolutions[0].Entry.FetchEntry());
             }
         });
         _closeButton.onClick.AddListener(() => gameObject.SetActive(false));
     }
 
-    public void Populate(Digimon digimon, EvolutionData evolutionData) {
+    public void Populate(IDataEntry entry, EvolutionData evolutionData) {
         gameObject.SetActive(true);
-        _sourceDigimonName.text = digimon.Name;
+        _sourceEntryName.text = entry.Name;
 
         if (_cts != null) {
             _cts.Cancel();
@@ -50,12 +50,12 @@ public class EvolutionsPopup : Popup {
         }
         _cts = new CancellationTokenSource();
 
-        if (digimon.Sprite.RuntimeKeyIsValid()) {
-            AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(digimon.Sprite);
+        if (entry.Sprite.RuntimeKeyIsValid()) {
+            AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(entry.Sprite);
             _handles.Add(spriteHandle);
             spriteHandle.WithCancellation(_cts.Token).ContinueWith(sprite => {
-                _sourceDigimonImage.sprite = sprite;
-                _sourceDigimonImage.gameObject.SetActive(sprite != null);
+                _sourceEntryImage.sprite = sprite;
+                _sourceEntryImage.gameObject.SetActive(sprite != null);
             }).Forget();
         }
         _evolutionData = evolutionData;
@@ -69,37 +69,20 @@ public class EvolutionsPopup : Popup {
         }
     }
 
-    private void OnDigimonSelected(Digimon digimon) {
+    private void OnEntrySelected(IDataEntry entry) {
         if (_inspectedCTS != null) {
             _inspectedCTS.Cancel();
             _inspectedCTS.Dispose();
         }
         _inspectedCTS = new CancellationTokenSource();
 
-        if (digimon.Sprite.RuntimeKeyIsValid()) {
-            AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(digimon.Sprite);
+        if (entry.Sprite.RuntimeKeyIsValid()) {
+            AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(entry.Sprite);
             _handles.Add(spriteHandle);
             spriteHandle.WithCancellation(_inspectedCTS.Token).ContinueWith(sprite => {
-                _inspectedDigimonImage.sprite = sprite;
-                _inspectedDigimonImage.gameObject.SetActive(sprite != null);
+                _inspectedEntryImage.sprite = sprite;
+                _inspectedEntryImage.gameObject.SetActive(sprite != null);
             }).Forget();
         }
     }
 }
-
-//    if (digimon.EvolutionData.RuntimeKeyIsValid()) {
-//             AsyncOperationHandle<EvolutionData> evolutionHandle = Addressables.LoadAssetAsync<EvolutionData>(digimon.EvolutionData);
-//             _handles.Add(evolutionHandle);
-//             evolutionHandle.WithCancellation(_cts.Token).ContinueWith(evolutionData => {
-//                 _evolutionData = evolutionData;
-//                 _to.gameObject.SetActive(_evolutionData.Evolutions.Count > 0);
-//                 _from.gameObject.SetActive(_evolutionData.PreEvolutions.Count > 0);
-//                 if (_from.gameObject.activeSelf) {
-//                     _from.isOn = false;
-//                     _from.isOn = true;
-//                 } else if (_to.gameObject.activeSelf) {
-//                     _to.Select();
-//                 }
-//             }).Forget();
-//         }
-

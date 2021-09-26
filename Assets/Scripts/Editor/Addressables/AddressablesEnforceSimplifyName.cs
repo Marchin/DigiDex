@@ -35,6 +35,16 @@ public class AddressablesEnforceSimplifyName {
     }
 
     private static void ApplyName(AddressableAssetEntry entry) {
-        entry.address = Path.GetFileNameWithoutExtension(entry.AssetPath);
+        Popup popup = (entry.MainAsset as GameObject)?.GetComponent<Popup>();
+        if (popup != null) {
+            string fileName = Path.GetFileNameWithoutExtension(entry.AssetPath);
+            string forcedName = popup.GetType().Name;
+            entry.address = forcedName;
+            if (fileName != forcedName) {
+                AssetDatabase.RenameAsset(entry.AssetPath, entry.AssetPath.Replace(fileName, forcedName));
+            }
+        } else {
+            entry.address = Path.GetFileNameWithoutExtension(entry.AssetPath);
+        }
     }
 }

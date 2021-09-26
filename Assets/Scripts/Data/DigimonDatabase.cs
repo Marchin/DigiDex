@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 
-public class DigimonDatabase : ScriptableObject, IDataDabase {
+public class DigimonDatabase : ScriptableObject, IDatabase {
     public const string FieldsFilter = "Fields";
     public const string AttributesFilter = "Attirbutes";
     public const string TypesFilter = "Types";
@@ -11,17 +11,18 @@ public class DigimonDatabase : ScriptableObject, IDataDabase {
     public const string FavoritesToggle = "Favorites";
     public const string ReverseToggle = "Reverse";
     public List<Digimon> Digimons;
+    public IEnumerable<IDataEntry> EntryList => Digimons.Cast<IDataEntry>();
     public List<Field> Fields;
     public List<Attribute> Attributes;
-    public List<Type> Types;
+    public List<DigimonType> Types;
     public List<Level> Levels;
-    private HashSet<Hash128> _favoriteDigimons;
-    public HashSet<Hash128> FavoriteDigimons {
+    private HashSet<Hash128> _favorites;
+    public HashSet<Hash128> Favorites {
         get {
-            if (_favoriteDigimons == null) {
-                _favoriteDigimons = LoadFavorites();
+            if (_favorites == null) {
+                _favorites = LoadFavorites();
             }
-            return _favoriteDigimons;
+            return _favorites;
         }
     }
     private const string FavDigimonPref = "fav_digimons";
@@ -84,7 +85,7 @@ public class DigimonDatabase : ScriptableObject, IDataDabase {
                 filterAction: (list, isOn) => {
                     if (isOn) {
                         return list
-                            .Where(o => FavoriteDigimons.Contains((o as Digimon).Hash))
+                            .Where(o => Favorites.Contains((o as Digimon).Hash))
                             .ToList();
                     } else {
                         return list;
@@ -109,7 +110,7 @@ public class DigimonDatabase : ScriptableObject, IDataDabase {
     }
 
     private void OnApplicationQuit() {
-        SaveFavorites(_favoriteDigimons);
+        SaveFavorites(_favorites);
     }
 
     private void SaveFavorites(HashSet<Hash128> hashes) {

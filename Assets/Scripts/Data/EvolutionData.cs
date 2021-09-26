@@ -17,32 +17,34 @@ public enum EvolutionType {
     // TODO: Matrix or just Fusion with human?
 }
 
-[System.Serializable]
+[Serializable]
 public class AssetReferenceEvolutionData : AssetReferenceT<EvolutionData> {
     public AssetReferenceEvolutionData(string guid) : base(guid) {}
 }
 
-[System.Serializable]
+[Serializable]
 public class EvolutionData : ScriptableObject {
     public List<Evolution> PreEvolutions;
     public List<Evolution> Evolutions;
 }
 
-[System.Serializable]
+[Serializable]
 public class Evolution : IEquatable<Evolution> {
-    public int DigimonID;
-    public string DebugName;
+    public EntryIndex Entry;
     public EvolutionType Type;
-    public int[] FusionIDs;
+    public EntryIndex[] FusionEntries;
+#if UNITY_EDITOR
+    public string DebugName;
+#endif
 
     public bool Equals(Evolution other) {
-        bool areEqual = this.DigimonID == other.DigimonID &&
+        bool areEqual = this.Entry == other.Entry &&
             this.Type == other.Type &&
-            ((this.FusionIDs == null && other.FusionIDs == null) ||
-                (this.FusionIDs != null && other.FusionIDs != null &&
-                this.FusionIDs.Length == other.FusionIDs.Length &&
-                this.FusionIDs.Except(other.FusionIDs).Count() == 0 &&
-                other.FusionIDs.Except(this.FusionIDs).Count() == 0));
+            ((this.FusionEntries == null && other.FusionEntries == null) ||
+                (this.FusionEntries != null && other.FusionEntries != null &&
+                this.FusionEntries.Length == other.FusionEntries.Length &&
+                this.FusionEntries.Except(other.FusionEntries).Count() == 0 &&
+                other.FusionEntries.Except(this.FusionEntries).Count() == 0));
 
         return areEqual;
     }
@@ -59,12 +61,12 @@ public class Evolution : IEquatable<Evolution> {
 
     public override int GetHashCode() {
         int fusionHashes = 1;
-        if (FusionIDs != null) {
-            for (int iFusion = 0; iFusion < FusionIDs.Length; ++iFusion) {
-                fusionHashes *= FusionIDs[iFusion].GetHashCode();
+        if (FusionEntries != null) {
+            for (int iFusion = 0; iFusion < FusionEntries.Length; ++iFusion) {
+                fusionHashes *= FusionEntries[iFusion].GetHashCode();
             }
         }
-        return DigimonID.GetHashCode() * Type.GetHashCode() * fusionHashes;
+        return Entry.GetHashCode() * Type.GetHashCode() * fusionHashes;
     }
 
     public static bool operator ==(Evolution evolution1, Evolution evolution2) {

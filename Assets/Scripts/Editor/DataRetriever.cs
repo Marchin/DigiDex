@@ -3,7 +3,6 @@ using System.IO;
 using System.Xml;
 using System.Linq;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.U2D;
@@ -29,7 +28,7 @@ public static class DataRetriever {
     const string AttributeListURL = WikimonBaseURL + "/Attribute";
     const string TypeListURL = WikimonBaseURL + "/Type";
     const string LevelListURL = WikimonBaseURL + "/Evolution_Stage";
-    const int DigimonsPerAtlas = 4;
+    const int DigimonsPerAtlas = 3;
     const string ArtDigimonsPathX = ArtPath + "Digimons/Digimon({0})";
     const string DigimonsDataPath = DataPath + "Digimons";
     const string DigimonEvolutionsDataPath = DataPath + "Digimons/Evolutions";
@@ -203,7 +202,7 @@ public static class DataRetriever {
 
                     addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(digimonDataPath).ToString(), dataGroup);
                 } catch (Exception ex) {
-                    Debug.Log($"{digimonLinkSubFix} - {ex.Message} \n {ex.StackTrace}");
+                    Debug.LogError($"{digimonLinkSubFix} - {ex.Message} \n {ex.StackTrace}");
                 }
             }
         }
@@ -539,7 +538,7 @@ public static class DataRetriever {
             Directory.CreateDirectory(typesDataPath);
         }
 
-        List<Type> types = new List<Type>();
+        List<DigimonType> types = new List<DigimonType>();
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
         var listGroup = GetOrAddAddressableGroup(DigimonDataGroupName);
         for (int i = 0; i < table.Count; i++) {
@@ -547,13 +546,13 @@ public static class DataRetriever {
             string typeName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
 
             if (!string.IsNullOrEmpty(typeName)) {
-                Type type = null;
+                DigimonType type = null;
                 string typeDataPath = typesDataPath + "/" + typeName + ".asset";
                 if (!File.Exists(typeDataPath)) {
-                    type = ScriptableObject.CreateInstance<Type>();
+                    type = ScriptableObject.CreateInstance<DigimonType>();
                     AssetDatabase.CreateAsset(type, typeDataPath);
                 } else {
-                    type = AssetDatabase.LoadAssetAtPath(typeDataPath, typeof(Type)) as Type;
+                    type = AssetDatabase.LoadAssetAtPath(typeDataPath, typeof(DigimonType)) as DigimonType;
                 }
 
                 type.Name = typeName;
@@ -708,7 +707,8 @@ public static class DataRetriever {
                                 baseEvolutionType = EvolutionType.Main;
                             }
                             
-                            Evolution method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType, FusionIDs = new int[0] };
+                            EntryIndex digimonEntry = new EntryIndex(typeof(Digimon), digimonIndex);
+                            Evolution method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType, FusionEntries = new EntryIndex[0] };
 
                             bool isWarp = false;
                             bool oneOrMoreOptionals = false;
@@ -728,7 +728,7 @@ public static class DataRetriever {
                                             evolutionMethods.Add(method);
                                             oneOrMoreOptionals = true;
                                         }
-                                        method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                        method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
                                         
                                         if (siblingNode.Name == "b") {
                                             // skip "without" since we already parsed it
@@ -739,7 +739,7 @@ public static class DataRetriever {
                                     // Start reading components
                                     siblingNode = siblingNode?.NextSibling;
                                     
-                                    List<(int id, bool isMain)> fusionIDs = new List<(int id, bool isMain)>();
+                                    List<(EntryIndex index, bool isMain)> fusionIDs = new List<(EntryIndex index, bool isMain)>();
                                     bool recordFusionsTogether = false;
                                     bool recordFusionsSeparated = false;
 
@@ -750,26 +750,30 @@ public static class DataRetriever {
                                             method.Type |= EvolutionType.Armor;
                                             CheckMain(ref method, siblingNode);
                                             evolutionMethods.Add(method);
-                                            method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                            method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
                                         } else if (siblingNode.InnerText.Contains("Spirit")) {
                                             // Record fusion in the case of DigimonA(with DigimonB or NotDigimon)
                                             RecordConcatenatedFusions();
                                             method.Type |= EvolutionType.Spirit;
                                             CheckMain(ref method, siblingNode);
                                             evolutionMethods.Add(method);
-                                            method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                            method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
                                         } else if (siblingNode.InnerText.Trim() == "Slide Evolution") {
                                             // Record fusion in the case of DigimonA(with DigimonB or NotDigimon)
                                             RecordConcatenatedFusions();
                                             method.Type |= EvolutionType.Side;
                                             CheckMain(ref method, siblingNode);
                                             evolutionMethods.Add(method);
-                                            method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                            method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
                                         } else if (siblingNode.Name == "b" || siblingNode.Name == "a") {
                                             int fusionIndex = digimonDB.Digimons.FindIndex(d => d.Name == siblingNode.InnerText);
                                             if (fusionIndex > 0) {
                                                 method.Type |= EvolutionType.Fusion;
-                                                fusionIDs.Add((fusionIndex, siblingNode.Name == "b"));
+                                                EntryIndex fusionEntry = new EntryIndex(
+                                                    typeof(Digimon), 
+                                                    fusionIndex
+                                                );
+                                                fusionIDs.Add((fusionEntry, siblingNode.Name == "b"));
                                             }
                                             RecordConcatenatedFusions();
                                         } else if (siblingNode.InnerText.Contains("or")) {
@@ -786,7 +790,7 @@ public static class DataRetriever {
                                                 RecordConcatenatedFusions();
                                                 RecordFuseRemanents();
                                                 evolutionMethods.Add(method);
-                                                method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                                method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
                                             }
                                             break;
                                         }
@@ -802,26 +806,26 @@ public static class DataRetriever {
                                         void RecordConcatenatedFusions() {
                                             if (recordFusionsTogether) {
                                                 if (fusionIDs.Count > 0) {
-                                                    method.FusionIDs = fusionIDs.Select(tuple => tuple.id).ToArray();
+                                                    method.FusionEntries = fusionIDs.Select(tuple => tuple.index).ToArray();
                                                     if (!fusionIDs[0].isMain) {
                                                         method.Type &= ~EvolutionType.Main;
                                                     }
                                                     fusionIDs.Clear();
                                                     evolutionMethods.Add(method);
-                                                    method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType };
+                                                    method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
                                                 }
                                                 recordFusionsTogether = false;
                                             }
                                             if (recordFusionsSeparated) {
                                                 for (int iFusionID = 0; iFusionID < fusionIDs.Count; ++iFusionID) {
-                                                    method.FusionIDs = new int[] { fusionIDs[iFusionID].id };
+                                                    method.FusionEntries = new EntryIndex[] { fusionIDs[iFusionID].index };
                                                     method.Type = baseEvolutionType;
                                                     if (!fusionIDs[iFusionID].isMain) {
                                                         method.Type &= ~EvolutionType.Main;
                                                     }
                                                     method.Type |= EvolutionType.Fusion;
                                                     evolutionMethods.Add(method);
-                                                    method = new Evolution { DigimonID = digimonIndex, DebugName = name, Type = baseEvolutionType | EvolutionType.Fusion };
+                                                    method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType | EvolutionType.Fusion };
                                                 }
                                                 fusionIDs.Clear();
                                                 recordFusionsSeparated = false;
@@ -833,7 +837,7 @@ public static class DataRetriever {
 
                                     void RecordFuseRemanents() {
                                         if (fusionIDs.Count > 0) {
-                                            method.FusionIDs = fusionIDs.Select(tuple => tuple.id).ToArray();
+                                            method.FusionEntries = fusionIDs.Select(tuple => tuple.index).ToArray();
                                             if (!fusionIDs[0].isMain) {
                                                 method.Type &= ~EvolutionType.Main;
                                             }
@@ -883,6 +887,42 @@ public static class DataRetriever {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[iDigimon], typeof(Digimon)) as Digimon;
             digimonData.Hash = Hash128.Compute(digimonData.LinkSubFix);
             EditorUtility.SetDirty(digimonData);
+        }
+        AssetDatabase.SaveAssets();
+    }
+
+    
+
+    [MenuItem("DigiDex/Test")]
+    public static void Test() {
+        var paths = Directory.GetFiles(DigimonEvolutionsDataPath, "*.asset").OrderBy(path => path).ToArray();
+        for (int iEvolutionData = 0; iEvolutionData < paths.Length; iEvolutionData++) {
+            EvolutionData evolutionData = AssetDatabase.LoadAssetAtPath(paths[iEvolutionData], typeof(EvolutionData)) as EvolutionData;
+            for (int iEvolution = 0; iEvolution < evolutionData.PreEvolutions.Count; iEvolution++) {
+                evolutionData.PreEvolutions[iEvolution].Entry = new EntryIndex(
+                    typeof(Digimon),
+                    evolutionData.PreEvolutions[iEvolution].Entry.Index
+                );
+                for (int iFusion = 0; iFusion < evolutionData.PreEvolutions[iEvolution].FusionEntries.Length; iFusion++) {
+                    evolutionData.PreEvolutions[iEvolution].FusionEntries[iFusion] = new EntryIndex(
+                        typeof(Digimon),
+                        evolutionData.PreEvolutions[iEvolution].FusionEntries[iFusion].Index
+                    );
+                }
+            }
+            for (int iEvolution = 0; iEvolution < evolutionData.Evolutions.Count; iEvolution++) {
+                evolutionData.Evolutions[iEvolution].Entry = new EntryIndex(
+                    typeof(Digimon),
+                    evolutionData.Evolutions[iEvolution].Entry.Index
+                );
+                for (int iFusion = 0; iFusion < evolutionData.Evolutions[iEvolution].FusionEntries.Length; iFusion++) {
+                    evolutionData.Evolutions[iEvolution].FusionEntries[iFusion] = new EntryIndex(
+                        typeof(Digimon),
+                        evolutionData.Evolutions[iEvolution].FusionEntries[iFusion].Index
+                    );
+                }
+            }
+            EditorUtility.SetDirty(evolutionData);
         }
         AssetDatabase.SaveAssets();
     }

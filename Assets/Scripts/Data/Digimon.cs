@@ -13,24 +13,37 @@ public class AssetReferenceDigimon : AssetReferenceT<Digimon> {
     public AssetReferenceDigimon(string guid) : base(guid) {}
 }
 
-public class Digimon : ScriptableObject, IDataObject {
-    public string Name;
+public class Digimon : ScriptableObject, IDataEntry {
+    [SerializeField] private string _name;
+    [SerializeField] private  AssetReferenceAtlasedSprite _sprite;
+    [SerializeField] private  Hash128 _hash;
+    public string Name {
+        get => _name;
+        set => _name = value;
+    }
+    public AssetReferenceAtlasedSprite Sprite {
+        get => _sprite;
+        set => _sprite = value;
+    }
+    public Hash128 Hash  {
+        get => _hash;
+        set => _hash = value;
+    }
+    
     public string ProfileData;
-    public AssetReferenceAtlasedSprite Sprite;
     public List<int> AttributeIDs;
     public List<int> FieldIDs;
     public List<int> TypeIDs;
     public List<int> LevelIDs;
     public AssetReferenceEvolutionData EvolutionData;
-    public Hash128 Hash;
 #if UNITY_EDITOR
     public string LinkSubFix;
 #endif
 
-    public List<InformationData> ExtractInformationData(CentralDatabase centralDB) {
+    public List<InformationData> ExtractInformationData() {
         List<InformationData> information = new List<InformationData>();
         
-        DigimonDatabase digimonDB = centralDB.DigimonDB;
+        DigimonDatabase digimonDB = ApplicationManager.Instance.GetDatabase(this) as DigimonDatabase;
         information.Add(new InformationData { Prefix = "Name", Content = Name });
 
         if (LevelIDs.Count > 0) {

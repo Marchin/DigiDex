@@ -8,4 +8,7 @@ public class Popup : MonoBehaviour {
     public virtual void Hide() {
         gameObject.SetActive(false);
     }
+
+    public virtual void OnClose() {
+    }
 }
