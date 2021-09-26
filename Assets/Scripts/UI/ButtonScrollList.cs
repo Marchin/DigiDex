@@ -95,9 +95,18 @@ public class ButtonScrollList : MonoBehaviour {
             Debug.LogError("List of names is null");
             return;
         }
+        
+        string lastName = null;
+        if (_namesList != null) {
+            lastName = _namesList[_currElementScrollIndex + _currButtonIndex];
+        }
         _namesList = nameList;
 
-        ResetScroll();
+        if (!string.IsNullOrEmpty(lastName) && _namesList.Contains(lastName)) {
+            ScrollTo(lastName);
+        } else {
+            ResetScroll();
+        }
     }
 
     private void Update() {
@@ -175,6 +184,27 @@ public class ButtonScrollList : MonoBehaviour {
 
         float scrollableLength = _scrollRect.content.rect.height - _scrollRect.viewport.rect.height;
         _buttonNormalizedLenght = ((_buttons[0].transform as RectTransform).rect.height + _layoutGroup.spacing) /  scrollableLength;
+    }
+
+    public void ScrollTo(string name) {
+        int index = _namesList.IndexOf(name);
+        if (index >= 0) {
+            _currButtonIndex = Mathf.Min(
+                index,
+                Mathf.FloorToInt((float)Mathf.Min(_buttons.Length, _namesList.Count) * 0.5f)
+            );
+
+            int prevElementScrollIndex = _currElementScrollIndex;
+            _currElementScrollIndex = index - _currButtonIndex;
+
+            int newIndex = _currButtonIndex + _currElementScrollIndex;
+            if (_currElementScrollIndex != prevElementScrollIndex) {
+                PopulateButtons();
+            }
+            _scrollRect.verticalNormalizedPosition = 1f - _currButtonIndex * _buttonNormalizedLenght;
+            AnimateButtons();
+            OnConfirmed?.Invoke(newIndex);
+        }
     }
 
     public async void ResetScroll() {
