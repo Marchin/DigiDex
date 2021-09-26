@@ -25,10 +25,17 @@ MonoBehaviour:
     m_Address: FilterPopup
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: a0d07fdaaf16c864e98e571c5090199f
+    m_Address: EntryViewPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 9d0354011b60ee2468fa42eb0fff5623
+    m_Address: DatabaseViewPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 540ef4b002fba424d86242275961d112, type: 2}
   m_SchemaSet:
     m_Schemas:
     - {fileID: 11400000, guid: 9e9a1caaf24b41c40b5cd4d26d4978cd, type: 2}
     - {fileID: 11400000, guid: 024b9506bf914814f88f8a7f1e041e8f, type: 2}
-    - {fileID: 11400000, guid: ad611711b873e734faa9a85dda408dcd, type: 2}

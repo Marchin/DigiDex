@@ -10,8 +10,6 @@ public class ButtonScrollList : MonoBehaviour {
     [SerializeField] private float _scrollAnimationScale = 0.2f;
     [SerializeField] private float _scrollCenteringSpeedMul = 2f;
     [SerializeField] private CustomScrollRect _scrollRect = default;
-    [SerializeField] private Color _unselectedColor = default;
-    [SerializeField] private Color _selectedColor = default;
     [SerializeField] private VerticalLayoutGroup _layoutGroup = default;
     [SerializeField] private RectTransform _buttonTemplate = default;
     [SerializeField] private int _maxButtons = default;
@@ -39,7 +37,6 @@ public class ButtonScrollList : MonoBehaviour {
             if (_currButtonIndex != value) {
                 _currButtonIndex = value;
                 OnSelectedButtonChanged?.Invoke(value);
-                RefreshButtons();
             }
         }
     }
@@ -153,7 +150,7 @@ public class ButtonScrollList : MonoBehaviour {
         for (int iButton = 0; iButton < _buttons.Length; iButton++) {
             Vector2 button = _buttons[iButton].transform.TransformPoint((_buttons[iButton].transform as RectTransform).rect.center);
             float t = Mathf.Abs(viewportCenter.y - button.y) / _scrollRect.viewport.rect.height;
-            button.x = viewportCenter.x - Mathf.Lerp(0, _scrollAnimationOffset, t*t);
+            button.x = viewportCenter.x - (_buttons[iButton].transform as RectTransform).rect.width*0.5f - Mathf.Lerp(0, _scrollAnimationOffset, t*t);
             _buttons[iButton].transform.localScale = Vector2.one * Mathf.Lerp(1f, _scrollAnimationScale, t*t);
             _buttons[iButton].transform.position = button;
             if (minT > t) {
@@ -178,14 +175,6 @@ public class ButtonScrollList : MonoBehaviour {
 
         float scrollableLength = _scrollRect.content.rect.height - _scrollRect.viewport.rect.height;
         _buttonNormalizedLenght = ((_buttons[0].transform as RectTransform).rect.height + _layoutGroup.spacing) /  scrollableLength;
-        RefreshButtons();
-    }
-
-    public void RefreshButtons() {
-        for (int iButton = 0; iButton < _buttons.Length; iButton++) {
-            _buttons[iButton].image.color = iButton == CurrButtonIndex ?
-                _selectedColor : _unselectedColor;
-        }
     }
 
     public async void ResetScroll() {

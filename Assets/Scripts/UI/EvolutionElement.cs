@@ -11,21 +11,21 @@ using System.Collections.Generic;
 
 public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
     [SerializeField] private TextMeshProUGUI _name = default;
-    [SerializeField] private Image _digimonImage = default;
+    [SerializeField] private Image _entryImage = default;
     [SerializeField] private Button _button = default;
     [SerializeField] private ColorList _evolutionTypeIndicators = default;
     [SerializeField] private SpriteList _fusionSprites = default;
     private List<AsyncOperationHandle<Sprite>> _handles = new List<AsyncOperationHandle<Sprite>>();
     private CancellationTokenSource _cts;
-    private Digimon _digimon;
-    public Action<Digimon> OnPressed;
+    private IDataEntry _entry;
+    public Action<IDataEntry> OnPressed;
 
     private void Awake() {
-        _button.onClick.AddListener(() => OnPressed?.Invoke(_digimon));
+        _button.onClick.AddListener(() => OnPressed?.Invoke(_entry));
     }
 
     public async void Populate(Evolution data) {
-        _digimon = DigimonListTest.Instance.DigimonDB.Digimons[data.DigimonID];
+        _entry = data.Entry.FetchEntry();
 
         if (_cts != null) {
             _cts.Cancel();
@@ -33,22 +33,22 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
         }
         _cts = new CancellationTokenSource();
 
-        _name.text = _digimon.Name;
+        _name.text = _entry.Name;
 
-        if (_digimon.Sprite.RuntimeKeyIsValid()) {
-            AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(_digimon.Sprite);
+        if (_entry.Sprite.RuntimeKeyIsValid()) {
+            AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(_entry.Sprite);
             _handles.Add(spriteHandle);
             await spriteHandle.WithCancellation(_cts.Token).ContinueWith(sprite => {
-                _digimonImage.sprite = sprite;
-                _digimonImage.gameObject.SetActive(sprite != null);
+                _entryImage.sprite = sprite;
+                _entryImage.gameObject.SetActive(sprite != null);
             });
         }
 
-        List<UniTask<Sprite>> spritesTasks = new List<UniTask<Sprite>>(data.FusionIDs.Length);
-        for (int iFusionID = 0; iFusionID < data.FusionIDs.Length; ++iFusionID) {
-            Digimon fusion = DigimonListTest.Instance.DigimonDB.Digimons[data.FusionIDs[iFusionID]];
+        List<UniTask<Sprite>> spritesTasks = new List<UniTask<Sprite>>(data.FusionEntries.Length);
+        for (int iFusionID = 0; iFusionID < data.FusionEntries.Length; ++iFusionID) {
+            IDataEntry fusion = data.FusionEntries[iFusionID].FetchEntry();
             
-            if (_digimon.Sprite.RuntimeKeyIsValid()) {
+            if (_entry.Sprite.RuntimeKeyIsValid()) {
                 AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(fusion.Sprite);
                 _handles.Add(spriteHandle);
                 spritesTasks.Add(spriteHandle.WithCancellation(_cts.Token));
