@@ -1358,7 +1358,7 @@ MonoBehaviour:
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: 8
+    m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
   m_Spacing: 0
@@ -1783,6 +1783,7 @@ MonoBehaviour:
   _from: {fileID: 4225431140413887577}
   _to: {fileID: 4225431140307082717}
   _closeButton: {fileID: 9189026066872949884}
+  _scroll: {fileID: 4225431141942275946}
 --- !u!1 &4225431140885682161
 GameObject:
   m_ObjectHideFlags: 0
@@ -3934,7 +3935,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Agumon
+  m_text: Source
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 68b7471d07f84bf4193633c752b6a6b5, type: 2}
   m_sharedMaterial: {fileID: -8734962225759229839, guid: 68b7471d07f84bf4193633c752b6a6b5,

@@ -16,25 +16,34 @@ public class EvolutionsPopup : Popup {
     [SerializeField] private Toggle _from = default;
     [SerializeField] private Toggle _to = default;
     [SerializeField] private Button _closeButton = default;
+    [SerializeField] private ScrollRect _scroll = default;
     private List<AsyncOperationHandle> _handles = new List<AsyncOperationHandle>();
     private CancellationTokenSource _cts;
     private CancellationTokenSource _inspectedCTS;
     private EvolutionData _evolutionData;
+    private float _fromScrollPos = 1f;
+    private float _toScrollPos = 1f;
 
     private void Awake() {
         _from.onValueChanged.AddListener(isOn => {
             if (isOn && _evolutionData != null) {
+                _toScrollPos = _scroll.verticalNormalizedPosition;
                 _evolutionList.Populate(_evolutionData.PreEvolutions);
                 for (int i = 0; i < _evolutionList.Elements.Count; ++i) {
                     _evolutionList.Elements[i].OnPressed = entry => OnEntrySelected(entry);
                 }
                 OnEntrySelected(_evolutionData.PreEvolutions[0].Entry.FetchEntry());
+                Canvas.ForceUpdateCanvases();
+                _scroll.verticalNormalizedPosition = _fromScrollPos;
             }
         });
         _to.onValueChanged.AddListener(isOn => {
             if (isOn && _evolutionData != null) {
+                _fromScrollPos = _scroll.verticalNormalizedPosition;
                 _evolutionList.Populate(_evolutionData.Evolutions);
                 OnEntrySelected(_evolutionData.Evolutions[0].Entry.FetchEntry());
+                Canvas.ForceUpdateCanvases();
+                _scroll.verticalNormalizedPosition = _toScrollPos;
             }
         });
         _closeButton.onClick.AddListener(() => gameObject.SetActive(false));

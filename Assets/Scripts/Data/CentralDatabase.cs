@@ -24,7 +24,7 @@ public class EntryIndex : IEquatable<EntryIndex> {
     public int Index;
 
     public EntryIndex(Type type, int index) {
-        Debug.Assert(type is IDataEntry, $"Invalid type {type}");
+        Debug.Assert(type.GetInterface(nameof(IDataEntry)) != null, $"Invalid type {type}");
         _typeName = type.ToString();
         Index = index;
     }

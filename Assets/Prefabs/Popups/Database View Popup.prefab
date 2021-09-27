@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: 4696955865466225540}
   - component: {fileID: 3012443657566351193}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Highlighter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2722,6 +2722,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -68.539986
+      objectReference: {fileID: 0}
+    - target: {fileID: 8836179057308368035, guid: a0d07fdaaf16c864e98e571c5090199f,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0.050048828
       objectReference: {fileID: 0}
     - target: {fileID: 8836179057459743957, guid: a0d07fdaaf16c864e98e571c5090199f,
         type: 3}
