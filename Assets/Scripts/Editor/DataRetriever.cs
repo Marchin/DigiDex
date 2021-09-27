@@ -893,8 +893,8 @@ public static class DataRetriever {
 
     
 
-    [MenuItem("DigiDex/Test")]
-    public static void Test() {
+    [MenuItem("DigiDex/Fill Digimon Evolution Type")]
+    public static void FillDigimonEvolutionType() {
         var paths = Directory.GetFiles(DigimonEvolutionsDataPath, "*.asset").OrderBy(path => path).ToArray();
         for (int iEvolutionData = 0; iEvolutionData < paths.Length; iEvolutionData++) {
             EvolutionData evolutionData = AssetDatabase.LoadAssetAtPath(paths[iEvolutionData], typeof(EvolutionData)) as EvolutionData;

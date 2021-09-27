@@ -11,15 +11,15 @@ public class ButtonScrollList : MonoBehaviour {
     [SerializeField] private float _scrollCenteringSpeedMul = 2f;
     [SerializeField] private CustomScrollRect _scrollRect = default;
     [SerializeField] private VerticalLayoutGroup _layoutGroup = default;
-    [SerializeField] private RectTransform _buttonTemplate = default;
-    [SerializeField] private int _maxButtons = default;
-    private Button[] _buttons;
-    private TextMeshProUGUI[] _buttonsTexts;
+    [SerializeField] private RectTransform _elementTemplate = default;
+    [SerializeField] private int _maxElements = default;
+    private RectTransform[] _elements;
+    private TextMeshProUGUI[] _elementsTexts;
     private List<string> _namesList = new List<string>();
     private float _buttonNormalizedLenght;
     private float _buttonReuseScrollPoint = 0.3f;
     private int _currElementScrollIndex;
-    public Button CurrenButton => _buttons[_currButtonIndex];
+    public RectTransform CurrenElement => _elements[_currButtonIndex];
     private bool _fixingListPosition = false;
     private Action<int> OnConfirmed;
     public event Action OnBeginDrag;
@@ -51,9 +51,9 @@ public class ButtonScrollList : MonoBehaviour {
 
         _namesList = nameList;
 
-        int buttonCount = Mathf.Min(nameList.Count, _maxButtons);
+        int buttonCount = Mathf.Min(nameList.Count, _maxElements);
         for (int i = 0; i < buttonCount; i++) {
-            Instantiate(_buttonTemplate, _scrollRect.content);
+            Instantiate(_elementTemplate, _scrollRect.content);
         }
 
         _scrollRect.OnBeginDragEvent += () => {
@@ -70,11 +70,15 @@ public class ButtonScrollList : MonoBehaviour {
         
         // Add padding so that the top and botton buttonns can be centered when scrolling
         _layoutGroup.padding.top = _layoutGroup.padding.bottom =
-            Mathf.RoundToInt(0.5f * (_scrollRect.viewport.rect.height - _buttonTemplate.rect.height));
+            Mathf.RoundToInt(0.5f * (_scrollRect.viewport.rect.height - _elementTemplate.rect.height));
 
-        _buttonTemplate.gameObject.SetActive(false);
-        _buttons = _scrollRect.content.GetComponentsInChildren<Button>();
-        _buttonsTexts = _scrollRect.content.GetComponentsInChildren<TextMeshProUGUI>();
+        _elementTemplate.gameObject.SetActive(false);
+
+        _elements = new RectTransform[_scrollRect.content.childCount - 1];
+        for (int iChild = 1; iChild < _scrollRect.content.childCount; ++iChild) {
+            _elements[iChild - 1] = _scrollRect.content.GetChild(iChild) as RectTransform;
+        }
+        _elementsTexts = _scrollRect.content.GetComponentsInChildren<TextMeshProUGUI>();
 
         PopulateButtons();
 
@@ -113,10 +117,11 @@ public class ButtonScrollList : MonoBehaviour {
         if (_fixingListPosition) {
             if (Mathf.Abs(_scrollRect.velocity.y) < 40f) {
                 Vector2 viewportCenter = _scrollRect.viewport.transform.position;
-                Vector2 selectedButtonPos = CurrenButton.transform
-                    .TransformPoint((CurrenButton.transform as RectTransform).rect.center);
+                Vector2 selectedButtonPos = CurrenElement.transform
+                    .TransformPoint(CurrenElement.rect.center);
                 if (!_scrollRect.BeingDragged) {
-                    _scrollRect.velocity = _scrollCenteringSpeedMul * Vector2.up * (viewportCenter.y - selectedButtonPos.y);
+                    _scrollRect.velocity = _scrollCenteringSpeedMul * Vector2.up * 
+                        (viewportCenter.y - selectedButtonPos.y);
                 }
 
                 if (Mathf.Abs(viewportCenter.y - selectedButtonPos.y) < 80f) {
@@ -131,7 +136,7 @@ public class ButtonScrollList : MonoBehaviour {
 
     private void OnScroll(Vector2 newPos) {
         int newScrollIndex = _currElementScrollIndex;
-        if (_currElementScrollIndex < (_namesList.Count - _buttons.Length) &&
+        if (_currElementScrollIndex < (_namesList.Count - _elements.Length) &&
             _scrollRect.velocity.y > 0f &&
             newPos.y < ((_buttonReuseScrollPoint))
         ) {
@@ -156,12 +161,13 @@ public class ButtonScrollList : MonoBehaviour {
         Vector2 viewportCenter = _scrollRect.viewport.transform.position;
         Vector2 selectedButtonPos = Vector2.zero;
         int currButtonIndex = 0;
-        for (int iButton = 0; iButton < _buttons.Length; iButton++) {
-            Vector2 button = _buttons[iButton].transform.TransformPoint((_buttons[iButton].transform as RectTransform).rect.center);
+        for (int iButton = 0; iButton < _elements.Length; iButton++) {
+            Vector2 button = _elements[iButton].transform.TransformPoint((_elements[iButton].transform as RectTransform).rect.center);
             float t = Mathf.Abs(viewportCenter.y - button.y) / _scrollRect.viewport.rect.height;
-            button.x = viewportCenter.x - (_buttons[iButton].transform as RectTransform).rect.width*0.5f - Mathf.Lerp(0, _scrollAnimationOffset, t*t);
-            _buttons[iButton].transform.localScale = Vector2.one * Mathf.Lerp(1f, _scrollAnimationScale, t*t);
-            _buttons[iButton].transform.position = button;
+            float sqT = t * t;
+            button.x = viewportCenter.x - _elements[iButton].rect.width * 0.5f - Mathf.Lerp(0, _scrollAnimationOffset, sqT);
+            _elements[iButton].transform.localScale = Vector2.one * Mathf.Lerp(1f, _scrollAnimationScale, sqT);
+            _elements[iButton].transform.position = button;
             if (minT > t) {
                 selectedButtonPos = button;
                 minT = t;
@@ -172,18 +178,18 @@ public class ButtonScrollList : MonoBehaviour {
     }
 
     private void PopulateButtons() {
-        _currElementScrollIndex = Mathf.Min(_currElementScrollIndex, Mathf.Max(_namesList.Count - _buttons.Length, 0));
-        for (int iDigimon = _currElementScrollIndex, iButton = 0; iButton < _buttons.Length; iDigimon++, iButton++) {
+        _currElementScrollIndex = Mathf.Min(_currElementScrollIndex, Mathf.Max(_namesList.Count - _elements.Length, 0));
+        for (int iDigimon = _currElementScrollIndex, iButton = 0; iButton < _elements.Length; iDigimon++, iButton++) {
             if (iButton < _namesList.Count) {
-                _buttonsTexts[iButton].text = _namesList[iDigimon];
-                _buttons[iButton].gameObject.SetActive(true);
+                _elementsTexts[iButton].text = _namesList[iDigimon];
+                _elements[iButton].gameObject.SetActive(true);
             } else {
-                _buttons[iButton].gameObject.SetActive(false);
+                _elements[iButton].gameObject.SetActive(false);
             }
         }
 
         float scrollableLength = _scrollRect.content.rect.height - _scrollRect.viewport.rect.height;
-        _buttonNormalizedLenght = ((_buttons[0].transform as RectTransform).rect.height + _layoutGroup.spacing) /  scrollableLength;
+        _buttonNormalizedLenght = (_elements[0].rect.height + _layoutGroup.spacing) /  scrollableLength;
     }
 
     public void ScrollTo(string name) {
@@ -191,7 +197,7 @@ public class ButtonScrollList : MonoBehaviour {
         if (index >= 0) {
             _currButtonIndex = Mathf.Min(
                 index,
-                Mathf.FloorToInt((float)Mathf.Min(_buttons.Length, _namesList.Count) * 0.5f)
+                Mathf.FloorToInt((float)Mathf.Min(_elements.Length, _namesList.Count) * 0.5f)
             );
 
             int prevElementScrollIndex = _currElementScrollIndex;
