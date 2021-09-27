@@ -4,6 +4,8 @@ using UnityEngine.SceneManagement;
 
 public static class UnityUtils {
 
+    public static bool EditorClosing { get; private set; }
+
     public static void Quit() {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.ExitPlaymode();
@@ -11,6 +13,19 @@ public static class UnityUtils {
         Application.Quit();
 #endif
     }
+
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoadMethod]
+    public static void RegisterToEditorStateChange() {
+        UnityEditor.EditorApplication.playModeStateChanged += OnPlayModeStateChange;
+    }
+#endif
+
+#if UNITY_EDITOR
+    public static void OnPlayModeStateChange(UnityEditor.PlayModeStateChange state) {
+        EditorClosing = (state == UnityEditor.PlayModeStateChange.ExitingPlayMode);
+    }
+#endif 
 
     public static bool FloatsAreEqual(float a, float b, float epsilon = 0.001f) {
         bool result = (a > b - epsilon) && (a < b + epsilon);

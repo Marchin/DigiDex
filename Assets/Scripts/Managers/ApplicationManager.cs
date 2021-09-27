@@ -3,20 +3,9 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using Cysharp.Threading.Tasks;
 
-public class ApplicationManager : MonoBehaviour {
+public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     [SerializeField] private CentralDatabase _centralDB = default;
-    private static ApplicationManager _instance;
-    public static ApplicationManager Instance => _instance;
-
     
-    private void Awake() {
-        if (_instance != null && _instance != this) {
-            Destroy(this);
-        } else {
-            _instance = this;
-        }
-    }
-
     private async void Start() {
         if (_centralDB == null) {
             UnityUtils.Quit();

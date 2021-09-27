@@ -1,20 +1,22 @@
 ﻿using UnityEngine;
 
 public class MonoBehaviourSingleton<T> : MonoBehaviour where T : MonoBehaviourSingleton<T> {
-    private static MonoBehaviourSingleton<T> instance = null;
-
+    private static MonoBehaviourSingleton<T> _instance = null;
     public static T Instance {
         get {
-            if (instance == null) {
-                instance = FindObjectOfType<MonoBehaviourSingleton<T>>();
+            if (UnityUtils.EditorClosing) {
+                return (T)_instance;
             }
-            if (instance == null) {
+            if (_instance == null) {
+                _instance = FindObjectOfType<MonoBehaviourSingleton<T>>();
+            }
+            if (_instance == null) {
                 GameObject managerParentGO = UnityUtils.GetOrGenerateRootGO("Managers");
-                instance = new GameObject(typeof(T).Name).AddComponent<T>();
-                instance.transform.SetParent(managerParentGO.transform);
+                _instance = new GameObject(typeof(T).Name).AddComponent<T>();
+                _instance.transform.SetParent(managerParentGO.transform);
             }
 
-            return (T)instance;
+            return (T)_instance;
         }
     }
 
@@ -23,11 +25,11 @@ public class MonoBehaviourSingleton<T> : MonoBehaviour where T : MonoBehaviourSi
     }
 
     private void Awake() {
-        if (instance != null) {
+        if (_instance != null) {
             Destroy(this.gameObject);
         }
 
-        instance = this;
+        _instance = this;
 
         Initialize();
     }
