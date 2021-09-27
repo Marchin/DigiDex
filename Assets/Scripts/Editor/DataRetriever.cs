@@ -49,10 +49,10 @@ public static class DataRetriever {
 
     [MenuItem("DigiDex/Retrieve Data")]
     public static async void RetrieveData() {
-        GenerateFieldList();
-        GenerateAttributeList();
-        GenerateTypeList();
-        GenerateLevelList();
+        // GenerateFieldList();
+        // GenerateAttributeList();
+        // GenerateTypeList();
+        // GenerateLevelList();
 
         // TODO: Add the new images either in the last folder or on a new one depending on the wether the last folder is full
         
@@ -113,20 +113,15 @@ public static class DataRetriever {
                         XmlNode image = digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[1]/td/div/div/a/img");
                         if (image != null) {
                             string linkToImage = WikimonBaseURL + image.Attributes.GetNamedItem("src").InnerText;
-                            bool isPNG = linkToImage.ToLower().EndsWith(".png");
-                            bool isJPG = linkToImage.ToLower().EndsWith(".jpg");
-                            if (isPNG || isJPG) {
-                                using (UnityWebRequest textureRequest = UnityWebRequestTexture.GetTexture(linkToImage)) {
-                                    await textureRequest.SendWebRequest();
-                                    if (textureRequest.result != UnityWebRequest.Result.ConnectionError) {
-                                        var texture = DownloadHandlerTexture.GetContent(textureRequest);
-                                        var data = isPNG ? texture.EncodeToPNG() : texture.EncodeToJPG();
-                                        var file = File.Create(digimonArtPath);
-                                        file.Write(data, 0, data.Length);
-                                        file.Close();
-                                        AssetDatabase.Refresh();
-                                        hasArt = true;
-                                    }
+                            using (UnityWebRequest request = UnityWebRequest.Get(linkToImage)) {
+                                await request.SendWebRequest();
+                                if (request.result != UnityWebRequest.Result.ConnectionError) {
+                                    var data = request.downloadHandler.data;
+                                    var file = File.Create(digimonArtPath);
+                                    file.Write(data, 0, data.Length);
+                                    file.Close();
+                                    AssetDatabase.Refresh();
+                                    hasArt = true;
                                 }
                             }
                         }
@@ -925,5 +920,20 @@ public static class DataRetriever {
             EditorUtility.SetDirty(evolutionData);
         }
         AssetDatabase.SaveAssets();
+    }
+
+    
+    
+    [MenuItem("DigiDex/GIF Test")]
+    public static async void GIFTest() {
+        using (UnityWebRequest request = UnityWebRequest.Get("https://wikimon.net/images/thumb/6/6b/Angoramon.gif/270px-Angoramon.gif")) {
+            await request.SendWebRequest();
+            if (request.result != UnityWebRequest.Result.ConnectionError) {
+                var a = request.downloadHandler.data;
+                var f = File.Open("test.png", FileMode.Create);
+                f.Write(a, 0, a.Length);
+                f.Close();
+            }
+        }
     }
 }
