@@ -55,6 +55,12 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             var handle = Addressables.InstantiateAsync(typeof(T).Name, _parentCanvas.transform);
             _handles.Insert(0, handle);
             popup = (await handle).GetComponent<T>();
+            var rect = (popup.transform as RectTransform);
+            rect.offsetMin = Screen.safeArea.min;
+            rect.offsetMax = new Vector2(
+                Screen.safeArea.xMax - Screen.width,
+                Screen.height - Screen.safeArea.yMax
+            );
             _stack.Insert(0, popup);
         }
 
