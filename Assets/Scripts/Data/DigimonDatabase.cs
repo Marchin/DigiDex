@@ -122,10 +122,17 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
 
     private HashSet<Hash128> LoadFavorites() {
         string jsonData = PlayerPrefs.GetString(FavDigimonPref, "");
-        var strings = JsonConvert.DeserializeObject<List<string>>(jsonData);
-        var a = strings.Select(s => Hash128.Parse(s)).ToList();
-        HashSet<Hash128> result = new HashSet<Hash128>(a);
+        var strings = JsonConvert.DeserializeObject<List<string>>(jsonData) ?? new List<string>();
+        var hashesList = strings.Select(s => Hash128.Parse(s)).ToList();
+        HashSet<Hash128> result = new HashSet<Hash128>(hashesList);
 
         return result;
     }
+
+#if UNITY_EDITOR
+    [UnityEditor.MenuItem("Tools/Clear Favorites")]
+    public static void ClearFavorites() {
+        PlayerPrefs.DeleteKey(FavDigimonPref);
+    }
+#endif
 }
