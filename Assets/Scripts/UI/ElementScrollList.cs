@@ -184,7 +184,7 @@ public class ElementScrollList : MonoBehaviour {
     private void PopulateElements() {
         _currElementScrollIndex = Mathf.Min(_currElementScrollIndex, Mathf.Max(_namesList.Count - _elements.Length, 0));
         for (int iDigimon = _currElementScrollIndex, iElement = 0; iElement < _elements.Length; iDigimon++, iElement++) {
-            if (iElement < _namesList.Count) {
+            if (iDigimon < _namesList.Count) {
                 _elementsTexts[iElement].text = _namesList[iDigimon];
                 _elements[iElement].gameObject.SetActive(true);
             } else {
@@ -211,7 +211,8 @@ public class ElementScrollList : MonoBehaviour {
                 _currElementIndex = halfElementsIndex;
             }
 
-            _currElementScrollIndex = Mathf.Min(index - _currElementIndex, _namesList.Count - _elements.Length);
+            _currElementScrollIndex = Mathf.Min(index - _currElementIndex, 
+                Mathf.Max(_namesList.Count - _elements.Length, 0));
 
             PopulateElements();
             int newIndex = _currElementIndex + _currElementScrollIndex;
