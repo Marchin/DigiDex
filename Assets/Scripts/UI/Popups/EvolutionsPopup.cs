@@ -42,6 +42,9 @@ public class EvolutionsPopup : Popup {
             if (isOn && _evolutionData != null) {
                 _fromScrollPos = _initialized ? _scroll.verticalNormalizedPosition : 1f;
                 _evolutionList.Populate(_evolutionData.Evolutions);
+                for (int i = 0; i < _evolutionList.Elements.Count; ++i) {
+                    _evolutionList.Elements[i].OnPressed = entry => OnEntrySelected(entry);
+                }
                 OnEntrySelected(_evolutionData.Evolutions[0].Entry.FetchEntry());
                 Canvas.ForceUpdateCanvases();
                 _scroll.verticalNormalizedPosition = _toScrollPos;
