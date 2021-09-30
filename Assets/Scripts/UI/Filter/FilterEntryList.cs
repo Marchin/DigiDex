@@ -21,7 +21,7 @@ public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IP
     }
 
     private void Update() {
-        if (IsMouseOut) {
+        if (IsMouseOut && !Application.isMobilePlatform) {
             accum += Time.unscaledDeltaTime;
             if (accum >= _hideInSecs) {
                 accum = 0f;

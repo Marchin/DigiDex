@@ -30,6 +30,22 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
   - m_GUID: 9d0354011b60ee2468fa42eb0fff5623
+    m_Address: DatabaseViewPopup (Vertical)
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2124f1944f4f4df4f83d6e58d4852b64
+    m_Address: EntryViewPopup (Vertical)
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 1a9f9fa68b7907344a9576af926b4c81
+    m_Address: EvolutionsPopup (Vertical)
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: da064d2b07d80b54ab3d2f970486e903
+    m_Address: FilterPopup (Vertical)
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 0e164c96934cdd448ae70476af5b9922
     m_Address: DatabaseViewPopup
     m_ReadOnly: 0
     m_SerializedLabels: []

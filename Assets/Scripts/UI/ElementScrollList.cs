@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 
-public class ButtonScrollList : MonoBehaviour {
+public class ElementScrollList : MonoBehaviour {
     [SerializeField] private float _scrollAnimationOffset = 550f;
     [SerializeField] private float _scrollAnimationScale = 0.2f;
     [SerializeField] private float _scrollCenteringSpeedMul = 2f;
@@ -16,27 +16,28 @@ public class ButtonScrollList : MonoBehaviour {
     private RectTransform[] _elements;
     private TextMeshProUGUI[] _elementsTexts;
     private List<string> _namesList = new List<string>();
-    private float _buttonNormalizedLenght;
-    private float _buttonReuseScrollPoint = 0.3f;
+    private float _elementNormalizedLenght;
+    private float _elementWidth;
+    private float _elementReuseScrollPoint = 0.3f;
     private int _currElementScrollIndex;
-    public RectTransform CurrenElement => _elements[_currButtonIndex];
+    public RectTransform CurrenElement => _elements[_currElementIndex];
     private bool _fixingListPosition = false;
     private Action<int> OnConfirmed;
     public event Action OnBeginDrag;
     public event Action OnEndDrag;
-    public event Action<int> OnSelectedButtonChanged;
+    public event Action<int> OnSelectedElementChanged;
     public bool IsEmpty => _namesList.Count == 0;
     public bool ScrollEnabled {
         get => _scrollRect.enabled;
         set => _scrollRect.enabled = value;
     }
-    private int _currButtonIndex;
-    public int CurrButtonIndex {
-        get => _currButtonIndex;
+    private int _currElementIndex;
+    public int CurrElementIndex {
+        get => _currElementIndex;
         set {
-            if (_currButtonIndex != value) {
-                _currButtonIndex = value;
-                OnSelectedButtonChanged?.Invoke(value);
+            if (_currElementIndex != value) {
+                _currElementIndex = value;
+                OnSelectedElementChanged?.Invoke(value);
             }
         }
     }
@@ -51,8 +52,8 @@ public class ButtonScrollList : MonoBehaviour {
 
         _namesList = nameList;
 
-        int buttonCount = Mathf.Min(nameList.Count, _maxElements);
-        for (int i = 0; i < buttonCount; i++) {
+        int elementCount = Mathf.Min(nameList.Count, _maxElements);
+        for (int i = 0; i < elementCount; i++) {
             Instantiate(_elementTemplate, _scrollRect.content);
         }
 
@@ -65,13 +66,13 @@ public class ButtonScrollList : MonoBehaviour {
             OnEndDrag?.Invoke();
         };
 
-        // Wait for button population
-        await UniTask.DelayFrame(1);
+        Canvas.ForceUpdateCanvases();
         
-        // Add padding so that the top and botton buttonns can be centered when scrolling
+        // Add padding so that the top and botton elementns can be centered when scrolling
         _layoutGroup.padding.top = _layoutGroup.padding.bottom =
             Mathf.RoundToInt(0.5f * (_scrollRect.viewport.rect.height - _elementTemplate.rect.height));
 
+        _elementWidth = _elementTemplate.rect.width;
         _elementTemplate.gameObject.SetActive(false);
 
         _elements = new RectTransform[_scrollRect.content.childCount - 1];
@@ -80,7 +81,7 @@ public class ButtonScrollList : MonoBehaviour {
         }
         _elementsTexts = _scrollRect.content.GetComponentsInChildren<TextMeshProUGUI>();
 
-        PopulateButtons();
+        PopulateElements();
 
         OnConfirmed?.Invoke(0);
 
@@ -88,9 +89,9 @@ public class ButtonScrollList : MonoBehaviour {
 
         _scrollRect.normalizedPosition = Vector2.up;
 
-        // If we don't wait these frames the buttons don't get properly animated
+        // HACK: If we don't wait these frames the elements don't get properly animated
         await UniTask.DelayFrame(2);
-        AnimateButtons();
+        AnimateElements();
     }
 
     public void UpdateList(List<string> nameList) {
@@ -101,8 +102,11 @@ public class ButtonScrollList : MonoBehaviour {
         }
         
         string lastName = null;
-        if (_namesList != null) {
-            lastName = _namesList[_currElementScrollIndex + _currButtonIndex];
+        if (_namesList != null && _namesList.Count > 0) {
+            lastName = _namesList[_currElementScrollIndex + _currElementIndex];
+        } else {
+            _currElementScrollIndex = 0;
+            _currElementIndex = 0;
         }
         _namesList = nameList;
 
@@ -117,16 +121,16 @@ public class ButtonScrollList : MonoBehaviour {
         if (_fixingListPosition) {
             if (Mathf.Abs(_scrollRect.velocity.y) < 40f) {
                 Vector2 viewportCenter = _scrollRect.viewport.transform.position;
-                Vector2 selectedButtonPos = CurrenElement.transform
+                Vector2 selectedElementPos = CurrenElement.transform
                     .TransformPoint(CurrenElement.rect.center);
                 if (!_scrollRect.BeingDragged) {
                     _scrollRect.velocity = _scrollCenteringSpeedMul * Vector2.up * 
-                        (viewportCenter.y - selectedButtonPos.y);
+                        (viewportCenter.y - selectedElementPos.y);
                 }
 
-                if (Mathf.Abs(viewportCenter.y - selectedButtonPos.y) < 80f) {
-                    OnConfirmed?.Invoke(_currButtonIndex + _currElementScrollIndex);
-                    if (Mathf.Abs(viewportCenter.y - selectedButtonPos.y) < 2f) {
+                if (Mathf.Abs(viewportCenter.y - selectedElementPos.y) < 80f) {
+                    OnConfirmed?.Invoke(_currElementIndex + _currElementScrollIndex);
+                    if (Mathf.Abs(viewportCenter.y - selectedElementPos.y) < 2f) {
                         _fixingListPosition = false;
                     }
                 }
@@ -138,91 +142,97 @@ public class ButtonScrollList : MonoBehaviour {
         int newScrollIndex = _currElementScrollIndex;
         if (_currElementScrollIndex < (_namesList.Count - _elements.Length) &&
             _scrollRect.velocity.y > 0f &&
-            newPos.y < ((_buttonReuseScrollPoint))
+            newPos.y < ((_elementReuseScrollPoint))
         ) {
             newScrollIndex++;
-            CurrButtonIndex--;
-            _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y + _buttonNormalizedLenght);
-        } else if (_currElementScrollIndex > 0 && _scrollRect.velocity.y < 0f && newPos.y > (1f - (_buttonReuseScrollPoint))) {
+            CurrElementIndex--;
+            _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y + _elementNormalizedLenght);
+        } else if (_currElementScrollIndex > 0 && _scrollRect.velocity.y < 0f && newPos.y > (1f - (_elementReuseScrollPoint))) {
             newScrollIndex--;
-            CurrButtonIndex++;
-            _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y - _buttonNormalizedLenght);
+            CurrElementIndex++;
+            _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y - _elementNormalizedLenght);
         }
         if (newScrollIndex != _currElementScrollIndex) {
             _currElementScrollIndex = newScrollIndex;
-            PopulateButtons();
+            PopulateElements();
         }
 
-        AnimateButtons();
+        AnimateElements();
     }
 
-    private void AnimateButtons() {
+    private void AnimateElements() {
         float minT = float.MaxValue;
         Vector2 viewportCenter = _scrollRect.viewport.transform.position;
-        Vector2 selectedButtonPos = Vector2.zero;
-        int currButtonIndex = 0;
-        for (int iButton = 0; iButton < _elements.Length; iButton++) {
-            Vector2 button = _elements[iButton].transform.TransformPoint((_elements[iButton].transform as RectTransform).rect.center);
-            float t = Mathf.Abs(viewportCenter.y - button.y) / _scrollRect.viewport.rect.height;
+        Vector2 selectedElementPos = Vector2.zero;
+        int currElementIndex = 0;
+        for (int iElement = 0; iElement < _elements.Length; iElement++) {
+            Vector2 element = _elements[iElement].transform.TransformPoint((_elements[iElement].transform as RectTransform).rect.center);
+            float t = Mathf.Abs(viewportCenter.y - element.y) / _scrollRect.viewport.rect.height;
             float sqT = t * t;
-            button.x = viewportCenter.x - _elements[iButton].rect.width * 0.5f - Mathf.Lerp(0, _scrollAnimationOffset, sqT);
-            _elements[iButton].transform.localScale = Vector2.one * Mathf.Lerp(1f, _scrollAnimationScale, sqT);
-            _elements[iButton].transform.position = button;
+            element.x = viewportCenter.x - Mathf.Lerp(0, _scrollAnimationOffset, sqT);
+            _elements[iElement].transform.localScale = Vector2.one * Mathf.Lerp(1f, _scrollAnimationScale, sqT);
+            _elements[iElement].transform.position = element;
             if (minT > t) {
-                selectedButtonPos = button;
+                selectedElementPos = element;
                 minT = t;
-                currButtonIndex = iButton;
+                currElementIndex = iElement;
             }
         }
-        CurrButtonIndex = currButtonIndex;
+        CurrElementIndex = currElementIndex;
     }
 
-    private void PopulateButtons() {
+    private void PopulateElements() {
         _currElementScrollIndex = Mathf.Min(_currElementScrollIndex, Mathf.Max(_namesList.Count - _elements.Length, 0));
-        for (int iDigimon = _currElementScrollIndex, iButton = 0; iButton < _elements.Length; iDigimon++, iButton++) {
-            if (iButton < _namesList.Count) {
-                _elementsTexts[iButton].text = _namesList[iDigimon];
-                _elements[iButton].gameObject.SetActive(true);
+        for (int iDigimon = _currElementScrollIndex, iElement = 0; iElement < _elements.Length; iDigimon++, iElement++) {
+            if (iElement < _namesList.Count) {
+                _elementsTexts[iElement].text = _namesList[iDigimon];
+                _elements[iElement].gameObject.SetActive(true);
             } else {
-                _elements[iButton].gameObject.SetActive(false);
+                _elements[iElement].gameObject.SetActive(false);
             }
         }
 
         float scrollableLength = _scrollRect.content.rect.height - _scrollRect.viewport.rect.height;
-        _buttonNormalizedLenght = (_elements[0].rect.height + _layoutGroup.spacing) /  scrollableLength;
+        _elementNormalizedLenght = (_elements[0].rect.height + _layoutGroup.spacing) /  scrollableLength;
     }
 
     public void ScrollTo(string name) {
+        enabled = false;
         int index = _namesList.IndexOf(name);
         if (index >= 0) {
-            _currButtonIndex = Mathf.Min(
-                index,
-                Mathf.FloorToInt((float)Mathf.Min(_elements.Length, _namesList.Count) * 0.5f)
-            );
+            int halfElementsIndex = Mathf.FloorToInt(
+                (float)Mathf.Min(_elements.Length, _namesList.Count) * 0.5f);
 
-            int prevElementScrollIndex = _currElementScrollIndex;
-            _currElementScrollIndex = index - _currButtonIndex;
-
-            int newIndex = _currButtonIndex + _currElementScrollIndex;
-            if (_currElementScrollIndex != prevElementScrollIndex) {
-                PopulateButtons();
+            if (index < halfElementsIndex) {
+                _currElementIndex = index;
+            } else if (((_namesList.Count - 1) - index) < halfElementsIndex) {
+                _currElementIndex = _elements.Length - (_namesList.Count - index);
+            } else {
+                _currElementIndex = halfElementsIndex;
             }
-            _scrollRect.verticalNormalizedPosition = 1f - _currButtonIndex * _buttonNormalizedLenght;
-            AnimateButtons();
+
+            _currElementScrollIndex = Mathf.Min(index - _currElementIndex, _namesList.Count - _elements.Length);
+
+            PopulateElements();
+            int newIndex = _currElementIndex + _currElementScrollIndex;
+            _scrollRect.verticalNormalizedPosition = 1f - _currElementIndex * _elementNormalizedLenght;
+            Canvas.ForceUpdateCanvases();
+            AnimateElements();
             OnConfirmed?.Invoke(newIndex);
         }
+        enabled = true;
     }
 
-    public async void ResetScroll() {
+    public void ResetScroll() {
         _scrollRect.enabled = false;
         _scrollRect.normalizedPosition = Vector2.up;
         _currElementScrollIndex = 0;
-        PopulateButtons();
+        PopulateElements();
 
-        await UniTask.DelayFrame(2);
+        Canvas.ForceUpdateCanvases();
 
         _scrollRect.enabled = true;
-        AnimateButtons();
+        AnimateElements();
         
         if (_namesList.Count > 0) {
             OnConfirmed?.Invoke(0);

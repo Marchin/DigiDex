@@ -16,7 +16,7 @@ public class DatabaseViewPopup : Popup {
     [SerializeField] private Button _clearSearch = default;
     [SerializeField] private GameObject _searchIcon = default;
     [SerializeField] private Button _profileButton = default;
-    [SerializeField] private ButtonScrollList _buttonScrollList = default;
+    [SerializeField] private ElementScrollList _elementScrollList = default;
     [SerializeField] private Button _filterButton = default;
     private CancellationTokenSource _entryDataCTS;
     private List<AsyncOperationHandle> _entryDataHandles = new List<AsyncOperationHandle>();
@@ -81,7 +81,7 @@ public class DatabaseViewPopup : Popup {
             });
         });
 
-        _buttonScrollList.OnSelectedButtonChanged += _ => {
+        _elementScrollList.OnSelectedElementChanged += _ => {
             _profileButton.gameObject.SetActive(false);
         };
 
@@ -100,7 +100,7 @@ public class DatabaseViewPopup : Popup {
     public void Populate(IDatabase database) {
         _db = database;
         _currEntries = _filteredEntries = database.EntryList;
-        _buttonScrollList.Initialize(
+        _elementScrollList.Initialize(
             nameList: _currEntries.Select(e => e.Name).ToList(),
             onConfirmed: (index) => {
                 if (index >= 0 && index <= _currEntries.Count()) {
@@ -142,10 +142,10 @@ public class DatabaseViewPopup : Popup {
             }
 
             
-            _buttonScrollList.ScrollEnabled = true;
+            _elementScrollList.ScrollEnabled = true;
             RefreshList();
         } else {
-            _buttonScrollList.ScrollEnabled = false;
+            _elementScrollList.ScrollEnabled = false;
         }
     }
 
@@ -155,7 +155,7 @@ public class DatabaseViewPopup : Popup {
             .OrderByDescending(e => e.Name.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture))
             .ToList();
 
-        _buttonScrollList.UpdateList(_currEntries.Select(e => e.Name).ToList());
+        _elementScrollList.UpdateList(_currEntries.Select(e => e.Name).ToList());
     }
 
     private void OnInputChanged(string query) {

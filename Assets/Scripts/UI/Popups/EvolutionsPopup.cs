@@ -23,11 +23,12 @@ public class EvolutionsPopup : Popup {
     private EvolutionData _evolutionData;
     private float _fromScrollPos = 1f;
     private float _toScrollPos = 1f;
+    private bool _initialized = false;
 
     private void Awake() {
         _from.onValueChanged.AddListener(isOn => {
             if (isOn && _evolutionData != null) {
-                _toScrollPos = _scroll.verticalNormalizedPosition;
+                _toScrollPos = _initialized ? _scroll.verticalNormalizedPosition : 1f;
                 _evolutionList.Populate(_evolutionData.PreEvolutions);
                 for (int i = 0; i < _evolutionList.Elements.Count; ++i) {
                     _evolutionList.Elements[i].OnPressed = entry => OnEntrySelected(entry);
@@ -39,7 +40,7 @@ public class EvolutionsPopup : Popup {
         });
         _to.onValueChanged.AddListener(isOn => {
             if (isOn && _evolutionData != null) {
-                _fromScrollPos = _scroll.verticalNormalizedPosition;
+                _fromScrollPos = _initialized ? _scroll.verticalNormalizedPosition : 1f;
                 _evolutionList.Populate(_evolutionData.Evolutions);
                 OnEntrySelected(_evolutionData.Evolutions[0].Entry.FetchEntry());
                 Canvas.ForceUpdateCanvases();
@@ -50,8 +51,11 @@ public class EvolutionsPopup : Popup {
     }
 
     public void Populate(IDataEntry entry, EvolutionData evolutionData) {
-        gameObject.SetActive(true);
+        _initialized = false;
         _sourceEntryName.text = entry.Name;
+
+        _fromScrollPos = 1f;
+        _toScrollPos = 1f;
 
         if (_cts != null) {
             _cts.Cancel();
@@ -76,6 +80,7 @@ public class EvolutionsPopup : Popup {
         } else if (_to.gameObject.activeSelf) {
             _to.Select();
         }
+        _initialized = true;
     }
 
     private void OnEntrySelected(IDataEntry entry) {
