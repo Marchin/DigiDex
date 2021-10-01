@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 public class DigimonDatabase : ScriptableObject, IDatabase {
     public const string FieldsFilter = "Fields";
-    public const string AttributesFilter = "Attirbutes";
+    public const string AttributesFilter = "Attributes";
     public const string TypesFilter = "Types";
     public const string LevelsFilter = "Levels";
     public const string FavoritesToggle = "Favorites";
