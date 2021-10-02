@@ -81,7 +81,6 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
                 return;
             }
 
-            _filterData.List.LastCaller = this;
             if (_filterData.List.LastCaller == this && _filterData.List.gameObject.activeSelf) {
                 _filterData.List.gameObject.SetActive(false);
             } else {
@@ -108,6 +107,8 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
                 _filterData.List.gameObject.SetActive(true);
                 _filterData.List.ResetScroll();
             }
+            
+            _filterData.List.LastCaller = this;
         });
     }
 
