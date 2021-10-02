@@ -16,7 +16,7 @@ public class ElementScrollList : MonoBehaviour {
     private RectTransform[] _elements;
     private TextMeshProUGUI[] _elementsTexts;
     private List<string> _namesList = new List<string>();
-    private float _elementNormalizedLenght;
+    private float _elementNormalizedHeight;
     private float _elementWidth;
     private float _elementReuseScrollPoint = 0.3f;
     private int _currElementScrollIndex;
@@ -157,11 +157,11 @@ public class ElementScrollList : MonoBehaviour {
         ) {
             newScrollIndex++;
             CurrElementIndex--;
-            _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y + _elementNormalizedLenght);
+            _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y + _elementNormalizedHeight);
         } else if (_currElementScrollIndex > 0 && _scrollRect.velocity.y < 0f && newPos.y > (1f - (_elementReuseScrollPoint))) {
             newScrollIndex--;
             CurrElementIndex++;
-            _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y - _elementNormalizedLenght);
+            _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y - _elementNormalizedHeight);
         }
         if (newScrollIndex != _currElementScrollIndex) {
             _currElementScrollIndex = newScrollIndex;
@@ -203,8 +203,10 @@ public class ElementScrollList : MonoBehaviour {
             }
         }
 
-        float scrollableLength = _scrollRect.content.rect.height - _scrollRect.viewport.rect.height;
-        _elementNormalizedLenght = (_elements[0].rect.height + _layoutGroup.spacing) /  scrollableLength;
+        Canvas.ForceUpdateCanvases();
+
+        float scrollableHeight = _scrollRect.content.rect.height - _scrollRect.viewport.rect.height;
+        _elementNormalizedHeight = (_elements[0].rect.height + _layoutGroup.spacing) /  scrollableHeight;
     }
 
     public async void ScrollTo(string name) {
@@ -227,11 +229,10 @@ public class ElementScrollList : MonoBehaviour {
 
             PopulateElements();
             int newIndex = _currElementIndex + _currElementScrollIndex;
-            _scrollRect.verticalNormalizedPosition = 1f - _currElementIndex * _elementNormalizedLenght;
-            await UniTask.WaitForEndOfFrame();
-            Canvas.ForceUpdateCanvases();
-            AnimateElements();
+            _scrollRect.verticalNormalizedPosition = 1f - _currElementIndex * _elementNormalizedHeight;
             OnConfirmed?.Invoke(newIndex);
+            await UniTask.DelayFrame(2);
+            AnimateElements();
         }
         enabled = true;
     }
