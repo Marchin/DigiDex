@@ -196,7 +196,7 @@ public class ElementScrollList : MonoBehaviour {
         _elementNormalizedLenght = (_elements[0].rect.height + _layoutGroup.spacing) /  scrollableLength;
     }
 
-    public void ScrollTo(string name) {
+    public async void ScrollTo(string name) {
         enabled = false;
         int index = _namesList.IndexOf(name);
         if (index >= 0) {
@@ -217,6 +217,7 @@ public class ElementScrollList : MonoBehaviour {
             PopulateElements();
             int newIndex = _currElementIndex + _currElementScrollIndex;
             _scrollRect.verticalNormalizedPosition = 1f - _currElementIndex * _elementNormalizedLenght;
+            await UniTask.WaitForEndOfFrame();
             Canvas.ForceUpdateCanvases();
             AnimateElements();
             OnConfirmed?.Invoke(newIndex);
