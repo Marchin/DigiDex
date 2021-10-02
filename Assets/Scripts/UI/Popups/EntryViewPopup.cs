@@ -3,10 +3,17 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+
+public class EntryViewPopupData {
+    public Action Prev;
+    public Action Next;
+    public IDataEntry Entry;
+}
 
 public class EntryViewPopup : Popup {
     [SerializeField] private Image _image = default;
@@ -21,6 +28,12 @@ public class EntryViewPopup : Popup {
     [SerializeField] private Toggle _favoriteButton = default;
     [SerializeField] private Button _evolutionButton = default;
     [SerializeField] private Button _closeButton = default;
+    [SerializeField] private Button _prevButton = default;
+    [SerializeField] private Button _nextButton = default;
+    [SerializeField] private GameObject _nextPrevButtonContainer = default;
+    public event Action<IDataEntry> OnPopulate;
+    private Action _prev;
+    private Action _next;
     private List<AsyncOperationHandle> _dataHandles = new List<AsyncOperationHandle>();
     private EvolutionData _currEvolutionData;
     private IDatabase _db;
@@ -29,7 +42,7 @@ public class EntryViewPopup : Popup {
 
     private void Awake() {
         _evolutionButton.onClick.AddListener(async () => {
-            var popup = await PopupManager.Instance.GetOrLoadPopup<EvolutionsPopup>();
+            var popup = await PopupManager.Instance.GetOrLoadPopup<EvolutionsPopup>(restore: true);
             popup.Populate(_entry, _currEvolutionData);
         });
         _closeButton.onClick.AddListener(() => {
@@ -37,6 +50,8 @@ public class EntryViewPopup : Popup {
                 PopupManager.Instance.Back();
             }
         });
+        _prevButton.onClick.AddListener(() => _prev?.Invoke());
+        _nextButton.onClick.AddListener(() => _next?.Invoke());
 
         _dataToggle.onValueChanged.AddListener(isOn => _dataContent.gameObject.SetActive(isOn));
         _profileToggle.onValueChanged.AddListener(isOn => _profileContent.gameObject.SetActive(isOn));
@@ -50,8 +65,18 @@ public class EntryViewPopup : Popup {
         });
     }
 
-    public void Populate(IDataEntry data) {
-        _entry = data;
+    public void Initialize(Action prev, Action next) {
+        _prev = prev;
+        _next = next;
+        _prevButton.gameObject.SetActive(_prev != null);
+        _nextButton.gameObject.SetActive(_next != null);
+        if (_nextPrevButtonContainer != null) {
+            _nextPrevButtonContainer.SetActive(_prev != null || _next != null);
+        }
+    }
+
+    public void Populate(IDataEntry entry) {
+        _entry = entry;
         _db = ApplicationManager.Instance.GetDatabase(_entry);
 
         if (_cts != null) {
@@ -63,7 +88,7 @@ public class EntryViewPopup : Popup {
         _dataScroll.verticalNormalizedPosition = 1f;
         _profileScroll.verticalNormalizedPosition = 1f;
 
-        switch (data) {
+        switch (entry) {
             case Digimon digimon: {
                 _profile.text = digimon.ProfileData;
                 _favoriteButton.isOn = _db.Favorites.Contains(digimon.Hash);
@@ -95,6 +120,25 @@ public class EntryViewPopup : Popup {
                 _info.Populate(informationData);
                 UniTask.DelayFrame(1).ContinueWith(() => _dataScroll.normalizedPosition = Vector2.up).Forget();
             } break;
+        }
+
+        OnPopulate?.Invoke(_entry);
+    }
+
+    public override object GetRestorationData() {
+        EntryViewPopupData data = new EntryViewPopupData {
+            Prev = _prev,
+            Next = _next,
+            Entry = _entry
+        };
+
+        return data;
+    }
+
+    public override void Restore(object data) {
+        if (data is EntryViewPopupData popupData) {
+            Initialize(popupData.Prev, popupData.Next);
+            Populate(popupData.Entry);
         }
     }
 }

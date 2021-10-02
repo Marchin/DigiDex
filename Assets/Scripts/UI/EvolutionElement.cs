@@ -17,15 +17,16 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
     [SerializeField] private SpriteList _fusionSprites = default;
     private List<AsyncOperationHandle<Sprite>> _handles = new List<AsyncOperationHandle<Sprite>>();
     private CancellationTokenSource _cts;
-    private IDataEntry _entry;
-    public Action<IDataEntry> OnPressed;
+    private Evolution _data;
+    public Action<Evolution> OnPressed;
 
     private void Awake() {
-        _button.onClick.AddListener(() => OnPressed?.Invoke(_entry));
+        _button.onClick.AddListener(() => OnPressed?.Invoke(_data));
     }
 
     public async void Populate(Evolution data) {
-        _entry = data.Entry.FetchEntry();
+        _data = data;
+        IDataEntry entry = data.Entry.FetchEntryData();
 
         if (_cts != null) {
             _cts.Cancel();
@@ -33,10 +34,10 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
         }
         _cts = new CancellationTokenSource();
 
-        _name.text = _entry.Name;
+        _name.text = entry.Name;
 
-        if (_entry.Sprite.RuntimeKeyIsValid()) {
-            AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(_entry.Sprite);
+        if (entry.Sprite.RuntimeKeyIsValid()) {
+            AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(entry.Sprite);
             _handles.Add(spriteHandle);
             await spriteHandle.WithCancellation(_cts.Token).ContinueWith(sprite => {
                 _entryImage.sprite = sprite;
@@ -46,9 +47,9 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
 
         List<UniTask<Sprite>> spritesTasks = new List<UniTask<Sprite>>(data.FusionEntries.Length);
         for (int iFusionID = 0; iFusionID < data.FusionEntries.Length; ++iFusionID) {
-            IDataEntry fusion = data.FusionEntries[iFusionID].FetchEntry();
+            IDataEntry fusion = data.FusionEntries[iFusionID].FetchEntryData();
             
-            if (_entry.Sprite.RuntimeKeyIsValid()) {
+            if (entry.Sprite.RuntimeKeyIsValid()) {
                 AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(fusion.Sprite);
                 _handles.Add(spriteHandle);
                 spritesTasks.Add(spriteHandle.WithCancellation(_cts.Token));
@@ -70,6 +71,9 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
         }
         if (data.Type.HasFlag(EvolutionType.Main)) {
             colors.Add(Color.red);
+        }
+        if (data.Type.HasFlag(EvolutionType.Spirit)) {
+            colors.Add(Color.yellow);
         }
         _evolutionTypeIndicators.Populate(colors);
 

@@ -29,7 +29,7 @@ public class EntryIndex : IEquatable<EntryIndex> {
         Index = index;
     }
 
-    public IDataEntry FetchEntry() {
+    public IDataEntry FetchEntryData() {
         IDataEntry result = ApplicationManager.Instance.GetDatabase(Type.GetType(_typeName))?.EntryList.ElementAt(Index);
 
         return result;

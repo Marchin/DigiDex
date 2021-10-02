@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Globalization;
@@ -90,6 +91,21 @@ public class DatabaseViewPopup : Popup {
 
         _profileButton.onClick.AddListener(() => {
             PopupManager.Instance.GetOrLoadPopup<EntryViewPopup>().ContinueWith(popup => {
+                Action prev = null;
+                Action next = null;
+
+                if (_currEntries.Count() > 1) {
+                    prev = () => {
+                        --_elementScrollList.CurrentIndex;
+                        popup.Populate(SelectedEntry);
+                    };
+                    next = () => {
+                        ++_elementScrollList.CurrentIndex;
+                        popup.Populate(SelectedEntry);
+                    };
+                }
+                
+                popup.Initialize(prev, next);
                 popup.Populate(SelectedEntry);
             });
         });

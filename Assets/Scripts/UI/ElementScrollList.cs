@@ -20,7 +20,7 @@ public class ElementScrollList : MonoBehaviour {
     private float _elementWidth;
     private float _elementReuseScrollPoint = 0.3f;
     private int _currElementScrollIndex;
-    public RectTransform CurrenElement => _elements[_currElementIndex];
+    private RectTransform CurrenElement => _elements[_currElementIndex];
     private bool _fixingListPosition = false;
     private Action<int> OnConfirmed;
     public event Action OnBeginDrag;
@@ -32,13 +32,24 @@ public class ElementScrollList : MonoBehaviour {
         set => _scrollRect.enabled = value;
     }
     private int _currElementIndex;
-    public int CurrElementIndex {
+    private int CurrElementIndex {
         get => _currElementIndex;
         set {
             if (_currElementIndex != value) {
                 _currElementIndex = value;
                 OnSelectedElementChanged?.Invoke(value);
             }
+        }
+    }
+    public int CurrentIndex {
+        get => _currElementScrollIndex + _currElementIndex;
+        set {
+            value = value % _namesList.Count;
+            if (value < 0) {
+                value = _namesList.Count + value;
+            }
+            ScrollTo(_namesList[value]);
+            OnConfirmed?.Invoke(value);
         }
     }
 
