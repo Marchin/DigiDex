@@ -9,13 +9,22 @@ using System.Threading;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
-public class EntryViewPopupData {
-    public Action Prev;
-    public Action Next;
-    public IDataEntry Entry;
-}
-
 public class EntryViewPopup : Popup {
+    public enum Tab {
+        Data,
+        Profile
+    }
+
+    public class PopupData {
+        public Action Prev;
+        public Action Next;
+        public IDataEntry Entry;
+        public Tab CurrTab;
+        public float DataScrollPos;
+        public float ProfileScrollPos;
+    }
+
+
     [SerializeField] private Image _image = default;
     [SerializeField] private TextMeshProUGUI _profile = default;
     [SerializeField] private CustomScrollRect _dataScroll = default;
@@ -39,7 +48,8 @@ public class EntryViewPopup : Popup {
     private IDatabase _db;
     private IDataEntry _entry;
     private CancellationTokenSource _cts;
-
+    private Tab _currTab;
+    
     private void Awake() {
         _evolutionButton.onClick.AddListener(async () => {
             var popup = await PopupManager.Instance.GetOrLoadPopup<EvolutionsPopup>(restore: true);
@@ -53,8 +63,18 @@ public class EntryViewPopup : Popup {
         _prevButton.onClick.AddListener(() => _prev?.Invoke());
         _nextButton.onClick.AddListener(() => _next?.Invoke());
 
-        _dataToggle.onValueChanged.AddListener(isOn => _dataContent.gameObject.SetActive(isOn));
-        _profileToggle.onValueChanged.AddListener(isOn => _profileContent.gameObject.SetActive(isOn));
+        _dataToggle.onValueChanged.AddListener(isOn => {
+            _dataContent.gameObject.SetActive(isOn);
+            if (isOn) {
+                _currTab = Tab.Data;
+            }
+        });
+        _profileToggle.onValueChanged.AddListener(isOn => {
+            _profileContent.gameObject.SetActive(isOn);
+            if (isOn) {
+                _currTab = Tab.Profile;
+            }
+        });
         
         _favoriteButton.onValueChanged.AddListener(isOn => {
             if (isOn) {
@@ -103,17 +123,19 @@ public class EntryViewPopup : Popup {
                             _image.sprite = sprite;
                         }
                     }).Forget();
-                    if (digimon.EvolutionData.RuntimeKeyIsValid()) {
+                }
+
+                if (digimon.EvolutionData.RuntimeKeyIsValid()) {
                         var evolutionHandle = Addressables.LoadAssetAsync<EvolutionData>(digimon.EvolutionData);
                         _dataHandles.Add(evolutionHandle);
                         evolutionHandle.WithCancellation(_cts.Token).ContinueWith(evolutionData => {
-                            if (evolutionData != null) {
-                                _evolutionButton.gameObject.SetActive(true);
-                                _evolutionButton.interactable = (evolutionData.PreEvolutions.Count > 0 || evolutionData.Evolutions.Count > 0);
-                                _currEvolutionData = evolutionData;
-                            }
-                        });
-                    }
+                        if (evolutionData != null) {
+                            _evolutionButton.gameObject.SetActive(true);
+                            _evolutionButton.interactable = (evolutionData.PreEvolutions.Count > 0 || 
+                                evolutionData.Evolutions.Count > 0);
+                            _currEvolutionData = evolutionData;
+                        }
+                    });
                 }
 
                 List<InformationData> informationData = digimon.ExtractInformationData();
@@ -126,19 +148,40 @@ public class EntryViewPopup : Popup {
     }
 
     public override object GetRestorationData() {
-        EntryViewPopupData data = new EntryViewPopupData {
+        PopupData data = new PopupData {
             Prev = _prev,
             Next = _next,
-            Entry = _entry
+            Entry = _entry,
+            CurrTab = _currTab,
+            DataScrollPos = _dataScroll.verticalNormalizedPosition,
+            ProfileScrollPos = _profileScroll.verticalNormalizedPosition
         };
 
         return data;
     }
 
-    public override void Restore(object data) {
-        if (data is EntryViewPopupData popupData) {
+    public async override void Restore(object data) {
+        if (data is PopupData popupData) {
             Initialize(popupData.Prev, popupData.Next);
             Populate(popupData.Entry);
+            await UniTask.DelayFrame(1);
+            Canvas.ForceUpdateCanvases();
+            // Turn both on to adjust scroll
+            _dataContent.gameObject.SetActive(true);
+            _profileScroll.gameObject.SetActive(true);
+            _dataScroll.verticalNormalizedPosition = popupData.DataScrollPos;
+            _profileScroll.verticalNormalizedPosition = popupData.ProfileScrollPos;
+            _currTab = popupData.CurrTab;
+            switch (_currTab) {
+                case Tab.Data: {
+                    _dataToggle.isOn = false;
+                    _dataToggle.isOn = true;
+                } break;
+                case Tab.Profile: {
+                    _profileToggle.isOn = false;
+                    _profileToggle.isOn = true;
+                } break;
+            }
         }
     }
 }
