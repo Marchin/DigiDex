@@ -234,13 +234,13 @@ public class ElementScrollList : MonoBehaviour {
         enabled = true;
     }
 
-    public void ResetScroll() {
+    public async void ResetScroll() {
         _scrollRect.enabled = false;
         _scrollRect.normalizedPosition = Vector2.up;
         _currElementScrollIndex = 0;
         PopulateElements();
 
-        Canvas.ForceUpdateCanvases();
+        await UniTask.DelayFrame(2);
 
         _scrollRect.enabled = true;
         AnimateElements();

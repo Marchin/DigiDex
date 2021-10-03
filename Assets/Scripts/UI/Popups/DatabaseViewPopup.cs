@@ -19,6 +19,7 @@ public class DatabaseViewPopup : Popup {
     [SerializeField] private Button _profileButton = default;
     [SerializeField] private ElementScrollList _elementScrollList = default;
     [SerializeField] private Button _filterButton = default;
+    [SerializeField] private GameObject _loadingWheel = default;
     private CancellationTokenSource _entryDataCTS;
     private List<AsyncOperationHandle> _entryDataHandles = new List<AsyncOperationHandle>();
     private IEnumerable<IDataEntry> _filteredEntries;
@@ -52,11 +53,13 @@ public class DatabaseViewPopup : Popup {
             _selectedEntry = value;
 
             _entryImage.gameObject.SetActive(false);
+            _loadingWheel.SetActive(true);
             if (_selectedEntry != null) {
                 if (_selectedEntry.Sprite.RuntimeKeyIsValid()) {
                     var spriteHandle = Addressables.LoadAssetAsync<Sprite>(_selectedEntry.Sprite);
                     _entryDataHandles.Add(spriteHandle);
                     spriteHandle.WithCancellation(_entryDataCTS.Token).ContinueWith(sprite => {
+                        _loadingWheel.SetActive(false);
                         if (sprite != null) {
                             _entryImage.gameObject.SetActive(true);
                             _entryImage.sprite = sprite;

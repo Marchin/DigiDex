@@ -40,6 +40,7 @@ public class EntryViewPopup : Popup {
     [SerializeField] private Button _prevButton = default;
     [SerializeField] private Button _nextButton = default;
     [SerializeField] private GameObject _nextPrevButtonContainer = default;
+    [SerializeField] private GameObject _loadingWheel = default;
     public event Action<IDataEntry> OnPopulate;
     private Action _prev;
     private Action _next;
@@ -62,6 +63,7 @@ public class EntryViewPopup : Popup {
         });
         _prevButton.onClick.AddListener(() => _prev?.Invoke());
         _nextButton.onClick.AddListener(() => _next?.Invoke());
+        _loadingWheel.SetActive(false);
 
         _dataToggle.onValueChanged.AddListener(isOn => {
             _dataContent.gameObject.SetActive(isOn);
@@ -112,9 +114,12 @@ public class EntryViewPopup : Popup {
         List<InformationData> informationData = entry.ExtractInformationData();
         _info.Populate(informationData);
         if (entry.Sprite.RuntimeKeyIsValid()) {
+            _loadingWheel.SetActive(true);
+            _image.gameObject.SetActive(false);
             var spriteHandle = Addressables.LoadAssetAsync<Sprite>(entry.Sprite);
             _dataHandles.Add(spriteHandle);
             spriteHandle.WithCancellation(_cts.Token).ContinueWith(sprite => {
+                _loadingWheel.SetActive(false);
                 if (sprite != null) {
                     _image.gameObject.SetActive(true);
                     _image.sprite = sprite;
@@ -125,7 +130,6 @@ public class EntryViewPopup : Popup {
         switch (entry) {
             case Digimon digimon: {
                 _profile.text = digimon.ProfileData;
-                _dataToggle.isOn = true;
             
                 if (digimon.EvolutionData.RuntimeKeyIsValid()) {
                     var evolutionHandle = Addressables.LoadAssetAsync<EvolutionData>(digimon.EvolutionData);
@@ -168,9 +172,11 @@ public class EntryViewPopup : Popup {
             Canvas.ForceUpdateCanvases();
             // Turn both on to adjust scroll
             _dataContent.gameObject.SetActive(true);
-            _profileScroll.gameObject.SetActive(true);
+            _profileContent.gameObject.SetActive(true);
             _dataScroll.verticalNormalizedPosition = popupData.DataScrollPos;
             _profileScroll.verticalNormalizedPosition = popupData.ProfileScrollPos;
+            _dataContent.gameObject.SetActive(false);
+            _profileContent.gameObject.SetActive(false);
             _currTab = popupData.CurrTab;
             switch (_currTab) {
                 case Tab.Data: {

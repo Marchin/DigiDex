@@ -66,6 +66,7 @@ public class EvolutionsPopup : Popup {
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private Button _inspectButton = default;
     [SerializeField] private ScrollRect _scroll = default;
+    [SerializeField] private GameObject _loadingWheel = default;
     private List<AsyncOperationHandle> _handles = new List<AsyncOperationHandle>();
     private CancellationTokenSource _cts;
     private CancellationTokenSource _inspectedCTS;
@@ -131,6 +132,7 @@ public class EvolutionsPopup : Popup {
                 }).Forget();
         });
         _closeButton.onClick.AddListener(() => PopupManager.Instance.Back());
+        _loadingWheel.SetActive(false);
     }
 
     public void Populate(IDataEntry entry, EvolutionData evolutionData) {
@@ -167,9 +169,12 @@ public class EvolutionsPopup : Popup {
         _cts = new CancellationTokenSource();
 
         if (SourceEntry.Sprite.RuntimeKeyIsValid()) {
+            _loadingWheel.SetActive(true);
+            _sourceEntryImage.gameObject.SetActive(false);
             AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(SourceEntry.Sprite);
             _handles.Add(spriteHandle);
             spriteHandle.WithCancellation(_cts.Token).ContinueWith(sprite => {
+                _loadingWheel.SetActive(false);
                 _sourceEntryImage.sprite = sprite;
                 _sourceEntryImage.gameObject.SetActive(sprite != null);
             }).SuppressCancellationThrow().Forget();
