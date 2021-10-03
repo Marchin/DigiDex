@@ -17,11 +17,24 @@ public enum EvolutionTab {
 public class EvolutionsPopupData {
     public IDataEntry SourceEntry;
     public EvolutionData EvolutionData;
-    public EvolutionTab Tab;
+    public EvolutionTab CurrTab;
+    public Evolution CurrPreEvolution;
     public Evolution CurrEvolution;
+    public Evolution CurrTabEvolution {
+        get {
+            switch (CurrTab) {
+                case EvolutionTab.From:
+                    return CurrPreEvolution;
+                case EvolutionTab.To:
+                    return CurrEvolution;
+                default:
+                    return null;
+            }
+        }
+    }
     public List<Evolution> CurrEvolutionList {
         get {
-            switch (Tab) {
+            switch (CurrTab) {
                 case EvolutionTab.From:
                     return EvolutionData.PreEvolutions;
                 case EvolutionTab.To:
@@ -56,32 +69,30 @@ public class EvolutionsPopup : Popup {
     private void Awake() {
         _from.onValueChanged.AddListener(isOn => {
             if (isOn && EvolutionData != null) {
+                _popupData.CurrTab = EvolutionTab.From;
                 _toScrollPos = _initialized ? _scroll.verticalNormalizedPosition : 1f;
                 _evolutionList.Populate(EvolutionData.PreEvolutions);
                 for (int i = 0; i < _evolutionList.Elements.Count; ++i) {
                     _evolutionList.Elements[i].OnPressed = entry => OnEvolutionSelected(entry);
                 }
-                Evolution evo = (!_initialized && _popupData.CurrEvolution != null) ?  _popupData.CurrEvolution :
-                    EvolutionData.PreEvolutions[0];
+                Evolution evo = _popupData.CurrPreEvolution ?? _popupData.EvolutionData.PreEvolutions[0];
                 OnEvolutionSelected(evo);
                 Canvas.ForceUpdateCanvases();
                 _scroll.verticalNormalizedPosition = _fromScrollPos;
-                _popupData.Tab = EvolutionTab.From;
             }
         });
         _to.onValueChanged.AddListener(isOn => {
             if (isOn && EvolutionData != null) {
+                _popupData.CurrTab = EvolutionTab.To;
                 _fromScrollPos = _initialized ? _scroll.verticalNormalizedPosition : 1f;
                 _evolutionList.Populate(EvolutionData.Evolutions);
                 for (int i = 0; i < _evolutionList.Elements.Count; ++i) {
                     _evolutionList.Elements[i].OnPressed = entry => OnEvolutionSelected(entry);
                 }
-                Evolution evo = (!_initialized && _popupData.CurrEvolution != null) ?  _popupData.CurrEvolution :
-                    EvolutionData.PreEvolutions[0];
+                Evolution evo = _popupData.CurrEvolution ?? _popupData.EvolutionData.Evolutions[0];
                 OnEvolutionSelected(evo);
                 Canvas.ForceUpdateCanvases();
                 _scroll.verticalNormalizedPosition = _toScrollPos;
-                _popupData.Tab = EvolutionTab.To;
             }
         });
         _inspectButton.onClick.AddListener(() => {
@@ -94,7 +105,7 @@ public class EvolutionsPopup : Popup {
                             int index = _popupData.CurrEvolutionList.IndexOf(_popupData.CurrEvolution);
                             Debug.Assert(index >= 0, "Invalid Evolution");
                             index = UnityUtils.Repeat(--index, _popupData.CurrEvolutionList.Count);
-                            _popupData.CurrEvolution = _popupData.CurrEvolutionList[index];
+                            _popupData.CurrPreEvolution = _popupData.CurrEvolutionList[index];
                             popup.Populate(_popupData.CurrEvolution.Entry.FetchEntryData());
                         };
                         next = () => {
@@ -106,7 +117,7 @@ public class EvolutionsPopup : Popup {
                         };
                     }
                     popup.Initialize(prev, next);
-                    popup.Populate(_popupData.CurrEvolution.Entry.FetchEntryData());
+                    popup.Populate(_popupData.CurrTabEvolution.Entry.FetchEntryData());
                 }).Forget();
         });
         _closeButton.onClick.AddListener(() => PopupManager.Instance.Back());
@@ -124,6 +135,17 @@ public class EvolutionsPopup : Popup {
         _initialized = false;
         _popupData = popupData;
         _sourceEntryName.text = popupData.SourceEntry.Name;
+
+        Evolution initEvolution = null;
+        switch (popupData.CurrTab) {
+            case EvolutionTab.From: {
+                initEvolution = popupData.CurrPreEvolution;
+            } break;
+
+            case EvolutionTab.To: {
+                initEvolution = popupData.CurrEvolution;
+            } break;
+        }
 
         _fromScrollPos = 1f;
         _toScrollPos = 1f;
@@ -146,7 +168,7 @@ public class EvolutionsPopup : Popup {
         _from.gameObject.SetActive(EvolutionData.PreEvolutions.Count > 0);
 
         if (popupData.CurrEvolution != null) {
-            switch (popupData.Tab) {
+            switch (popupData.CurrTab) {
                 case EvolutionTab.From: {
                     _from.isOn = false;
                     _from.isOn = true;
@@ -168,15 +190,25 @@ public class EvolutionsPopup : Popup {
         }
 
         Canvas.ForceUpdateCanvases();
-        int index = _popupData.CurrEvolutionList.IndexOf(_popupData.CurrEvolution);
-        _scroll.SnapTo(_evolutionList.Elements[index].transform as RectTransform);
+
+        if (initEvolution != null) {
+            int index = _popupData.CurrEvolutionList.IndexOf(initEvolution);
+            _scroll.SnapTo(_evolutionList.Elements[index].transform as RectTransform);
+        }
 
         _initialized = true;
     }
 
     private void OnEvolutionSelected(Evolution evolution) {
-        _popupData.CurrEvolution = evolution;
-        IDataEntry entry = _popupData.CurrEvolution.Entry.FetchEntryData();
+        switch (_popupData.CurrTab) {
+            case EvolutionTab.From: {
+                _popupData.CurrPreEvolution = evolution;
+            } break;
+            case EvolutionTab.To: {
+                _popupData.CurrEvolution = evolution;
+            } break;
+        }
+        IDataEntry entry = evolution.Entry.FetchEntryData();
 
         if (_inspectedCTS != null) {
             _inspectedCTS.Cancel();
@@ -195,12 +227,6 @@ public class EvolutionsPopup : Popup {
     }
     
     public override object GetRestorationData() {
-        // EvolutionsPopupData data = new EvolutionsPopupData {
-        //     SourceEntry = _sourceEntry,
-        //     EvolutionData = _evolutionData
-        // };
-
-
         return _popupData;
     }
 
