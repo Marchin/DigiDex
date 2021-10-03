@@ -224,6 +224,10 @@ public class EvolutionsPopup : Popup {
                 _inspectedEntryImage.gameObject.SetActive(sprite != null);
             }).SuppressCancellationThrow().Forget();
         }
+
+        foreach (var element in _evolutionList.Elements) {
+            element.SetSelected(element.Data == evolution);
+        }
     }
     
     public override object GetRestorationData() {
