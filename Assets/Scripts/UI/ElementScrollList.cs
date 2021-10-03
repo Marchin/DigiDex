@@ -216,7 +216,7 @@ public class ElementScrollList : MonoBehaviour {
             if (index < halfElementsIndex) {
                 _currElementIndex = index;
             } else if (((_namesList.Count - 1) - index) < halfElementsIndex) {
-                _currElementIndex = _elements.Length - (_namesList.Count - index);
+                _currElementIndex = Mathf.Min(_elements.Length, _namesList.Count) - (_namesList.Count - index);
             } else {
                 _currElementIndex = halfElementsIndex;
             }
