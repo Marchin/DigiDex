@@ -31,6 +31,16 @@ public class EvolutionsPopupData {
                     return null;
             }
         }
+        set {
+            switch (CurrTab) {
+                case EvolutionTab.From: {
+                    CurrPreEvolution = value;
+                } break;
+                case EvolutionTab.To: {
+                    CurrEvolution = value;
+                } break;
+            }
+        }
     }
     public List<Evolution> CurrEvolutionList {
         get {
@@ -102,18 +112,18 @@ public class EvolutionsPopup : Popup {
                     Action next = null;
                     if (_popupData.CurrEvolutionList.Count > 1) {
                         prev = () => {
-                            int index = _popupData.CurrEvolutionList.IndexOf(_popupData.CurrEvolution);
+                            int index = _popupData.CurrEvolutionList.IndexOf(_popupData.CurrTabEvolution);
                             Debug.Assert(index >= 0, "Invalid Evolution");
                             index = UnityUtils.Repeat(--index, _popupData.CurrEvolutionList.Count);
-                            _popupData.CurrPreEvolution = _popupData.CurrEvolutionList[index];
-                            popup.Populate(_popupData.CurrEvolution.Entry.FetchEntryData());
+                            _popupData.CurrTabEvolution = _popupData.CurrEvolutionList[index];
+                            popup.Populate(_popupData.CurrTabEvolution.Entry.FetchEntryData());
                         };
                         next = () => {
-                            int index = _popupData.CurrEvolutionList.IndexOf(_popupData.CurrEvolution);
+                            int index = _popupData.CurrEvolutionList.IndexOf(_popupData.CurrTabEvolution);
                             Debug.Assert(index >= 0, "Invalid Evolution");
                             index = UnityUtils.Repeat(++index, _popupData.CurrEvolutionList.Count);
-                            _popupData.CurrEvolution = _popupData.CurrEvolutionList[index];
-                            popup.Populate(_popupData.CurrEvolution.Entry.FetchEntryData());
+                            _popupData.CurrTabEvolution = _popupData.CurrEvolutionList[index];
+                            popup.Populate(_popupData.CurrTabEvolution.Entry.FetchEntryData());
                         };
                     }
                     popup.Initialize(prev, next);
