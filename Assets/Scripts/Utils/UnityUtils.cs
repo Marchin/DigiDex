@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public static class UnityUtils {
@@ -50,5 +51,22 @@ public static class UnityUtils {
         }
 
         return component;
+    }
+
+    public static int Repeat(int n, int count) {
+        int result = n % count;
+        if (result < 0) {
+            result = count + result;
+        }
+        return result;
+    }
+
+    public static void SnapTo(this ScrollRect scroll, RectTransform target)
+    {
+        Canvas.ForceUpdateCanvases();
+
+        scroll.content.anchoredPosition =
+            (Vector2)scroll.transform.InverseTransformPoint(scroll.content.position)
+            - (Vector2)scroll.transform.InverseTransformPoint(target.position);
     }
 }

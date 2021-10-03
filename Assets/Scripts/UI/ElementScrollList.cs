@@ -44,10 +44,7 @@ public class ElementScrollList : MonoBehaviour {
     public int CurrentIndex {
         get => _currElementScrollIndex + _currElementIndex;
         set {
-            value = value % _namesList.Count;
-            if (value < 0) {
-                value = _namesList.Count + value;
-            }
+            value = UnityUtils.Repeat(value, _namesList.Count);
             ScrollTo(_namesList[value]);
             OnConfirmed?.Invoke(value);
         }
