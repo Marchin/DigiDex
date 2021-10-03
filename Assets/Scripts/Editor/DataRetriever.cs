@@ -703,7 +703,7 @@ public static class DataRetriever {
                             }
                             
                             EntryIndex digimonEntry = new EntryIndex(typeof(Digimon), digimonIndex);
-                            Evolution method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType, FusionEntries = new EntryIndex[0] };
+                            Evolution method = new Evolution { Entry = digimonEntry, DebugName = name, Types = baseEvolutionType, FusionEntries = new EntryIndex[0] };
 
                             bool isWarp = false;
                             bool oneOrMoreOptionals = false;
@@ -719,11 +719,11 @@ public static class DataRetriever {
                                     if (isOptional) {
                                         // The first optional means that the digimon can evolve with the base element alone and we always record it
                                         // Otherwise we only record the method if it has any changes from the base element
-                                        if (!oneOrMoreOptionals || (method.Type != baseEvolutionType)) {
+                                        if (!oneOrMoreOptionals || (method.Types != baseEvolutionType)) {
                                             evolutionMethods.Add(method);
                                             oneOrMoreOptionals = true;
                                         }
-                                        method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
+                                        method = new Evolution { Entry = digimonEntry, DebugName = name, Types = baseEvolutionType };
                                         
                                         if (siblingNode.Name == "b") {
                                             // skip "without" since we already parsed it
@@ -742,28 +742,28 @@ public static class DataRetriever {
                                         if (siblingNode.InnerText.Contains("Digimental")) {
                                             // Record fusion in the case of DigimonA(with DigimonB or NotDigimon)
                                             RecordConcatenatedFusions();
-                                            method.Type |= EvolutionType.Armor;
+                                            method.Types |= EvolutionType.Armor;
                                             CheckMain(ref method, siblingNode);
                                             evolutionMethods.Add(method);
-                                            method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
+                                            method = new Evolution { Entry = digimonEntry, DebugName = name, Types = baseEvolutionType };
                                         } else if (siblingNode.InnerText.Contains("Spirit")) {
                                             // Record fusion in the case of DigimonA(with DigimonB or NotDigimon)
                                             RecordConcatenatedFusions();
-                                            method.Type |= EvolutionType.Spirit;
+                                            method.Types |= EvolutionType.Spirit;
                                             CheckMain(ref method, siblingNode);
                                             evolutionMethods.Add(method);
-                                            method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
+                                            method = new Evolution { Entry = digimonEntry, DebugName = name, Types = baseEvolutionType };
                                         } else if (siblingNode.InnerText.Trim() == "Slide Evolution") {
                                             // Record fusion in the case of DigimonA(with DigimonB or NotDigimon)
                                             RecordConcatenatedFusions();
-                                            method.Type |= EvolutionType.Side;
+                                            method.Types |= EvolutionType.Side;
                                             CheckMain(ref method, siblingNode);
                                             evolutionMethods.Add(method);
-                                            method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
+                                            method = new Evolution { Entry = digimonEntry, DebugName = name, Types = baseEvolutionType };
                                         } else if (siblingNode.Name == "b" || siblingNode.Name == "a") {
                                             int fusionIndex = digimonDB.Digimons.FindIndex(d => d.Name == siblingNode.InnerText);
                                             if (fusionIndex > 0) {
-                                                method.Type |= EvolutionType.Fusion;
+                                                method.Types |= EvolutionType.Fusion;
                                                 EntryIndex fusionEntry = new EntryIndex(
                                                     typeof(Digimon), 
                                                     fusionIndex
@@ -780,12 +780,12 @@ public static class DataRetriever {
                                                 recordFusionsTogether = true;
                                             }
                                         } else if (siblingNode.InnerText.Contains(')')) {
-                                            if (method.Type != baseEvolutionType) {
+                                            if (method.Types != baseEvolutionType) {
                                                 // Record fusion in the case of DigimonA(with DigimonB or NotDigimon)
                                                 RecordConcatenatedFusions();
                                                 RecordFuseRemanents();
                                                 evolutionMethods.Add(method);
-                                                method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
+                                                method = new Evolution { Entry = digimonEntry, DebugName = name, Types = baseEvolutionType };
                                             }
                                             break;
                                         }
@@ -794,7 +794,7 @@ public static class DataRetriever {
 
                                         void CheckMain(ref Evolution evo, XmlNode node) {
                                             if (node.Name != "b") {
-                                                evo.Type &= ~EvolutionType.Main;
+                                                evo.Types &= ~EvolutionType.Main;
                                             }
                                         }
 
@@ -803,24 +803,24 @@ public static class DataRetriever {
                                                 if (fusionIDs.Count > 0) {
                                                     method.FusionEntries = fusionIDs.Select(tuple => tuple.index).ToArray();
                                                     if (!fusionIDs[0].isMain) {
-                                                        method.Type &= ~EvolutionType.Main;
+                                                        method.Types &= ~EvolutionType.Main;
                                                     }
                                                     fusionIDs.Clear();
                                                     evolutionMethods.Add(method);
-                                                    method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType };
+                                                    method = new Evolution { Entry = digimonEntry, DebugName = name, Types = baseEvolutionType };
                                                 }
                                                 recordFusionsTogether = false;
                                             }
                                             if (recordFusionsSeparated) {
                                                 for (int iFusionID = 0; iFusionID < fusionIDs.Count; ++iFusionID) {
                                                     method.FusionEntries = new EntryIndex[] { fusionIDs[iFusionID].index };
-                                                    method.Type = baseEvolutionType;
+                                                    method.Types = baseEvolutionType;
                                                     if (!fusionIDs[iFusionID].isMain) {
-                                                        method.Type &= ~EvolutionType.Main;
+                                                        method.Types &= ~EvolutionType.Main;
                                                     }
-                                                    method.Type |= EvolutionType.Fusion;
+                                                    method.Types |= EvolutionType.Fusion;
                                                     evolutionMethods.Add(method);
-                                                    method = new Evolution { Entry = digimonEntry, DebugName = name, Type = baseEvolutionType | EvolutionType.Fusion };
+                                                    method = new Evolution { Entry = digimonEntry, DebugName = name, Types = baseEvolutionType | EvolutionType.Fusion };
                                                 }
                                                 fusionIDs.Clear();
                                                 recordFusionsSeparated = false;
@@ -834,7 +834,7 @@ public static class DataRetriever {
                                         if (fusionIDs.Count > 0) {
                                             method.FusionEntries = fusionIDs.Select(tuple => tuple.index).ToArray();
                                             if (!fusionIDs[0].isMain) {
-                                                method.Type &= ~EvolutionType.Main;
+                                                method.Types &= ~EvolutionType.Main;
                                             }
                                         }
                                     }
@@ -843,14 +843,14 @@ public static class DataRetriever {
                                 siblingNode = siblingNode?.NextSibling;
                             }
 
-                            if (evolutionMethods.Count == 0 || (method.Type != baseEvolutionType)) {
+                            if (evolutionMethods.Count == 0 || (method.Types != baseEvolutionType)) {
                                 evolutionMethods.Add(method);
                             }
 
                             for (int iMethod = 0; iMethod < evolutionMethods.Count; ++iMethod) {
                                 // Warp means the an evolution stage gets skipped independent of the method
                                 if (isWarp) {
-                                    evolutionMethods[iMethod].Type |= EvolutionType.Warp;
+                                    evolutionMethods[iMethod].Types |= EvolutionType.Warp;
                                 }
                                 evolutions.Add(evolutionMethods[iMethod]);
                             }

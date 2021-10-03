@@ -65,6 +65,7 @@ public class EvolutionsPopup : Popup {
     [SerializeField] private Toggle _to = default;
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private Button _inspectButton = default;
+    [SerializeField] private Button _glossaryButton = default;
     [SerializeField] private ScrollRect _scroll = default;
     [SerializeField] private GameObject _loadingWheel = default;
     private List<AsyncOperationHandle> _handles = new List<AsyncOperationHandle>();
@@ -131,7 +132,9 @@ public class EvolutionsPopup : Popup {
                     popup.Populate(_popupData.CurrTabEvolution.Entry.FetchEntryData());
                 }).Forget();
         });
-        _closeButton.onClick.AddListener(() => PopupManager.Instance.Back());
+        _glossaryButton.onClick.AddListener(() =>
+            PopupManager.Instance.GetOrLoadPopup<EvolutionGlossaryPopup>().Forget());
+        _closeButton.onClick.AddListener(PopupManager.Instance.Back);
         _loadingWheel.SetActive(false);
     }
 

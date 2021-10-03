@@ -60,26 +60,7 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
             }
         }
 
-        List<Color> colors = new List<Color>();
-        if (data.Type.HasFlag(EvolutionType.Warp)) {
-            colors.Add(new Color(1f, 0.6f, 0f));
-        }
-        if (data.Type.HasFlag(EvolutionType.Armor)) {
-            colors.Add(Color.cyan);
-        }
-        if (data.Type.HasFlag(EvolutionType.Side)) {
-            colors.Add(Color.magenta);
-        }
-        if (data.Type.HasFlag(EvolutionType.Fusion)) {
-            colors.Add(Color.green);
-        }
-        if (data.Type.HasFlag(EvolutionType.Main)) {
-            colors.Add(Color.red);
-        }
-        if (data.Type.HasFlag(EvolutionType.Spirit)) {
-            colors.Add(Color.yellow);
-        }
-        _evolutionTypeIndicators.Populate(colors);
+        _evolutionTypeIndicators.Populate(data.GetEvolutionColors());
 
         Sprite[] sprites = await UniTask.WhenAll(spritesTasks);
         _fusionSprites.Populate(sprites.ToList());

@@ -110,8 +110,10 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     }
 
     public void SaveFavorites() {
-        string jsonData = JsonConvert.SerializeObject(_favorites.Select(h => h.ToString()));
-        PlayerPrefs.SetString(FavDigimonPref, jsonData);
+        if (_favorites != null) {
+            string jsonData = JsonConvert.SerializeObject(_favorites.Select(h => h.ToString()));
+            PlayerPrefs.SetString(FavDigimonPref, jsonData);
+        }
     }
 
     private HashSet<Hash128> LoadFavorites() {

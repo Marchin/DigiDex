@@ -56,11 +56,7 @@ public class EntryViewPopup : Popup {
             var popup = await PopupManager.Instance.GetOrLoadPopup<EvolutionsPopup>(restore: true);
             popup.Populate(_entry, _currEvolutionData);
         });
-        _closeButton.onClick.AddListener(() => {
-            if (PopupManager.Instance.ActivePopup == this) {
-                PopupManager.Instance.Back();
-            }
-        });
+        _closeButton.onClick.AddListener(PopupManager.Instance.Back);
         _prevButton.onClick.AddListener(() => _prev?.Invoke());
         _nextButton.onClick.AddListener(() => _next?.Invoke());
         _loadingWheel.SetActive(false);

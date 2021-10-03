@@ -16,7 +16,7 @@ public class FilterPopup : Popup {
     private Action<Dictionary<string, FilterData>, Dictionary<string, ToggleFilterData>> ApplyCallback;
 
     private void Awake() {
-        _closeButton.onClick.AddListener(() => { PopupManager.Instance.Back(); });
+        _closeButton.onClick.AddListener(PopupManager.Instance.Back);
         _applyButton.onClick.AddListener(() => {
             ApplyCallback?.Invoke(_filters, _toggles);
             PopupManager.Instance.Back();
