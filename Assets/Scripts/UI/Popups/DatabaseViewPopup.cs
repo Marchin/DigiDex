@@ -127,6 +127,7 @@ public class DatabaseViewPopup : Popup {
                     _profileButton.gameObject.SetActive(true);
                 } else {
                     SelectedEntry = null;
+                    _profileButton.gameObject.SetActive(false);
                 }
             }
         );
