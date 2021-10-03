@@ -107,28 +107,30 @@ public class EntryViewPopup : Popup {
 
         _dataScroll.verticalNormalizedPosition = 1f;
         _profileScroll.verticalNormalizedPosition = 1f;
+    
+        _favoriteButton.isOn = _db.Favorites.Contains(entry.Hash);
+        List<InformationData> informationData = entry.ExtractInformationData();
+        _info.Populate(informationData);
+        if (entry.Sprite.RuntimeKeyIsValid()) {
+            var spriteHandle = Addressables.LoadAssetAsync<Sprite>(entry.Sprite);
+            _dataHandles.Add(spriteHandle);
+            spriteHandle.WithCancellation(_cts.Token).ContinueWith(sprite => {
+                if (sprite != null) {
+                    _image.gameObject.SetActive(true);
+                    _image.sprite = sprite;
+                }
+            }).Forget();
+        }
 
         switch (entry) {
             case Digimon digimon: {
                 _profile.text = digimon.ProfileData;
-                _favoriteButton.isOn = _db.Favorites.Contains(digimon.Hash);
                 _dataToggle.isOn = true;
-                
-                if (digimon.Sprite.RuntimeKeyIsValid()) {
-                    var spriteHandle = Addressables.LoadAssetAsync<Sprite>(digimon.Sprite);
-                    _dataHandles.Add(spriteHandle);
-                    spriteHandle.WithCancellation(_cts.Token).ContinueWith(sprite => {
-                        if (sprite != null) {
-                            _image.gameObject.SetActive(true);
-                            _image.sprite = sprite;
-                        }
-                    }).Forget();
-                }
-
+            
                 if (digimon.EvolutionData.RuntimeKeyIsValid()) {
-                        var evolutionHandle = Addressables.LoadAssetAsync<EvolutionData>(digimon.EvolutionData);
-                        _dataHandles.Add(evolutionHandle);
-                        evolutionHandle.WithCancellation(_cts.Token).ContinueWith(evolutionData => {
+                    var evolutionHandle = Addressables.LoadAssetAsync<EvolutionData>(digimon.EvolutionData);
+                    _dataHandles.Add(evolutionHandle);
+                    evolutionHandle.WithCancellation(_cts.Token).ContinueWith(evolutionData => {
                         if (evolutionData != null) {
                             _evolutionButton.gameObject.SetActive(true);
                             _evolutionButton.interactable = (evolutionData.PreEvolutions.Count > 0 || 
@@ -137,12 +139,10 @@ public class EntryViewPopup : Popup {
                         }
                     });
                 }
-
-                List<InformationData> informationData = digimon.ExtractInformationData();
-                _info.Populate(informationData);
-                UniTask.DelayFrame(1).ContinueWith(() => _dataScroll.normalizedPosition = Vector2.up).Forget();
             } break;
         }
+
+        UniTask.DelayFrame(1).ContinueWith(() => _dataScroll.normalizedPosition = Vector2.up).Forget();
 
         OnPopulate?.Invoke(_entry);
     }
