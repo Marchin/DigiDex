@@ -50,4 +50,8 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         Debug.LogError($"{type} does not implement IDataEntry");
         return null;
     }
+    
+    private void OnApplicationQuit() {
+        _centralDB.DigimonDB.SaveFavorites();
+    }
 }
