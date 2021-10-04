@@ -6,6 +6,10 @@ using System;
 using System.Collections.Generic;
 
 public class ElementScrollList : MonoBehaviour {
+    // Delay for populating the button list and being good to animate
+    // We already tried forcing a canvas update and/or waiting until end of frame
+    // This was the most consistent
+    public const int FrameDelayToAnimateList = 2;
     [SerializeField] private float _scrollAnimationOffset = 550f;
     [SerializeField] private float _scrollAnimationScale = 0.2f;
     [SerializeField] private float _scrollCenteringSpeedMul = 2f;
@@ -98,7 +102,7 @@ public class ElementScrollList : MonoBehaviour {
         _scrollRect.normalizedPosition = Vector2.up;
 
         // HACK: If we don't wait these frames the elements don't get properly animated
-        await UniTask.DelayFrame(2);
+        await UniTask.DelayFrame(FrameDelayToAnimateList);
         AnimateElements();
     }
 
@@ -228,7 +232,7 @@ public class ElementScrollList : MonoBehaviour {
             int newIndex = _currElementIndex + _currElementScrollIndex;
             _scrollRect.verticalNormalizedPosition = 1f - _currElementIndex * _elementNormalizedHeight;
             OnConfirmed?.Invoke(newIndex);
-            await UniTask.DelayFrame(2);
+            await UniTask.DelayFrame(FrameDelayToAnimateList);
             AnimateElements();
         }
         enabled = true;
@@ -240,7 +244,7 @@ public class ElementScrollList : MonoBehaviour {
         _currElementScrollIndex = 0;
         PopulateElements();
 
-        await UniTask.DelayFrame(2);
+        await UniTask.DelayFrame(FrameDelayToAnimateList);
 
         _scrollRect.enabled = true;
         AnimateElements();

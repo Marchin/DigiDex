@@ -27,4 +27,12 @@ public class EvolutionGlossaryPopup : Popup {
 
         _closeButton.onClick.AddListener(PopupManager.Instance.Back);
     }
+
+    
+    public override object GetRestorationData() {
+        return null;
+    }
+
+    public override void Restore(object data) {
+    }
 }

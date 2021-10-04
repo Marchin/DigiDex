@@ -1495,6 +1495,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Vertical: 0
+  FullScreen: 0
   _applyButton: {fileID: 7058217830665740898}
   _clearButton: {fileID: 7093342316450901032}
   _closeButton: {fileID: 1717143074517277255}
@@ -3982,7 +3983,7 @@ PrefabInstance:
     - target: {fileID: 6080466428067014785, guid: a72097bba0445c641b72399f00ea77e1,
         type: 3}
       propertyPath: m_Name
-      value: Filter Popup2
+      value: Filter Popup
       objectReference: {fileID: 0}
     - target: {fileID: 7307732864059180454, guid: a72097bba0445c641b72399f00ea77e1,
         type: 3}

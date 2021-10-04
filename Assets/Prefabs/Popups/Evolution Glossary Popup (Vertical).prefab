@@ -515,6 +515,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Vertical: 1
+  FullScreen: 0
   _list: {fileID: 8622672086708334604}
   _closeButton: {fileID: 5570208025377577497}
 --- !u!1001 &9005943940841052744

@@ -2772,6 +2772,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Vertical: 1
+  FullScreen: 0
   _applyButton: {fileID: 2768692908630855368}
   _clearButton: {fileID: 5737616842368352879}
   _closeButton: {fileID: 5883285065007969179}

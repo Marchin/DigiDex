@@ -3,8 +3,15 @@ using UnityEngine.UI;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using FilterCallback = System.Action<System.Collections.Generic.Dictionary<string, FilterData>, System.Collections.Generic.Dictionary<string, ToggleFilterData>>;
 
 public class FilterPopup : Popup {
+    class PopupData {
+        public Dictionary<string, FilterData> Filters;
+        public Dictionary<string, ToggleFilterData> Toggles;
+        public FilterCallback ApplyCallback;
+    }
+
     [SerializeField] private Button _applyButton = default;
     [SerializeField] private Button _clearButton = default;
     [SerializeField] private Button _closeButton = default;
@@ -13,7 +20,7 @@ public class FilterPopup : Popup {
     [SerializeField] private ToggleList _toggleList = default;
     private Dictionary<string, FilterData> _filters;
     private Dictionary<string, ToggleFilterData> _toggles;
-    private Action<Dictionary<string, FilterData>, Dictionary<string, ToggleFilterData>> ApplyCallback;
+    private FilterCallback ApplyCallback;
 
     private void Awake() {
         _closeButton.onClick.AddListener(PopupManager.Instance.Back);
@@ -43,7 +50,7 @@ public class FilterPopup : Popup {
     public void Populate(
         Dictionary<string, FilterData> filters,
         Dictionary<string, ToggleFilterData> toggles,
-        Action<Dictionary<string, FilterData>, Dictionary<string, ToggleFilterData>> applyCallback
+        FilterCallback applyCallback
     ) {
         ApplyCallback = applyCallback;
 
@@ -66,5 +73,24 @@ public class FilterPopup : Popup {
 
         _filterEntriesList.gameObject.SetActive(false);
         gameObject.SetActive(true);
+    }
+
+    public override object GetRestorationData() {
+        PopupData data = new PopupData {
+            Filters = _filters,
+            Toggles = _toggles,
+            ApplyCallback = this.ApplyCallback
+        };  
+
+        return data;
+    }
+
+    public override void Restore(object data) {
+        if (data is PopupData popupData) {
+            Populate(
+                popupData.Filters, 
+                popupData.Toggles, 
+                popupData.ApplyCallback);
+        }
     }
 }

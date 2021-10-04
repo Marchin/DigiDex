@@ -15,7 +15,7 @@ public class EvolutionsPopup : Popup {
         To
     }
 
-    public class EvolutionsPopupData {
+    public class PopupData {
         public IDataEntry SourceEntry;
         public EvolutionData EvolutionData;
         public Tab CurrTab;
@@ -76,7 +76,7 @@ public class EvolutionsPopup : Popup {
     private float _fromScrollPos = 1f;
     private float _toScrollPos = 1f;
     private bool _initialized = false;
-    private EvolutionsPopupData _popupData = new EvolutionsPopupData();
+    private PopupData _popupData = new PopupData();
 
     private void Awake() {
         _from.onValueChanged.AddListener(isOn => {
@@ -118,14 +118,16 @@ public class EvolutionsPopup : Popup {
                             Debug.Assert(index >= 0, "Invalid Evolution");
                             index = UnityUtils.Repeat(--index, _popupData.CurrEvolutionList.Count);
                             _popupData.CurrTabEvolution = _popupData.CurrEvolutionList[index];
-                            popup.Populate(_popupData.CurrTabEvolution.Entry.FetchEntryData());
+                            EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
+                            activePopupInstance?.Populate(_popupData.CurrTabEvolution.Entry.FetchEntryData());
                         };
                         next = () => {
                             int index = _popupData.CurrEvolutionList.IndexOf(_popupData.CurrTabEvolution);
                             Debug.Assert(index >= 0, "Invalid Evolution");
                             index = UnityUtils.Repeat(++index, _popupData.CurrEvolutionList.Count);
                             _popupData.CurrTabEvolution = _popupData.CurrEvolutionList[index];
-                            popup.Populate(_popupData.CurrTabEvolution.Entry.FetchEntryData());
+                            EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
+                            activePopupInstance?.Populate(_popupData.CurrTabEvolution.Entry.FetchEntryData());
                         };
                     }
                     popup.Initialize(prev, next);
@@ -139,14 +141,14 @@ public class EvolutionsPopup : Popup {
     }
 
     public void Populate(IDataEntry entry, EvolutionData evolutionData) {
-        var popupData = new EvolutionsPopupData {
+        var popupData = new PopupData {
             SourceEntry = entry,
             EvolutionData = evolutionData,
         };
         Populate(popupData);
     }
 
-    public void Populate(EvolutionsPopupData popupData) {
+    public void Populate(PopupData popupData) {
         _initialized = false;
         _popupData = popupData;
         _sourceEntryName.text = popupData.SourceEntry.Name;
@@ -253,7 +255,7 @@ public class EvolutionsPopup : Popup {
     }
 
     public override void Restore(object data) {
-        if (data is EvolutionsPopupData popupData) {
+        if (data is PopupData popupData) {
             Populate(popupData);
         }
     }

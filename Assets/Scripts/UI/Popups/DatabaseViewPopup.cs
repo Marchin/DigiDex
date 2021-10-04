@@ -12,6 +12,14 @@ using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 
 public class DatabaseViewPopup : Popup {
+    public class PopupData {
+        public Dictionary<string, FilterData> Filters;
+        public Dictionary<string, ToggleFilterData> Toggles;
+        public string LastQuery;
+        public IDatabase DB;
+        public string SelectedEntry;
+    }
+
     [SerializeField] private Image _entryImage = default;
     [SerializeField] private TMP_InputField _searchInput = default;
     [SerializeField] private Button _clearSearch = default;
@@ -100,11 +108,13 @@ public class DatabaseViewPopup : Popup {
                 if (_currEntries.Count() > 1) {
                     prev = () => {
                         --_elementScrollList.CurrentIndex;
-                        popup.Populate(SelectedEntry);
+                        EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
+                        activePopupInstance?.Populate(SelectedEntry);
                     };
                     next = () => {
                         ++_elementScrollList.CurrentIndex;
-                        popup.Populate(SelectedEntry);
+                        EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
+                        activePopupInstance?.Populate(SelectedEntry);
                     };
                 }
                 
@@ -183,5 +193,29 @@ public class DatabaseViewPopup : Popup {
         _clearSearch.gameObject.SetActive(!string.IsNullOrEmpty(query));
         _searchIcon.SetActive(string.IsNullOrEmpty(query));
         RefreshList();
+    }
+
+    public override object GetRestorationData() {
+        PopupData data = new PopupData {
+            Filters = _filters,
+            Toggles = _toggles,
+            LastQuery = _lastQuery,
+            DB = _db,
+            SelectedEntry = SelectedEntry.Name
+        };  
+
+        return data;
+    }
+
+    public async override void Restore(object data) {
+        if (data is PopupData popupData) {
+            Populate(popupData.DB);
+            _filters = popupData.Filters;
+            _toggles = popupData.Toggles;
+            _lastQuery = popupData.LastQuery;
+            ReApplyFilterAndRefresh();
+            await UniTask.DelayFrame(ElementScrollList.FrameDelayToAnimateList + 1);
+            _elementScrollList.ScrollTo(popupData.SelectedEntry);
+        }
     }
 }
