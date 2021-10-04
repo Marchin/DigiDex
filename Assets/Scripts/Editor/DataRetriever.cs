@@ -151,7 +151,7 @@ public static class DataRetriever {
                             // Remove the "Japanese/English" Toggle
                             profileNode.RemoveChild(profileNode.FirstChild);
                         }
-                        digimonData.ProfileData = profileNode.InnerText;
+                        digimonData.Profile = profileNode.InnerText;
                     } else {
                         Debug.Log($"No profile found for {digimonNameSafe}");
                     }

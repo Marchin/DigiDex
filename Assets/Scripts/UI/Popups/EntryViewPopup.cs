@@ -106,6 +106,7 @@ public class EntryViewPopup : Popup {
         _dataScroll.verticalNormalizedPosition = 1f;
         _profileScroll.verticalNormalizedPosition = 1f;
     
+        _profile.text = _entry.Profile;
         _favoriteButton.isOn = _db.Favorites.Contains(entry.Hash);
         List<InformationData> informationData = entry.ExtractInformationData();
         _info.Populate(informationData);
@@ -123,23 +124,19 @@ public class EntryViewPopup : Popup {
             }).Forget();
         }
 
-        switch (entry) {
-            case Digimon digimon: {
-                _profile.text = digimon.ProfileData;
-            
-                if (digimon.EvolutionData.RuntimeKeyIsValid()) {
-                    var evolutionHandle = Addressables.LoadAssetAsync<EvolutionData>(digimon.EvolutionData);
-                    _dataHandles.Add(evolutionHandle);
-                    evolutionHandle.WithCancellation(_cts.Token).ContinueWith(evolutionData => {
-                        if (evolutionData != null) {
-                            _evolutionButton.gameObject.SetActive(true);
-                            _evolutionButton.interactable = (evolutionData.PreEvolutions.Count > 0 || 
-                                evolutionData.Evolutions.Count > 0);
-                            _currEvolutionData = evolutionData;
-                        }
-                    });
-                }
-            } break;
+        if (entry is IEvolvable evolvable) {
+            if (evolvable.EvolutionDataRef.RuntimeKeyIsValid()) {
+                var evolutionHandle = Addressables.LoadAssetAsync<EvolutionData>(evolvable.EvolutionDataRef);
+                _dataHandles.Add(evolutionHandle);
+                evolutionHandle.WithCancellation(_cts.Token).ContinueWith(evolutionData => {
+                    if (evolutionData != null) {
+                        _evolutionButton.gameObject.SetActive(true);
+                        _evolutionButton.interactable = (evolutionData.PreEvolutions.Count > 0 || 
+                            evolutionData.Evolutions.Count > 0);
+                        _currEvolutionData = evolutionData;
+                    }
+                });
+            }
         }
 
         UniTask.DelayFrame(1).ContinueWith(() => _dataScroll.normalizedPosition = Vector2.up).Forget();

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.AddressableAssets;
 using System.Collections.Generic;
 
@@ -13,24 +14,35 @@ public class AssetReferenceDigimon : AssetReferenceT<Digimon> {
     public AssetReferenceDigimon(string guid) : base(guid) {}
 }
 
-public class Digimon : ScriptableObject, IDataEntry {
+public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
     [SerializeField] private string _name;
-    [SerializeField] private  AssetReferenceAtlasedSprite _sprite;
-    [SerializeField] private  Hash128 _hash;
+    [FormerlySerializedAs("ProfileData")]
+    [SerializeField] private string _profile;
+    [FormerlySerializedAs("EvolutionData")]
+    [SerializeField] private AssetReferenceEvolutionData _evolutionDataRef;
+    [SerializeField] private AssetReferenceAtlasedSprite _sprite;
+    [SerializeField] private Hash128 _hash;
     public string Name {
         get => _name;
         set => _name = value;
     }
+    public string Profile {
+        get => _profile;
+        set => _profile = value;
+    }
     public AssetReferenceAtlasedSprite Sprite {
         get => _sprite;
         set => _sprite = value;
+    }
+    public AssetReferenceEvolutionData EvolutionDataRef {
+        get => _evolutionDataRef;
+        set => _evolutionDataRef = value;
     }
     public Hash128 Hash  {
         get => _hash;
         set => _hash = value;
     }
     
-    public string ProfileData;
     public List<int> AttributeIDs;
     public List<int> FieldIDs;
     public List<int> TypeIDs;

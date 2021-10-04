@@ -6,9 +6,14 @@ using UnityEngine.AddressableAssets;
 
 public interface IDataEntry {
     string Name { get; set; }
+    string Profile { get; set; }
     AssetReferenceAtlasedSprite Sprite { get; set; }
     Hash128 Hash { get; set; }
     List<InformationData> ExtractInformationData();
+}
+
+public interface IEvolvable {
+    AssetReferenceEvolutionData EvolutionDataRef { get; set; }
 }
 
 public interface IDatabase {
