@@ -184,10 +184,4 @@ public class DatabaseViewPopup : Popup {
         _searchIcon.SetActive(string.IsNullOrEmpty(query));
         RefreshList();
     }
-
-    private void Update() {
-        if (Input.GetKeyDown(KeyCode.Escape)) {
-            PopupManager.Instance.Back();
-        }
-    }
 }

@@ -9,54 +9,54 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Cysharp.Threading.Tasks;
 
-public enum EvolutionTab {
-    From,
-    To
-}
-
-public class EvolutionsPopupData {
-    public IDataEntry SourceEntry;
-    public EvolutionData EvolutionData;
-    public EvolutionTab CurrTab;
-    public Evolution CurrPreEvolution;
-    public Evolution CurrEvolution;
-    public Evolution CurrTabEvolution {
-        get {
-            switch (CurrTab) {
-                case EvolutionTab.From:
-                    return CurrPreEvolution;
-                case EvolutionTab.To:
-                    return CurrEvolution;
-                default:
-                    return null;
-            }
-        }
-        set {
-            switch (CurrTab) {
-                case EvolutionTab.From: {
-                    CurrPreEvolution = value;
-                } break;
-                case EvolutionTab.To: {
-                    CurrEvolution = value;
-                } break;
-            }
-        }
-    }
-    public List<Evolution> CurrEvolutionList {
-        get {
-            switch (CurrTab) {
-                case EvolutionTab.From:
-                    return EvolutionData.PreEvolutions;
-                case EvolutionTab.To:
-                    return EvolutionData.Evolutions;
-                default:
-                    return null;
-            }
-        }
-    }
-}
-
 public class EvolutionsPopup : Popup {
+    public enum Tab {
+        From,
+        To
+    }
+
+    public class EvolutionsPopupData {
+        public IDataEntry SourceEntry;
+        public EvolutionData EvolutionData;
+        public Tab CurrTab;
+        public Evolution CurrPreEvolution;
+        public Evolution CurrEvolution;
+        public Evolution CurrTabEvolution {
+            get {
+                switch (CurrTab) {
+                    case Tab.From:
+                        return CurrPreEvolution;
+                    case Tab.To:
+                        return CurrEvolution;
+                    default:
+                        return null;
+                }
+            }
+            set {
+                switch (CurrTab) {
+                    case Tab.From: {
+                        CurrPreEvolution = value;
+                    } break;
+                    case Tab.To: {
+                        CurrEvolution = value;
+                    } break;
+                }
+            }
+        }
+        public List<Evolution> CurrEvolutionList {
+            get {
+                switch (CurrTab) {
+                    case Tab.From:
+                        return EvolutionData.PreEvolutions;
+                    case Tab.To:
+                        return EvolutionData.Evolutions;
+                    default:
+                        return null;
+                }
+            }
+        }
+    }
+
     [SerializeField] private TextMeshProUGUI _sourceEntryName = default;
     [SerializeField] private Image _sourceEntryImage = default;
     [SerializeField] private Image _inspectedEntryImage = default;
@@ -81,7 +81,7 @@ public class EvolutionsPopup : Popup {
     private void Awake() {
         _from.onValueChanged.AddListener(isOn => {
             if (isOn && EvolutionData != null) {
-                _popupData.CurrTab = EvolutionTab.From;
+                _popupData.CurrTab = Tab.From;
                 _toScrollPos = _initialized ? _scroll.verticalNormalizedPosition : 1f;
                 _evolutionList.Populate(EvolutionData.PreEvolutions);
                 for (int i = 0; i < _evolutionList.Elements.Count; ++i) {
@@ -95,7 +95,7 @@ public class EvolutionsPopup : Popup {
         });
         _to.onValueChanged.AddListener(isOn => {
             if (isOn && EvolutionData != null) {
-                _popupData.CurrTab = EvolutionTab.To;
+                _popupData.CurrTab = Tab.To;
                 _fromScrollPos = _initialized ? _scroll.verticalNormalizedPosition : 1f;
                 _evolutionList.Populate(EvolutionData.Evolutions);
                 for (int i = 0; i < _evolutionList.Elements.Count; ++i) {
@@ -153,11 +153,11 @@ public class EvolutionsPopup : Popup {
 
         Evolution initEvolution = null;
         switch (popupData.CurrTab) {
-            case EvolutionTab.From: {
+            case Tab.From: {
                 initEvolution = popupData.CurrPreEvolution;
             } break;
 
-            case EvolutionTab.To: {
+            case Tab.To: {
                 initEvolution = popupData.CurrEvolution;
             } break;
         }
@@ -187,12 +187,12 @@ public class EvolutionsPopup : Popup {
 
         if (popupData.CurrEvolution != null) {
             switch (popupData.CurrTab) {
-                case EvolutionTab.From: {
+                case Tab.From: {
                     _from.isOn = false;
                     _from.isOn = true;
                 } break;
 
-                case EvolutionTab.To: {
+                case Tab.To: {
                     _to.isOn = false;
                     _to.isOn = true;
                 } break;
@@ -219,10 +219,10 @@ public class EvolutionsPopup : Popup {
 
     private void OnEvolutionSelected(Evolution evolution) {
         switch (_popupData.CurrTab) {
-            case EvolutionTab.From: {
+            case Tab.From: {
                 _popupData.CurrPreEvolution = evolution;
             } break;
-            case EvolutionTab.To: {
+            case Tab.To: {
                 _popupData.CurrEvolution = evolution;
             } break;
         }

@@ -54,4 +54,10 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     private void OnApplicationQuit() {
         _centralDB.DigimonDB.SaveFavorites();
     }
+    
+    private void Update() {
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            PopupManager.Instance.Back();
+        }
+    }
 }

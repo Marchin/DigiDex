@@ -106,7 +106,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     }
     
     private void RefreshScaler() {
-        if (ActivePopup.Vertical != (_canvasScaler.referenceResolution.y > _canvasScaler.referenceResolution.x)) {
+        bool isScreenOnPortrait = (_canvasScaler.referenceResolution.y > _canvasScaler.referenceResolution.x);
+        if (ActivePopup.Vertical != isScreenOnPortrait) {
             _canvasScaler.referenceResolution = new Vector2(
                 _canvasScaler.referenceResolution.y,
                 _canvasScaler.referenceResolution.x
@@ -116,9 +117,13 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     }
 
     public async void Back() {
-        if (_stack.Count > 0) {
-            (Type, object) restorationData = _restorationData[0];
-            _restorationData.RemoveAt(0);
+        if (ActivePopup != null) {
+            (Type, object) restorationData = (null, null);
+
+            if (_restorationData.Count > 0) {
+                restorationData = _restorationData[0];
+                _restorationData.RemoveAt(0);
+            }
 
             RefreshScaler();
 
@@ -127,7 +132,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 MethodInfo generic = method.MakeGenericMethod(restorationData.Item1);
                 var task = generic.Invoke(this, new object[] { false, false });
                 var awaiter = task.GetType().GetMethod("GetAwaiter").Invoke(task, null);
-                await UniTask.WaitUntil(() => (awaiter.GetType().GetProperty("IsCompleted").GetValue(awaiter) as bool?) ?? true);
+                await UniTask.WaitUntil(() =>
+                    (awaiter.GetType().GetProperty("IsCompleted").GetValue(awaiter) as bool?) ?? true);
                 var result = awaiter.GetType().GetMethod("GetResult");
                 Popup popup = result.Invoke(awaiter, null) as Popup;
                 popup.Restore(restorationData.Item2);
@@ -142,6 +148,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             }
 
             OnStackChange?.Invoke();
+        } else {
+            UnityUtils.Quit();
         }
     }
 }
