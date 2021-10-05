@@ -259,4 +259,11 @@ public class EvolutionsPopup : Popup {
             Populate(popupData);
         }
     }
+    
+    public override void OnClose() {
+        for (int iHandle = 0; iHandle < _handles.Count; ++iHandle) {
+            Addressables.Release(_handles[iHandle]);
+        }
+        _handles.Clear();
+    }
 }

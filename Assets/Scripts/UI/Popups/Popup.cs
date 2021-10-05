@@ -5,9 +5,7 @@ public abstract class Popup : MonoBehaviour {
     public bool Vertical;
     public bool FullScreen = true;
 
-    public virtual void OnClose() {
-    }
-    
+    public virtual void OnClose() {}
     public abstract object GetRestorationData();
     public abstract void Restore(object data);
 }

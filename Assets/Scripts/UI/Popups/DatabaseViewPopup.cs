@@ -218,4 +218,11 @@ public class DatabaseViewPopup : Popup {
             _elementScrollList.ScrollTo(popupData.SelectedEntry);
         }
     }
+
+    public override void OnClose() {
+        for (int iHandle = 0; iHandle < _entryDataHandles.Count; ++iHandle) {
+            Addressables.Release(_entryDataHandles[iHandle]);
+        }
+        _entryDataHandles.Clear();
+    }
 }

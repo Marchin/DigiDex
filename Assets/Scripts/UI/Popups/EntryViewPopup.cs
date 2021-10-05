@@ -183,4 +183,11 @@ public class EntryViewPopup : Popup {
             }
         }
     }
+    
+    public override void OnClose() {
+        for (int iHandle = 0; iHandle < _dataHandles.Count; ++iHandle) {
+            Addressables.Release(_dataHandles[iHandle]);
+        }
+        _dataHandles.Clear();
+    }
 }
