@@ -33,7 +33,7 @@ public static class DataRetriever {
     const string DigimonsDataPath = DataPath + "Digimons";
     const string DigimonEvolutionsDataPath = DataPath + "Digimons/Evolutions";
     const string CentralDBPath = DataPath + "Central Database.asset";
-    const string DigimonDBPath = DataPath + "Digimon Database.asset";
+    const string DigimonDBPath = DataPath + CentralDatabase.CentralDBAssetName + ".asset";
     const string FieldsArtPath = ArtPath + "Fields";
     const string FieldsDataPath = DataPath + "Fields";
 

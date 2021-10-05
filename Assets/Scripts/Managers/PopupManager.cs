@@ -28,6 +28,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     public event Action OnStackChange;
     private List<(Type, object)> _restorationData = new List<(Type, object)>();
     private bool _loadingPopup;
+    public bool IsScreenOnPortrait => (Screen.height > Screen.width);
     
     private void Awake() {
         SceneManager.activeSceneChanged += (prev, next) => {
@@ -41,16 +42,23 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         _parentCanvas = UnityUtils.GetOrGenerateRootGO("Popup Canvas");
         _parentCanvas.GetOrAddComponent<Canvas>();
         _canvasScaler = _parentCanvas.GetOrAddComponent<CanvasScaler>();
-        
-        bool isPortrait = Screen.height > Screen.width;
+        RefreshReferenceResolution();
+        _canvasScaler.matchWidthOrHeight = IsScreenOnPortrait ? 0f : 1f;
+    }
 
-        if (isPortrait != _canvasScaler.referenceResolution.y > _canvasScaler.referenceResolution.x) {
+    private void RemovePopup(int index = 0) {
+        _stack.RemoveAt(index);
+        Addressables.ReleaseInstance(_handles[index]);
+        _handles.RemoveAt(index);
+    }
+
+    private void RefreshReferenceResolution() {
+        if (IsScreenOnPortrait != (_canvasScaler.referenceResolution.y > _canvasScaler.referenceResolution.x)) {
             _canvasScaler.referenceResolution = new Vector2(
                 _canvasScaler.referenceResolution.y,
                 _canvasScaler.referenceResolution.x
             );
         }
-        _canvasScaler.matchWidthOrHeight = isPortrait ? 0f : 1f;
     }
 
     public async UniTask<T> GetOrLoadPopup<T>(bool restore = false, bool track = true) where T : Popup {
@@ -66,9 +74,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 popup.gameObject.SetActive(true);
             } else {
                 _stack[0].OnClose();
-                _stack.RemoveAt(0);
-                Addressables.ReleaseInstance(_handles[0]);
-                _handles.RemoveAt(0);
+                RemovePopup();
             }
         }
 
@@ -79,9 +85,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             if (popupIndex >= 0) {
                 Popup aux = _stack[popupIndex];
                 if (inPortait != aux.Vertical) {
-                    _stack.RemoveAt(popupIndex);
-                    Addressables.ReleaseInstance(_handles[popupIndex]);
-                    _handles.RemoveAt(popupIndex);
+                    RemovePopup(popupIndex);
                     popupIndex = -1;
                 }
             }
@@ -89,9 +93,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             if (popupIndex >= 0) {
                 while (popupIndex > 0) {
                     _stack[0].OnClose();
-                    _stack.RemoveAt(0);
-                    Addressables.ReleaseInstance(_handles[0]);
-                    _handles.RemoveAt(0);
+                    RemovePopup();
                     --popupIndex;
                 }
                 Debug.Assert(_stack[0] is T, "The found popup type doesn't correspond with the request");
@@ -127,17 +129,18 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     }
     
     private async void RefreshScaler() {
-        if (_loadingPopup) return;
-        bool isScreenOnPortrait = (Screen.height > Screen.width);
+        RefreshReferenceResolution();
+        if (_loadingPopup || ActivePopup == null) return;
 
-        if (ActivePopup.Vertical != isScreenOnPortrait) {
-            _canvasScaler.referenceResolution = new Vector2(
-                _canvasScaler.referenceResolution.y,
-                _canvasScaler.referenceResolution.x
-            );
-            _canvasScaler.matchWidthOrHeight = isScreenOnPortrait ? 0f : 1f;
-            int activePopupIndex = _stack.IndexOf(ActivePopup);
-            int lastVisiblePopup = activePopupIndex;
+        if (ActivePopup.Vertical != IsScreenOnPortrait) {
+            var handle = ApplicationManager.Instance.DisplayLoadingScreen();
+            
+            // Cleaning up inactive popup facilitates the algorithm and at this point their orientation probably don't match
+            while (!_stack[0].gameObject.activeSelf) {
+                RemovePopup();
+            }
+
+            int lastVisiblePopup = 0;
             while (lastVisiblePopup < _stack.Count) {
                 if (_stack[lastVisiblePopup].FullScreen) {
                     break;
@@ -146,19 +149,19 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 }
             }
 
-            int counter = lastVisiblePopup - activePopupIndex;
+            int counter = lastVisiblePopup;
             Popup popup = _stack[lastVisiblePopup];
             while (counter >= 0) {
                 (Type type, object content) restorationData = (null, null);
                 restorationData.type = popup.GetType();
                 restorationData.content = popup.GetRestorationData();
-                _stack.RemoveAt(lastVisiblePopup);
-                Addressables.ReleaseInstance(_handles[lastVisiblePopup]);
-                _handles.RemoveAt(lastVisiblePopup);
+                RemovePopup(lastVisiblePopup);
                 await RestorePopup(restorationData);
                 popup = _stack[lastVisiblePopup];
                 --counter;
             }
+
+            handle.Complete();
         }
     }
 

@@ -79,5 +79,6 @@ public class EntryIndex : IEquatable<EntryIndex> {
 }
 
 public class CentralDatabase : ScriptableObject {
+    public const string CentralDBAssetName = "Central Database";
     public DigimonDatabase DigimonDB;
 }

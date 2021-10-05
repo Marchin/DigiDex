@@ -157,7 +157,7 @@ public class DatabaseViewPopup : Popup {
     }
 
     private void ReApplyFilterAndRefresh() {
-        if (!_initialized) {
+        if (!_initialized || (Vertical != PopupManager.Instance.IsScreenOnPortrait)) {
             return;
         }
 

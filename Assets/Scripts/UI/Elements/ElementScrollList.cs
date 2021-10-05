@@ -102,7 +102,8 @@ public class ElementScrollList : MonoBehaviour {
         _scrollRect.normalizedPosition = Vector2.up;
 
         // HACK: If we don't wait these frames the elements don't get properly animated
-        await UniTask.DelayFrame(FrameDelayToAnimateList);
+        await UniTask.DelayFrame(FrameDelayToAnimateList,
+            cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this));
         AnimateElements();
     }
 
@@ -232,7 +233,8 @@ public class ElementScrollList : MonoBehaviour {
             int newIndex = _currElementIndex + _currElementScrollIndex;
             _scrollRect.verticalNormalizedPosition = 1f - _currElementIndex * _elementNormalizedHeight;
             OnConfirmed?.Invoke(newIndex);
-            await UniTask.DelayFrame(FrameDelayToAnimateList);
+            await UniTask.DelayFrame(FrameDelayToAnimateList,
+                cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this));
             AnimateElements();
         }
         enabled = true;
@@ -244,7 +246,8 @@ public class ElementScrollList : MonoBehaviour {
         _currElementScrollIndex = 0;
         PopulateElements();
 
-        await UniTask.DelayFrame(FrameDelayToAnimateList);
+        await UniTask.DelayFrame(FrameDelayToAnimateList,
+            cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this));
 
         _scrollRect.enabled = true;
         AnimateElements();
