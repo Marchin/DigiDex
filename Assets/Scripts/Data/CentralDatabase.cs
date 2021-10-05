@@ -19,8 +19,8 @@ public interface IEvolvable {
 public interface IDatabase {
     IEnumerable<IDataEntry> EntryList { get; }
     HashSet<Hash128> Favorites { get; }
-    Dictionary<string, FilterData> RetrieveFiltersData();
-    Dictionary<string, ToggleFilterData> RetrieveTogglesData();
+    List<FilterData> RetrieveFiltersData();
+    List<ToggleFilterData> RetrieveTogglesData();
 }
 
 [Serializable]

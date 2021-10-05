@@ -13,8 +13,8 @@ using Cysharp.Threading.Tasks.Linq;
 
 public class DatabaseViewPopup : Popup {
     public class PopupData {
-        public Dictionary<string, FilterData> Filters;
-        public Dictionary<string, ToggleFilterData> Toggles;
+        public List<FilterData> Filters;
+        public List<ToggleFilterData> Toggles;
         public string LastQuery;
         public IDatabase DB;
         public string SelectedEntry;
@@ -27,13 +27,14 @@ public class DatabaseViewPopup : Popup {
     [SerializeField] private Button _profileButton = default;
     [SerializeField] private ElementScrollList _elementScrollList = default;
     [SerializeField] private Button _filterButton = default;
+    [SerializeField] private GameObject _activeFilterIndicator = default;
     [SerializeField] private GameObject _loadingWheel = default;
     private CancellationTokenSource _entryDataCTS;
     private List<AsyncOperationHandle> _entryDataHandles = new List<AsyncOperationHandle>();
     private IEnumerable<IDataEntry> _filteredEntries;
     private IEnumerable<IDataEntry> _currEntries;
-    private Dictionary<string, FilterData> _filters;
-    private Dictionary<string, ToggleFilterData> _toggles;
+    private List<FilterData> _filters;
+    private List<ToggleFilterData> _toggles;
     private string _lastQuery = "";
     private Dictionary<Hash128, IDataEntry> _entryDict;
     private IDatabase _db;
@@ -82,6 +83,7 @@ public class DatabaseViewPopup : Popup {
     private void Start() {
         _clearSearch.gameObject.SetActive(false);
         _searchIcon.SetActive(true);
+        _activeFilterIndicator.gameObject.SetActive(false);
 
         _filterButton.onClick.AddListener(async () => {
             var popup = await PopupManager.Instance.GetOrLoadPopup<FilterPopup>();
@@ -164,13 +166,15 @@ public class DatabaseViewPopup : Popup {
         if (PopupManager.Instance.ActivePopup == this) {
             _filteredEntries = new List<IDataEntry>(_db.EntryList);
             foreach (var toggle in _toggles) {
-                _filteredEntries = toggle.Value.Apply(_filteredEntries);
+                _filteredEntries = toggle.Apply(_filteredEntries);
             }
 
             foreach (var filter in _filters) {
-                _filteredEntries = filter.Value.Apply(_filteredEntries);
+                _filteredEntries = filter.Apply(_filteredEntries);
             }
 
+            _activeFilterIndicator.SetActive(_toggles.Any(t => t.IsOn) || 
+                _filters.Any(f => f.Elements.Any(e => e.State != FilterState.None)));
             
             _elementScrollList.ScrollEnabled = true;
             RefreshList();

@@ -10,6 +10,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     public const string LevelsFilter = "Levels";
     public const string FavoritesToggle = "Favorites";
     public const string ReverseToggle = "Reverse";
+    private const string FavDigimonPref = "fav_digimons";
     public List<Digimon> Digimons;
     public IEnumerable<IDataEntry> EntryList => Digimons.Cast<IDataEntry>();
     public List<Field> Fields;
@@ -25,10 +26,9 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
             return _favorites;
         }
     }
-    private const string FavDigimonPref = "fav_digimons";
 
-    public Dictionary<string, FilterData> RetrieveFiltersData() {
-        Dictionary<string, FilterData> filters = new Dictionary<string, FilterData>();
+    public List<FilterData> RetrieveFiltersData() {
+        List<FilterData> filters = new List<FilterData>();
 
         FilterData fieldsFilter = new FilterData(
             name: FieldsFilter,
@@ -38,7 +38,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         for (int iField = 0; iField < Fields.Count; ++iField) {
             fieldsFilter.Elements.Add(new FilterEntryData { Name = Fields[iField].Name, Sprite = Fields[iField].Sprite });
         }
-        filters.Add(FieldsFilter, fieldsFilter);
+        filters.Add(fieldsFilter);
       
 
         FilterData attributesFilter = new FilterData(
@@ -49,7 +49,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         for (int iAttribute = 0; iAttribute < Attributes.Count; ++iAttribute) {
             attributesFilter.Elements.Add(new FilterEntryData { Name = Attributes[iAttribute].Name, Sprite = Attributes[iAttribute].Sprite });
         }
-        filters.Add(AttributesFilter, attributesFilter);
+        filters.Add(attributesFilter);
 
 
         FilterData typesFilter = new FilterData(
@@ -60,7 +60,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         for (int iType = 0; iType < Types.Count; ++iType) {
             typesFilter.Elements.Add(new FilterEntryData { Name = Types[iType].Name });
         }
-        filters.Add(TypesFilter, typesFilter);
+        filters.Add(typesFilter);
 
 
         FilterData levelsFilter = new FilterData(
@@ -71,15 +71,15 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         for (int iLevel = 0; iLevel < Levels.Count; ++iLevel) {
             levelsFilter.Elements.Add(new FilterEntryData { Name = Levels[iLevel].Name });
         }
-        filters.Add(LevelsFilter, levelsFilter);
+        filters.Add(levelsFilter);
 
         return filters;
     }
 
-    public Dictionary<string, ToggleFilterData> RetrieveTogglesData() {
-        Dictionary<string, ToggleFilterData> toggles = new Dictionary<string, ToggleFilterData>();
+    public List<ToggleFilterData> RetrieveTogglesData() {
+        List<ToggleFilterData> toggles = new List<ToggleFilterData>();
 
-        toggles.Add(FavoritesToggle,
+        toggles.Add(
             new ToggleFilterData(
                 name: FavoritesToggle,
                 filterAction: (list, isOn) => {
@@ -93,7 +93,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
                 }
             )
         );
-        toggles.Add(ReverseToggle,
+        toggles.Add(
             new ToggleFilterData(
                 name: ReverseToggle, 
                 filterAction: (list, isOn) => {
