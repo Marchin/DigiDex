@@ -39,6 +39,7 @@ public class EntryViewPopup : Popup {
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private Button _prevButton = default;
     [SerializeField] private Button _nextButton = default;
+    [SerializeField] private Button _dbViewButton = default;
     [SerializeField] private GameObject _nextPrevButtonContainer = default;
     [SerializeField] private GameObject _loadingWheel = default;
     public event Action<IDataEntry> OnPopulate;
@@ -59,6 +60,7 @@ public class EntryViewPopup : Popup {
         _closeButton.onClick.AddListener(PopupManager.Instance.Back);
         _prevButton.onClick.AddListener(() => _prev?.Invoke());
         _nextButton.onClick.AddListener(() => _next?.Invoke());
+        _dbViewButton.onClick.AddListener(() => PopupManager.Instance.ClearStackUntilPopup<DatabaseViewPopup>());
         _loadingWheel.SetActive(false);
 
         _dataToggle.onValueChanged.AddListener(isOn => {

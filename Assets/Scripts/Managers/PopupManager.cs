@@ -215,6 +215,35 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         }
     }
 
+    public async void ClearStackUntilPopup<T>() where T : Popup {
+        if (ActivePopup == null || ActivePopup.GetType() == typeof(T)) {
+            return;
+        }
+
+        while (ActivePopup != null && ActivePopup.GetType() != typeof(T)) {
+            (Type type, object content) restorationData = (null, null);
+
+            if (_restorationData.Count > 0) {
+                restorationData = _restorationData[0];
+                _restorationData.RemoveAt(0);
+            }
+
+            if (restorationData.type == typeof(T) && restorationData.content != null) {
+                await RestorePopup(restorationData);
+            } else {
+                foreach (var popup in _stack) {
+                    if (popup.gameObject.activeSelf) {
+                        popup.OnClose();
+                        popup.gameObject.SetActive(false);
+                        break;
+                    }
+                }
+            }
+        }
+
+        OnStackChange?.Invoke();
+    }
+
     private async UniTask RestorePopup((Type type, object content) restorationData) {
         MethodInfo method = this.GetType().GetMethod(nameof(GetOrLoadPopup));
         MethodInfo generic = method.MakeGenericMethod(restorationData.type);
