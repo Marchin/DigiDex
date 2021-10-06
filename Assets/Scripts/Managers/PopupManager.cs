@@ -14,6 +14,11 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     private List<AsyncOperationHandle<GameObject>> _handles = new List<AsyncOperationHandle<GameObject>>();
     private GameObject _parentCanvas;
     private CanvasScaler _canvasScaler;
+    public event Action OnStackChange;
+    private List<(Type, object)> _restorationData = new List<(Type, object)>();
+    private bool _loadingPopup;
+    public bool IsScreenOnPortrait => (Screen.height > Screen.width);
+    private ScreenOrientation _lastDeviceOrientation;
     public Popup ActivePopup {
         get {
             foreach (var popup in _stack) {
@@ -25,10 +30,6 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             return null;
         }
     }
-    public event Action OnStackChange;
-    private List<(Type, object)> _restorationData = new List<(Type, object)>();
-    private bool _loadingPopup;
-    public bool IsScreenOnPortrait => (Screen.height > Screen.width);
     
     private void Awake() {
         SceneManager.activeSceneChanged += (prev, next) => {
@@ -44,6 +45,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         _canvasScaler = _parentCanvas.GetOrAddComponent<CanvasScaler>();
         RefreshReferenceResolution();
         _canvasScaler.matchWidthOrHeight = IsScreenOnPortrait ? 0f : 1f;
+        _lastDeviceOrientation = Screen.orientation;
     }
 
     private void RemovePopup(int index = 0) {
@@ -112,12 +114,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 var handle = Addressables.InstantiateAsync(popupName, _parentCanvas.transform);
                 _handles.Insert(0, handle);
                 popup = (await handle).GetComponent<T>();
-                var rect = (popup.transform as RectTransform);
-                rect.offsetMin = Screen.safeArea.min;
-                rect.offsetMax = new Vector2(
-                    Screen.safeArea.xMax - Screen.width,
-                    Screen.safeArea.yMax - Screen.height
-                );
+                AdjustToSafeZone(popup.transform as RectTransform);
                 _stack.Insert(0, popup);
             }
         }
@@ -126,6 +123,14 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         _loadingPopup = false;
 
         return popup;
+    }
+
+    private void AdjustToSafeZone(RectTransform rect) {
+        rect.offsetMin = Screen.safeArea.min;
+        rect.offsetMax = new Vector2(
+            Screen.safeArea.xMax - Screen.width,
+            Screen.safeArea.yMax - Screen.height
+        );
     }
     
     private async void RefreshScaler() {
@@ -173,6 +178,14 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
 
     private void Update() {
         RefreshScaler();
+
+        if (Screen.orientation != _lastDeviceOrientation) {
+            foreach (var popup in _stack) {
+                AdjustToSafeZone(popup.transform as RectTransform);
+            }
+
+            _lastDeviceOrientation = Screen.orientation;
+        }
     }
 
     public void Back() {
