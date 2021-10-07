@@ -32,8 +32,8 @@ public static class DataRetriever {
     const string ArtDigimonsPathX = ArtPath + "Digimons/Digimon({0})";
     const string DigimonsDataPath = DataPath + "Digimons";
     const string DigimonEvolutionsDataPath = DataPath + "Digimons/Evolutions";
-    const string CentralDBPath = DataPath + "Central Database.asset";
-    const string DigimonDBPath = DataPath + CentralDatabase.CentralDBAssetName + ".asset";
+    const string CentralDBPath = DataPath + CentralDatabase.CentralDBAssetName + ".asset";
+    const string DigimonDBPath = DataPath + "Digimon Database.asset";
     const string FieldsArtPath = ArtPath + "Fields";
     const string FieldsDataPath = DataPath + "Fields";
 
@@ -656,7 +656,7 @@ public static class DataRetriever {
             List<Evolution> ParseEvolutionList(string headerName) {
                 List<Evolution> evolutions = new List<Evolution>();
 
-                    XmlNodeList header = digimonSite.SelectNodes($"/html/body/div/div/div/div/div/div/h2/span[@id='{headerName}']");
+                XmlNodeList header = digimonSite.SelectNodes($"/html/body/div/div/div/div/div/div/h2/span[@id='{headerName}']");
                 // Check if there're digimons to be parsed
                 if (header?.Item(0)?.ParentNode.NextSibling.Name == "ul") {
                     XmlNodeList evolutionsNode = header.Item(0).ParentNode.NextSibling.SelectNodes("li");
@@ -761,7 +761,25 @@ public static class DataRetriever {
                                             evolutionMethods.Add(method);
                                             method = new Evolution { Entry = digimonEntry, DebugName = name, Types = baseEvolutionType };
                                         } else if (siblingNode.Name == "b" || siblingNode.Name == "a") {
-                                            int fusionIndex = digimonDB.Digimons.FindIndex(d => d.Name == siblingNode.InnerText);
+                                            XmlNode aux = (siblingNode.Name == "b") ? siblingNode.FirstChild : siblingNode;
+                                            string materialLink = aux?.Attributes?.GetNamedItem("href")?.InnerText;
+                                            
+                                            XmlDocument materialSite = new XmlDocument();
+                                            try {
+                                                materialSite.Load(WikimonBaseURL + materialLink);
+                                                XmlNode redirectNode = materialSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
+                                                while (redirectNode != null) {
+                                                    materialLink = redirectNode.Attributes.GetNamedItem("href").InnerText;
+                                                    Debug.Log($"Redirecting from {fuseDigimonLinkSubFix} to {materialLink}");
+                                                    fuseDigimonLinkSubFix = materialLink;
+                                                    materialSite.Load(WikimonBaseURL + fuseDigimonLinkSubFix);
+                                                    redirectNode = materialSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
+                                                }
+                                            } catch (Exception ex) {
+                                                Debug.Log($"{name} - {ex.Message} \n {ex.StackTrace}");
+                                            }
+                                            int fusionIndex = digimonDB.Digimons.FindIndex(
+                                                d => d.LinkSubFix == materialLink);
                                             if (fusionIndex > 0) {
                                                 method.Types |= EvolutionType.Fusion;
                                                 EntryIndex fusionEntry = new EntryIndex(
