@@ -10,7 +10,9 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         public void Complete() => IsComplete = true;
     }
 
-    [SerializeField] private GameObject _loadingScreen;
+    [SerializeField] private GameObject _loadingScreen = default;
+    [SerializeField] private AssetReferenceAtlasedSprite _missingSprite = default;
+    public AssetReferenceAtlasedSprite MissingSpirte => _missingSprite;
     private List<Handle> _loadingScreenHandles = new List<Handle>();
     private CentralDatabase _centralDB;
     

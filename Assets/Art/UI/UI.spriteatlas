@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: UI
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: 054a3100abf13584d99b58beafc3033c, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 9f51b9c0a622e924383fb3dedbee50f1, type: 3}
+  - {fileID: 21300000, guid: 2f91ed1118a3da04283b1aab9437025d, type: 3}
+  - {fileID: 21300000, guid: 5c9b77619ef8ae24f948c699e7e30622, type: 3}
+  - {fileID: 21300000, guid: e03a42c1f3c9bfb4197ca0df3b0e1a7a, type: 3}
+  - {fileID: 21300000, guid: 9049cdb2a28bb4647a9400bdda607ade, type: 3}
+  - {fileID: 21300000, guid: d8bc289333dd90c44af3710cacfeefa3, type: 3}
+  - {fileID: 21300000, guid: 370a4584b57fe904f8c7579cdb96118c, type: 3}
+  - {fileID: 21300000, guid: 94b13bd63efcfbb47aca3400d118b2c7, type: 3}
+  - {fileID: 21300000, guid: 70150367f59effe41af51a71efb3505d, type: 3}
+  - {fileID: 21300000, guid: 35991189482289447a31767289ead085, type: 3}
+  - {fileID: 21300000, guid: bf49087a50ec0994b9c741fa75d54106, type: 3}
+  - {fileID: 21300000, guid: bdc6f52bd41ed7a4b9b077f385ab8f7f, type: 3}
+  - {fileID: 21300000, guid: 357a413be0e4c694cae118424b9e46b5, type: 3}
+  - {fileID: 21300000, guid: 98fcc3ccddc9fff4f924b85260174a4f, type: 3}
+  - {fileID: 21300000, guid: 1f56c22d379adaf46859a9aff9e19842, type: 3}
+  - {fileID: 21300000, guid: b8f1844df6878f24f9c51c333e75e9f5, type: 3}
+  - {fileID: 21300000, guid: dd49927d3f70e824b9d61aa5ffa8168c, type: 3}
+  - {fileID: 21300000, guid: 4cc77c1e68d688d47b021d5c3c7993d5, type: 3}
+  - {fileID: 21300000, guid: 2ab1148ea0f57de45821527943b840aa, type: 3}
+  - {fileID: 21300000, guid: 43f689ae86fb59c4b829373f3a43bbbf, type: 3}
+  - {fileID: 21300000, guid: bfae806f1ef21ff41b585c226bc64ef2, type: 3}
+  - {fileID: 21300000, guid: 34ac6f6f08503d14999b26316c457f09, type: 3}
+  - {fileID: 21300000, guid: e3baa0af99e5110479596a0c66269ee0, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Rounded Square
+  - Circle Border
+  - Question Mark
+  - Tab
+  - Checkmark
+  - Circle Gradient
+  - Button
+  - Arrow Thick
+  - Missing Digimon
+  - Vertical Gradient
+  - Plus
+  - Circle
+  - Search
+  - Forbidden
+  - Loading Border
+  - DB Icon
+  - Horizontal Gradient
+  - Half Circle
+  - Arrow
+  - Favorite
+  - Favorite Fill
+  - Cross
+  - Filter
+  m_RenderDataMap: {}
+  m_Tag: UI
+  m_IsVariant: 0

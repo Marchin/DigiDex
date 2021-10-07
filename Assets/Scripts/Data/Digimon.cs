@@ -31,7 +31,13 @@ public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
         set => _profile = value;
     }
     public AssetReferenceAtlasedSprite Sprite {
-        get => _sprite;
+        get {
+            if (_sprite.RuntimeKeyIsValid()) {
+                return _sprite;
+            } else {
+                return ApplicationManager.Instance.MissingSpirte;
+            }
+        }
         set => _sprite = value;
     }
     public AssetReferenceEvolutionData EvolutionDataRef {

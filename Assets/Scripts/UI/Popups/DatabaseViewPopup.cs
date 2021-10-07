@@ -29,7 +29,6 @@ public class DatabaseViewPopup : Popup {
     [SerializeField] private Button _filterButton = default;
     [SerializeField] private GameObject _activeFilterIndicator = default;
     [SerializeField] private GameObject _loadingWheel = default;
-    [SerializeField] private Sprite _missingDigimonImage = default;
     private CancellationTokenSource _entryDataCTS;
     private List<AsyncOperationHandle> _entryDataHandles = new List<AsyncOperationHandle>();
     private IEnumerable<IDataEntry> _filteredEntries;
@@ -73,13 +72,10 @@ public class DatabaseViewPopup : Popup {
                         if (sprite != null) {
                             _entryImage.gameObject.SetActive(true);
                             _entryImage.sprite = sprite;
-                        } else {
-                            _entryImage.sprite = _missingDigimonImage;
                         }
                     }).Forget();
-                } else {
-                    _entryImage.sprite = _missingDigimonImage;
                 }
+
             }
         }
     }

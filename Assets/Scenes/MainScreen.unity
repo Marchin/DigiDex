@@ -253,6 +253,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _loadingScreen: {fileID: 1667241813}
+  _missingSprite:
+    m_AssetGUID: ad7267f2efea17942aa77e1d8a97ef36
+    m_SubObjectName: Missing Digimon
+    m_SubObjectType: UnityEngine.Sprite, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    m_EditorAssetChanged: 0
 --- !u!4 &308806759
 Transform:
   m_ObjectHideFlags: 0
