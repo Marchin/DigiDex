@@ -1323,6 +1323,8 @@ MonoBehaviour:
   _filterButton: {fileID: 6457417603514890366}
   _activeFilterIndicator: {fileID: 7480411346049523588}
   _loadingWheel: {fileID: 8657206032806503344}
+  _missingDigimonImage: {fileID: 21300000, guid: 70150367f59effe41af51a71efb3505d,
+    type: 3}
 --- !u!114 &6253134688576834355
 MonoBehaviour:
   m_ObjectHideFlags: 0
