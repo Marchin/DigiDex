@@ -202,12 +202,12 @@ public class EvolutionsPopup : Popup {
                 } break;
             }
         } else {
-            if (_from.gameObject.activeSelf) {
-                _from.isOn = false;
-                _from.isOn = true;
-            } else if (_to.gameObject.activeSelf) {
+            if (_to.gameObject.activeSelf) {
                 _to.isOn = false;
                 _to.isOn = true;
+            } else if (_from.gameObject.activeSelf) {
+                _from.isOn = false;
+                _from.isOn = true;
             }
         }
 
@@ -222,14 +222,7 @@ public class EvolutionsPopup : Popup {
     }
 
     private void OnEvolutionSelected(Evolution evolution) {
-        switch (_popupData.CurrTab) {
-            case Tab.From: {
-                _popupData.CurrPreEvolution = evolution;
-            } break;
-            case Tab.To: {
-                _popupData.CurrEvolution = evolution;
-            } break;
-        }
+        _popupData.CurrTabEvolution = evolution;
         IDataEntry entry = evolution.Entry.FetchEntryData();
 
         if (_inspectedCTS != null) {
