@@ -406,6 +406,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _template: {fileID: 597580946503664625}
   _root: {fileID: 5554861661864127918}
+  _maxDisplayCount: 0
+  _overflowDisplay: {fileID: 0}
 --- !u!114 &5105983983021134132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -516,7 +518,7 @@ MonoBehaviour:
   Vertical: 1
   FullScreen: 0
   _list: {fileID: 8622672086708334604}
-  _closeButton: {fileID: 5570208025377577497}
+  _closeButton: {fileID: 8587283474188772132}
 --- !u!1001 &9005943940841052744
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -617,6 +619,11 @@ PrefabInstance:
     - target: {fileID: 3582280229701320784, guid: a72097bba0445c641b72399f00ea77e1,
         type: 3}
       propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3582280229701320787, guid: a72097bba0445c641b72399f00ea77e1,
+        type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4590744261947132073, guid: a72097bba0445c641b72399f00ea77e1,
@@ -819,6 +826,11 @@ PrefabInstance:
       propertyPath: m_PreferredHeight
       value: -1
       objectReference: {fileID: 0}
+    - target: {fileID: 8343456124756461313, guid: a72097bba0445c641b72399f00ea77e1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8386031091924851751, guid: a72097bba0445c641b72399f00ea77e1,
         type: 3}
       propertyPath: m_MinHeight
@@ -838,9 +850,9 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 9005943940841052744}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5570208025377577497 stripped
+--- !u!114 &8587283474188772132 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3582280229701320785, guid: a72097bba0445c641b72399f00ea77e1,
+  m_CorrespondingSourceObject: {fileID: 853329458133940588, guid: a72097bba0445c641b72399f00ea77e1,
     type: 3}
   m_PrefabInstance: {fileID: 9005943940841052744}
   m_PrefabAsset: {fileID: 0}
