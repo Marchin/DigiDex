@@ -10,6 +10,8 @@ public interface IDataUIElement<T> {
 public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElement<D> {
     [SerializeField] private T _template = default;
     [SerializeField] private RectTransform _root = default;
+    [SerializeField] private int _maxDisplayCount = default;
+    [SerializeField] private GameObject _overflowDisplay = default;
 	private List<T> _elements = new List<T>();
     public IReadOnlyList<T> Elements => _elements;
     public event Action<List<D>> OnPopulate;
@@ -29,8 +31,18 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
             return;
         }
 
+        if (_overflowDisplay != null) {
+            _overflowDisplay.SetActive(false);
+        }
+
         int index = 0;
         for (; index < data.Count; ++index) {
+            if (_maxDisplayCount > 0 && index >= _maxDisplayCount) {
+                if (_overflowDisplay != null) {
+                    _overflowDisplay.SetActive(true);
+                }
+                break;
+            }
             T element = null;
             if (index < _elements.Count) {
                 element = _elements[index];
