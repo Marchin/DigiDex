@@ -26,7 +26,7 @@ SpriteAtlas:
       padding: 4
       blockOffset: 1
       allowAlphaSplitting: 0
-      enableRotation: 1
+      enableRotation: 0
       enableTightPacking: 0
       enableAlphaDilation: 0
     secondaryTextureSettings: {}
@@ -55,7 +55,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 1f56c22d379adaf46859a9aff9e19842, type: 3}
   - {fileID: 21300000, guid: b8f1844df6878f24f9c51c333e75e9f5, type: 3}
   - {fileID: 21300000, guid: dd49927d3f70e824b9d61aa5ffa8168c, type: 3}
-  - {fileID: 21300000, guid: 4cc77c1e68d688d47b021d5c3c7993d5, type: 3}
   - {fileID: 21300000, guid: 2ab1148ea0f57de45821527943b840aa, type: 3}
   - {fileID: 21300000, guid: 43f689ae86fb59c4b829373f3a43bbbf, type: 3}
   - {fileID: 21300000, guid: bfae806f1ef21ff41b585c226bc64ef2, type: 3}
@@ -79,7 +78,6 @@ SpriteAtlas:
   - Loading Border
   - DB Icon
   - Horizontal Gradient
-  - Half Circle
   - Arrow
   - Favorite
   - Favorite Fill
