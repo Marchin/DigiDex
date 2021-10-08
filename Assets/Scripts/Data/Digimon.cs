@@ -1,7 +1,9 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.AddressableAssets;
-using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 [System.Serializable]
 public class DigimonReference {
@@ -88,7 +90,18 @@ public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
         if (FieldIDs.Count > 0) {
             information.Add(new InformationData { Prefix = "Field" });
             for (int iField = 0; iField < FieldIDs.Count; ++iField) {
-                information.Add(new InformationData { Content = digimonDB.Fields[FieldIDs[iField]].Name, SpriteReference = digimonDB.Fields[FieldIDs[iField]].Sprite, IndentLevel = 1 });
+                Field field = digimonDB.Fields[FieldIDs[iField]];
+                Action onMoreInfo = () => PopupManager.Instance.GetOrLoadPopup<MessagePopup>()
+                    .ContinueWith(popup => popup.Populate(field.Description, field.Name, field.Sprite))
+                    .Forget();
+                information.Add(
+                    new InformationData {
+                        Content = field.Name,
+                        SpriteReference = field.Sprite,
+                        OnMoreInfo = onMoreInfo,
+                        IndentLevel = 1
+                    }
+                );
             }
         }
 

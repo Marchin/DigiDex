@@ -1,4 +1,5 @@
 using TMPro;
+using System;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,14 +12,15 @@ public class InformationData {
     public string Prefix;
     public string Content;
     public AssetReferenceAtlasedSprite SpriteReference;
+    public Action OnMoreInfo;
 }
 
-public class InformationRow : MonoBehaviour, IDataUIElement<InformationData> {
-    [SerializeField] private float _indentWidth = default;
-    [SerializeField] private LayoutElement _indent = default;
-    [SerializeField] private GameObject _imageSeparator = default;
+public class InformationElement : MonoBehaviour, IDataUIElement<InformationData> {
+    [SerializeField] private int _indentWidth = default;
     [SerializeField] private Image _image = default;
     [SerializeField] private TextMeshProUGUI _text = default;
+    [SerializeField] private Button _moreInfoButton = default;
+    [SerializeField] private LayoutGroup _layoutGroup = default;
     private AsyncOperationHandle<Sprite> _spriteHandle;
     private CancellationTokenSource _cts;
 
@@ -28,10 +30,9 @@ public class InformationRow : MonoBehaviour, IDataUIElement<InformationData> {
         } else {
             _text.text = data.Content;
         }
-        _image.gameObject.SetActive(false);
-        _imageSeparator.SetActive(false);
 
-        _indent.minWidth = data.IndentLevel * _indentWidth;
+        _image.gameObject.SetActive(false);
+        _layoutGroup.padding.left = (data.IndentLevel * _indentWidth);
 
         if (_spriteHandle.IsValid()) {
             Addressables.Release(_spriteHandle);
@@ -48,8 +49,11 @@ public class InformationRow : MonoBehaviour, IDataUIElement<InformationData> {
             _spriteHandle.WithCancellation(_cts.Token).ContinueWith(sprite => {
                 _image.sprite = sprite;
                 _image.gameObject.SetActive(sprite != null);
-                _imageSeparator.SetActive(sprite != null);
             }).Forget();
         }
+
+        _moreInfoButton.onClick.RemoveAllListeners();
+        _moreInfoButton.onClick.AddListener(() => data.OnMoreInfo?.Invoke());
+        _moreInfoButton.gameObject.SetActive(data.OnMoreInfo != null);
     }
 }

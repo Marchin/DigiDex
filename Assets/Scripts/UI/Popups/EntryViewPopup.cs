@@ -29,7 +29,7 @@ public class EntryViewPopup : Popup {
     [SerializeField] private TextMeshProUGUI _profile = default;
     [SerializeField] private CustomScrollRect _dataScroll = default;
     [SerializeField] private CustomScrollRect _profileScroll = default;
-    [SerializeField] private InformationRowList _info = default;
+    [SerializeField] private InformationElementList _info = default;
     [SerializeField] private Toggle _dataToggle = default;
     [SerializeField] private Toggle _profileToggle = default;
     [SerializeField] private RectTransform _dataContent = default;
@@ -141,7 +141,11 @@ public class EntryViewPopup : Popup {
             }
         }
 
-        UniTask.DelayFrame(1).ContinueWith(() => _dataScroll.normalizedPosition = Vector2.up).Forget();
+        UniTask.DelayFrame(1).ContinueWith(() => {
+            _dataScroll.normalizedPosition = Vector2.up;
+            // HACK: Unity for some reason doesn't shrink the viewport at first even though this option is already set
+            _dataScroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
+        }).Forget();
 
         OnPopulate?.Invoke(_entry);
     }
