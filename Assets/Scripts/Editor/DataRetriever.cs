@@ -14,10 +14,12 @@ using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
 
 public static class DataRetriever {
-    const string ArtPath = "Assets/Remote/Art/";
+    const string LocalArtPath = "Assets/Art/";
+    const string RemoteArtPath = "Assets/Remote/Art/";
     const string DataPath = "Assets/Remote/Data/";
     const string DigimonSpriteAtlasesGroupName = "Digimon Sprite Atlases";
-    const string GeneralSpriteAtlasesGroupName = "General Sprite Atlases";
+    const string RemoteArtGroupName = "Remote Art";
+    const string LocalArtGroupName = "Local Art";
     const string DigimonListGroupName = "Digimon List";
     const string DigimonDataGroupName = "Digimon Data";
     const string DigimonEvolutionDataGroupName = "Digimon Evolution Data";
@@ -29,12 +31,13 @@ public static class DataRetriever {
     const string TypeListURL = WikimonBaseURL + "/Type";
     const string LevelListURL = WikimonBaseURL + "/Evolution_Stage";
     const int DigimonsPerAtlas = 3;
-    const string ArtDigimonsPathX = ArtPath + "Digimons/Digimon({0})";
+    const string ArtDigimonsPathX = RemoteArtPath + "Digimons/Digimon({0})";
     const string DigimonsDataPath = DataPath + "Digimons";
     const string DigimonEvolutionsDataPath = DataPath + "Digimons/Evolutions";
     const string CentralDBPath = DataPath + CentralDatabase.CentralDBAssetName + ".asset";
     const string DigimonDBPath = DataPath + "Digimon Database.asset";
-    const string FieldsArtPath = ArtPath + "Fields";
+    const string FieldsRemoteArtPath = RemoteArtPath + "Fields";
+    const string FieldsLocalArtPath = LocalArtPath + "Fields";
     const string FieldsDataPath = DataPath + "Fields";
 
     private static AddressableAssetGroup GetOrAddAddressableGroup(string name) {
@@ -277,7 +280,7 @@ public static class DataRetriever {
         digimonDB.Digimons = new List<Digimon>();
         var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path.Replace(".asset", string.Empty)).ToArray();
         for (int i = 0; i < paths.Length; i++) {
-            Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[i], typeof(Digimon)) as Digimon;
+            Digimon digimonData = AssetDatabase.LoadAssetAtPath<Digimon>(paths[i]);
             digimonDB.Digimons.Add(digimonData);
             //digimonDB.Digimons.Add(new DigimonReference { Name = digimonData.Name, Data = new AssetReferenceDigimon(AssetDatabase.GUIDFromAssetPath(paths[i]).ToString()) });
         }
@@ -367,51 +370,86 @@ public static class DataRetriever {
             addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(fieldDataPath).ToString(), listGroup);
         }
 
-        string fieldsArtPath = ArtPath + "Fields";
-        if (!Directory.Exists(fieldsArtPath)) {
-            Directory.CreateDirectory(fieldsArtPath);
+        // Art
+        if (!Directory.Exists(FieldsRemoteArtPath)) {
+            Directory.CreateDirectory(FieldsRemoteArtPath);
         }
 
         AssetDatabase.Refresh();
-        string spriteAtlasPath = fieldsArtPath + ".spriteatlas";
-        SpriteAtlas spriteAtlas = new SpriteAtlas();
-        UnityEngine.Object folder = AssetDatabase.LoadAssetAtPath(fieldsArtPath, typeof(UnityEngine.Object));
-        spriteAtlas.Add(new UnityEngine.Object[] { folder });
-        AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-
-        var generalSpriteAtlasGroup = GetOrAddAddressableGroup(GeneralSpriteAtlasesGroupName);
-        addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(spriteAtlasPath).ToString(), generalSpriteAtlasGroup);
-
-        XmlNodeList images = fieldSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/p[6]/a");
-        for (int i = 0; i < images.Count; i++) {
-            XmlNode image = images.Item(i);
-            string fieldName = image.Attributes.GetNamedItem("title").InnerText.Replace("Category:", string.Empty);
+        List<Field> missingArt = new List<Field>();
+        string[] spritePaths = Directory.GetFiles(FieldsLocalArtPath, "*.png");
+        if (spritePaths.Length > 0) {
+            // We assume there's only one
+            string localFieldsSpriteAtlasPath = FieldsLocalArtPath + "/Fields.spriteatlas";
+            SpriteAtlas fieldAtlas = new SpriteAtlas();
+            SpriteAtlasPackingSettings packingSettings = new SpriteAtlasPackingSettings();
+            packingSettings.enableRotation = false;
+            packingSettings.enableTightPacking = false;
+            fieldAtlas.SetPackingSettings(packingSettings);
+            Sprite[] sprites = new Sprite[fieldAtlas.spriteCount];
+            AssetDatabase.CreateAsset(fieldAtlas, localFieldsSpriteAtlasPath);
             
-            string linkToImage = WikimonBaseURL + image.FirstChild.Attributes.GetNamedItem("src").InnerText;
-            bool isPNG = linkToImage.ToLower().EndsWith(".png");
-            bool isJPG = linkToImage.ToLower().EndsWith(".jpg");
-            string fieldArtPath = FieldsArtPath + "/" + fieldName + (isPNG ? ".png" : ".jpg");
-            
-            if (!File.Exists(fieldArtPath) && (isPNG || isJPG)) {
-                using (UnityWebRequest textureRequest = UnityWebRequestTexture.GetTexture(linkToImage)) {
-                    await textureRequest.SendWebRequest();
-                    if (textureRequest.result != UnityWebRequest.Result.ConnectionError) {
-                        var texture = DownloadHandlerTexture.GetContent(textureRequest);
-                        var data = isPNG ? texture.EncodeToPNG() : texture.EncodeToJPG();
-                        var file = File.Create(fieldArtPath);
-                        file.Write(data, 0, data.Length);
-                        file.Close();
-                        AssetDatabase.Refresh();
-                    }
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            string spriteAtlasGUID = AssetDatabase.GUIDFromAssetPath(localFieldsSpriteAtlasPath).ToString();
+            var localArtGroup = GetOrAddAddressableGroup(LocalArtGroupName);
+            var entry = addressablesSettings.CreateOrMoveEntry(
+                spriteAtlasGUID, 
+                localArtGroup);
+
+            for (int iField = 0; iField < fields.Count; ++iField) {
+                string spritePath = spritePaths.FirstOrDefault(s => Path.GetFileNameWithoutExtension(s) == fields[iField].Name);
+                if (!string.IsNullOrEmpty(spritePath)) {
+                    fieldAtlas.Add(new UnityEngine.Object[] { AssetDatabase.LoadAssetAtPath<Sprite>(spritePath) });
+                    fields[iField].Sprite = new AssetReferenceAtlasedSprite(spriteAtlasGUID);
+                    fields[iField].Sprite.SubObjectName = Path.GetFileNameWithoutExtension(spritePath).AddresableSafe();
+                } else {
+                    missingArt.Add(fields[iField]);
                 }
             }
+        } else {
+            missingArt = fields;
+        }
+        
+        if (missingArt.Count > 0) {
+            string spriteAtlasPath = FieldsRemoteArtPath + ".spriteatlas";
+            SpriteAtlas spriteAtlas = new SpriteAtlas();
+            UnityEngine.Object folder = AssetDatabase.LoadAssetAtPath(FieldsRemoteArtPath, typeof(UnityEngine.Object));
+            spriteAtlas.Add(new UnityEngine.Object[] { folder });
+            AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
 
-            var field = fields.Find(f => f.Name == fieldName);
-            if (field != null) {
-                field.Sprite = new AssetReferenceAtlasedSprite(AssetDatabase.GUIDFromAssetPath(spriteAtlasPath).ToString());
-                field.Sprite.SubObjectName = fieldName.AddresableSafe();
+            var remoteArtGroup = GetOrAddAddressableGroup(RemoteArtGroupName);
+            addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(spriteAtlasPath).ToString(), remoteArtGroup);
+
+            XmlNodeList images = fieldSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/p[6]/a");
+            for (int i = 0; i < images.Count; i++) {
+                XmlNode image = images.Item(i);
+                string fieldName = image.Attributes.GetNamedItem("title").InnerText.Replace("Category:", string.Empty);
+                
+                var field = fields.Find(f => f.Name == fieldName);
+                if (field != null) {
+                    string linkToImage = WikimonBaseURL + image.FirstChild.Attributes.GetNamedItem("src").InnerText;
+                    string fieldArtPath = FieldsRemoteArtPath + "/" + fieldName + ".png";
+                    
+                    if (!File.Exists(fieldArtPath)) {
+                        using (UnityWebRequest request = UnityWebRequest.Get(linkToImage)) {
+                            await request.SendWebRequest();
+                            if (request.result != UnityWebRequest.Result.ConnectionError) {
+                                var data = request.downloadHandler.data;
+                                var file = File.Create(fieldArtPath);
+                                file.Write(data, 0, data.Length);
+                                file.Close();
+                                AssetDatabase.Refresh();
+                            }
+                        }
+                    }
+                    
+                    field.Sprite = new AssetReferenceAtlasedSprite(AssetDatabase.GUIDFromAssetPath(spriteAtlasPath).ToString());
+                    field.Sprite.SubObjectName = fieldName.AddresableSafe();
+                }
             }
         }
         

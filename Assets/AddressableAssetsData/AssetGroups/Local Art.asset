@@ -10,19 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: General Sprite Atlases
+  m_Name: Local Art
   m_EditorClassIdentifier: 
-  m_GroupName: General Sprite Atlases
+  m_GroupName: Local Art
   m_Data:
     m_SerializedData: []
-  m_GUID: 1040e7c442a824d45a1cb4b7bbfaecd8
+  m_GUID: cdb4cb2c0ca21464f955d02c883c9196
   m_SerializeEntries:
-  - m_GUID: 7b8a827806ccdf84a9112c553688fd5a
-    m_Address: Assets/Remote/Art/Fields.spriteatlas
+  - m_GUID: ad7267f2efea17942aa77e1d8a97ef36
+    m_Address: UI
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: ad0ff146e53d9d64ea796d111de8db5e
+    m_Address: Fields
     m_ReadOnly: 0
     m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 540ef4b002fba424d86242275961d112, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: b1525e7629b1e30488f7524e4b3632ea, type: 2}
+    - {fileID: 11400000, guid: 8b1e48893a73770458082b1cb666ea84, type: 2}
+    - {fileID: 11400000, guid: 6879b69b8a7e7dd49aae07e7c5f47046, type: 2}
