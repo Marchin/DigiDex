@@ -44,7 +44,6 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         _parentCanvas.GetOrAddComponent<Canvas>();
         _canvasScaler = _parentCanvas.GetOrAddComponent<CanvasScaler>();
         RefreshReferenceResolution();
-        _canvasScaler.matchWidthOrHeight = IsScreenOnPortrait ? 0f : 1f;
         _lastDeviceOrientation = Screen.orientation;
     }
 
@@ -60,6 +59,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 _canvasScaler.referenceResolution.y,
                 _canvasScaler.referenceResolution.x
             );
+            _canvasScaler.matchWidthOrHeight = IsScreenOnPortrait ? 0f : 1f;
         }
     }
 
