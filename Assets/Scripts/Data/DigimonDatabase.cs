@@ -26,6 +26,15 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
             return _favorites;
         }
     }
+    private Dictionary<Hash128, Digimon> _digimonDict;
+    public Dictionary<Hash128, Digimon> DigimonDict {
+        get {
+            if (_digimonDict == null) {
+                _digimonDict = Digimons.ToDictionary(d => d.Hash);
+            }
+            return _digimonDict;
+        }
+    }
 
     public List<FilterData> RetrieveFiltersData() {
         List<FilterData> filters = new List<FilterData>();

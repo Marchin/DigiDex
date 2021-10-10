@@ -1,13 +1,13 @@
 using TMPro;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Cysharp.Threading.Tasks;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Collections.Generic;
 
 public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
     [SerializeField] private TextMeshProUGUI _name = default;
@@ -63,7 +63,7 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
         _evolutionTypeIndicators.Populate(data.GetEvolutionColors());
 
         Sprite[] sprites = await UniTask.WhenAll(spritesTasks);
-        _fusionSprites.Populate(sprites.ToList());
+        _fusionSprites.Populate(sprites);
     }
 
     public void SetSelected(bool state) {

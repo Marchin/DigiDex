@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -97,30 +98,64 @@ public class Evolution : IEquatable<Evolution> {
         var evolutionTypes = Enum.GetValues(typeof(EvolutionType));
 
         foreach (EvolutionType evolutionType in evolutionTypes) {
+            if (evolutionType == EvolutionType.Regular) {
+                continue;
+            }
             if (type.HasFlag(evolutionType)) {
-                switch (evolutionType) {
-                    case EvolutionType.Main: {
-                        colors.Add(Color.red);
-                    } break;
-                    case EvolutionType.Warp: {
-                        colors.Add(new Color(1f, 0.6f, 0f));
-                    } break;
-                    case EvolutionType.Side: {
-                        colors.Add(Color.magenta);
-                    } break;
-                    case EvolutionType.Fusion: {
-                        colors.Add(Color.green);
-                    } break;
-                    case EvolutionType.Armor: {
-                        colors.Add(Color.cyan);
-                    } break;
-                    case EvolutionType.Spirit: {
-                        colors.Add(Color.yellow);
-                    } break;
-                }
+                colors.Add(GetEvolutionColor(evolutionType));
             }
         }
 
         return colors;
+    }
+
+    public static List<ColorPlusTextData> GetEvolutionColorsPlusText(EvolutionType type) {
+        List<ColorPlusTextData> data = new List<ColorPlusTextData>();
+
+        var evolutionTypes = Enum.GetValues(typeof(EvolutionType));
+
+        foreach (EvolutionType evolutionType in evolutionTypes) {
+            if (evolutionType == EvolutionType.Regular) {
+                continue;
+            }
+            if (type.HasFlag(evolutionType)) {
+                data.Add(new ColorPlusTextData {
+                    ElementColor = GetEvolutionColor(evolutionType),
+                    Text = Regex.Replace(evolutionType.ToString(), "([a-z])([A-Z])", "$1 $2") + " Evolution"
+                });
+            }
+        }
+
+        return data;
+    }
+
+    private static Color GetEvolutionColor(EvolutionType evolutionType) {
+        Color result = Color.black;
+
+        switch (evolutionType) {
+            case EvolutionType.Main: {
+                result = Color.red;
+            } break;
+            case EvolutionType.Warp: {
+                result = new Color(1f, 0.6f, 0f);
+            } break;
+            case EvolutionType.Side: {
+                result = Color.magenta;
+            } break;
+            case EvolutionType.Fusion: {
+                result = Color.green;
+            } break;
+            case EvolutionType.Armor: {
+                result = Color.cyan;
+            } break;
+            case EvolutionType.Spirit: {
+                result = Color.yellow;
+            } break;
+            default: {
+                Debug.LogWarning("Evolution Type has not pairing color");
+            } break;
+        }
+
+        return result;
     }
 }

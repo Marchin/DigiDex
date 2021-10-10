@@ -1,7 +1,11 @@
 ﻿using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using Cysharp.Threading.Tasks;
 
 public static class UnityUtils {
 
@@ -61,12 +65,28 @@ public static class UnityUtils {
         return result;
     }
 
-    public static void SnapTo(this ScrollRect scroll, RectTransform target)
-    {
+    public static void SnapTo(this ScrollRect scroll, RectTransform target) {
         Canvas.ForceUpdateCanvases();
+        scroll.content.anchoredPosition = 
+            (Vector2)scroll.transform.InverseTransformPoint(scroll.content.position) - 
+                (Vector2)scroll.transform.InverseTransformPoint(target.position);
+    }
 
-        scroll.content.anchoredPosition =
-            (Vector2)scroll.transform.InverseTransformPoint(scroll.content.position)
-            - (Vector2)scroll.transform.InverseTransformPoint(target.position);
+    public static AsyncOperationHandle<Sprite> LoadSprite(
+        this Image image, 
+        AssetReferenceAtlasedSprite spriteRef,
+        CancellationToken cancellationToken = default
+    ) {
+        if (spriteRef.RuntimeKeyIsValid()) {
+            var handle = Addressables.LoadAssetAsync<Sprite>(spriteRef);
+            handle.WithCancellation(cancellationToken).ContinueWith(sprite => {
+                image.sprite = sprite;
+                image.gameObject.SetActive(sprite != null);
+            }).SuppressCancellationThrow();
+
+            return handle;
+        } else {
+            return default;
+        }
     }
 }

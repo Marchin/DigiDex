@@ -65,6 +65,7 @@ public class EvolutionsPopup : Popup {
     [SerializeField] private Toggle _to = default;
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private Button _inspectButton = default;
+    [SerializeField] private Button _evolutionDetailsButton = default;
     [SerializeField] private Button _glossaryButton = default;
     [SerializeField] private Button _dbViewButton = default;
     [SerializeField] private ScrollRect _scroll = default;
@@ -134,6 +135,12 @@ public class EvolutionsPopup : Popup {
                     popup.Initialize(prev, next);
                     popup.Populate(_popupData.CurrTabEvolution.Entry.FetchEntryData());
                 }).Forget();
+        });
+        _evolutionDetailsButton.onClick.AddListener(() => {
+            PopupManager.Instance.GetOrLoadPopup<EvolutionDetailsPopup>(true).ContinueWith(popup => {
+                bool isPreEvolution = _popupData.CurrTab == Tab.From;
+                popup.Populate(_popupData.SourceEntry, _popupData.CurrTabEvolution, isPreEvolution);
+            });
         });
         _glossaryButton.onClick.AddListener(() =>
             PopupManager.Instance.GetOrLoadPopup<EvolutionGlossaryPopup>().Forget());
