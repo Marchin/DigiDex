@@ -114,21 +114,30 @@ public class EvolutionsPopup : Popup {
                 .ContinueWith(popup => {
                     Action prev = null;
                     Action next = null;
-                    if (_popupData.CurrEvolutionList.Count > 1) {
+                    int uniqueEvolution = _popupData.CurrEvolutionList.Select(e => e.Entry).Distinct().Count();
+                    if (uniqueEvolution > 1) {
                         prev = () => {
                             int index = _popupData.CurrEvolutionList.IndexOf(_popupData.CurrTabEvolution);
                             Debug.Assert(index >= 0, "Invalid Evolution");
-                            index = UnityUtils.Repeat(--index, _popupData.CurrEvolutionList.Count);
+                            EntryIndex entryIndex = _popupData.CurrTabEvolution.Entry;
+                            do {
+                                index = UnityUtils.Repeat(--index, _popupData.CurrEvolutionList.Count);
+                            } while (_popupData.CurrEvolutionList[index].Entry == entryIndex);
                             _popupData.CurrTabEvolution = _popupData.CurrEvolutionList[index];
-                            EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
+                            EntryViewPopup activePopupInstance = 
+                                PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
                             activePopupInstance?.Populate(_popupData.CurrTabEvolution.Entry.FetchEntryData());
                         };
                         next = () => {
                             int index = _popupData.CurrEvolutionList.IndexOf(_popupData.CurrTabEvolution);
                             Debug.Assert(index >= 0, "Invalid Evolution");
-                            index = UnityUtils.Repeat(++index, _popupData.CurrEvolutionList.Count);
+                            EntryIndex entryIndex = _popupData.CurrTabEvolution.Entry;
+                            do {
+                                index = UnityUtils.Repeat(++index, _popupData.CurrEvolutionList.Count);
+                            } while (_popupData.CurrEvolutionList[index].Entry == entryIndex);
                             _popupData.CurrTabEvolution = _popupData.CurrEvolutionList[index];
-                            EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
+                            EntryViewPopup activePopupInstance = 
+                                PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
                             activePopupInstance?.Populate(_popupData.CurrTabEvolution.Entry.FetchEntryData());
                         };
                     }
