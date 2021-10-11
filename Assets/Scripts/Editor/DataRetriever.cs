@@ -479,34 +479,56 @@ public static class DataRetriever {
             digimonData.FieldIDs = new List<int>();
             digimonData.TypeIDs = new List<int>();
             digimonData.LevelIDs = new List<int>();
-            XmlNodeList properties = digimonSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[5]/div[1]/ul/li/a");
+            XmlNodeList properties = digimonSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr");
+            string lastCategory = "";
             for (int iProperties = 0; iProperties < properties.Count; ++iProperties) {
-                string attributeLessName = properties.Item(iProperties).InnerText.Replace(" Attribute", string.Empty);
-                int attributeIndex = digimonDB.Attributes.FindIndex(a => a.Name == attributeLessName);
-                if (attributeIndex >= 0) {
-                    digimonData.AttributeIDs.Add(attributeIndex);
+                XmlNode dataNode = properties.Item(iProperties).FirstChild;
+                if (dataNode == null) {
                     continue;
                 }
-                string fieldLessName = properties.Item(iProperties).InnerText.Replace(" Field", string.Empty);
-                int fieldIndex = digimonDB.Fields.FindIndex(f => f.Name == fieldLessName);
-                if (fieldIndex >= 0) {
-                    digimonData.FieldIDs.Add(fieldIndex);
-                    continue;
+
+                string fieldType = dataNode?.FirstChild?.Name;
+                if (fieldType == "b") {
+                    lastCategory = dataNode.InnerText;
+                    dataNode = dataNode.NextSibling;
+                    fieldType = dataNode?.FirstChild?.Name;
                 }
-                string typeLessName = properties.Item(iProperties).InnerText.Replace(" Type", string.Empty);
-                int typeIndex = digimonDB.Types.FindIndex(f => f.Name == typeLessName);
-                if (typeIndex >= 0) {
-                    digimonData.TypeIDs.Add(typeIndex);
-                    continue;
-                }
-                string levelLessName = properties.Item(iProperties).InnerText.Replace(" Level", string.Empty);
-                int levelIndex = digimonDB.Levels.FindIndex(f => f.Name == levelLessName);
-                if (levelIndex >= 0) {
-                    digimonData.LevelIDs.Add(levelIndex);
-                    continue;
+                
+                if (fieldType == "a") {
+                    string propertyName = dataNode.FirstChild?.InnerText;
+
+                    switch (lastCategory) {
+                        case "Attribute": {
+                            int attributeIndex = digimonDB.Attributes.FindIndex(a => a.Name == propertyName);
+                            if (attributeIndex >= 0) {
+                                digimonData.AttributeIDs.Add(attributeIndex);
+                                continue;
+                            }
+                        } break;
+                        case "Field": {
+                            int fieldIndex = digimonDB.Fields.FindIndex(f => f.Name == propertyName);
+                            if (fieldIndex >= 0) {
+                                digimonData.FieldIDs.Add(fieldIndex);
+                                continue;
+                            }
+                        } break;
+                        case "Type": {
+                            int typeIndex = digimonDB.Types.FindIndex(f => f.Name == propertyName);
+                            if (typeIndex >= 0) {
+                                digimonData.TypeIDs.Add(typeIndex);
+                                continue;
+                            }
+                        } break;
+                        case "Level": {
+                            int levelIndex = digimonDB.Levels.FindIndex(f => f.Name == propertyName);
+                            if (levelIndex >= 0) {
+                                digimonData.LevelIDs.Add(levelIndex);
+                                continue;
+                            }
+                        } break;
+                    }
                 }
             }
-
             EditorUtility.SetDirty(digimonData);
         }
         AssetDatabase.SaveAssets();
@@ -976,20 +998,5 @@ public static class DataRetriever {
             EditorUtility.SetDirty(evolutionData);
         }
         AssetDatabase.SaveAssets();
-    }
-
-    
-    
-    [MenuItem("DigiDex/GIF Test")]
-    public static async void GIFTest() {
-        using (UnityWebRequest request = UnityWebRequest.Get("https://wikimon.net/images/thumb/6/6b/Angoramon.gif/270px-Angoramon.gif")) {
-            await request.SendWebRequest();
-            if (request.result != UnityWebRequest.Result.ConnectionError) {
-                var a = request.downloadHandler.data;
-                var f = File.Open("test.png", FileMode.Create);
-                f.Write(a, 0, a.Length);
-                f.Close();
-            }
-        }
     }
 }
