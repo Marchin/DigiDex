@@ -1,3 +1,4 @@
+using TMPro;
 using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
@@ -16,7 +17,8 @@ public class EvolutionDetailsPopup : Popup {
         public float Scroll;
     }
 
-    [SerializeField] private Image _image = default;
+    [SerializeField] private TextMeshProUGUI _selectedName = default;
+    [SerializeField] private Image _selectedImage = default;
     [SerializeField] private Button _inspectButton = default;
     [SerializeField] private Image _fromImage = default;
     [SerializeField] private Image _toImage = default;
@@ -74,8 +76,10 @@ public class EvolutionDetailsPopup : Popup {
     }
 
     private void SelectEntry(IDataEntry dataEntry) {
-        var handle = _image.LoadSprite(dataEntry.Sprite, _cts.Token);
+        var handle = _selectedImage.LoadSprite(dataEntry.Sprite, _cts.Token);
         _handles.Add(handle);
+
+        _selectedName.text = dataEntry.Name;
 
         _popupData.SelectedEntry = dataEntry;
 
