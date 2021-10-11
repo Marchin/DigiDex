@@ -2,6 +2,7 @@
 using System.IO;
 using System.Xml;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -137,7 +138,7 @@ public static class DataRetriever {
                         digimonData = ScriptableObject.CreateInstance<Digimon>();
                         AssetDatabase.CreateAsset(digimonData, digimonDataPath);
                     } else {
-                        digimonData = AssetDatabase.LoadAssetAtPath(digimonDataPath, typeof(Digimon)) as Digimon;
+                        digimonData = AssetDatabase.LoadAssetAtPath<Digimon>(digimonDataPath);
                     }
 
                     digimonData.LinkSubFix = digimonLinkSubFix;
@@ -211,7 +212,7 @@ public static class DataRetriever {
             string spriteAtlasPath = digimonsFoldersI + ".spriteatlas";
             if (!File.Exists(spriteAtlasPath)) {
                 SpriteAtlas spriteAtlas = new SpriteAtlas();
-                UnityEngine.Object folder = AssetDatabase.LoadAssetAtPath(digimonsFoldersI, typeof(UnityEngine.Object));
+                UnityEngine.Object folder = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(digimonsFoldersI);
                 spriteAtlas.Add(new UnityEngine.Object[] { folder });
                 AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
             }
@@ -321,7 +322,7 @@ public static class DataRetriever {
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         } else {
-            scriptableObj = AssetDatabase.LoadAssetAtPath(path, typeof(T)) as T;
+            scriptableObj = AssetDatabase.LoadAssetAtPath<T>(path);
         }
 
         return scriptableObj;
@@ -352,7 +353,7 @@ public static class DataRetriever {
                     field = ScriptableObject.CreateInstance<Field>();
                     AssetDatabase.CreateAsset(field, fieldDataPath);
                 } else {
-                    field = AssetDatabase.LoadAssetAtPath(fieldDataPath, typeof(Field)) as Field;
+                    field = AssetDatabase.LoadAssetAtPath<Field>(fieldDataPath);
                 }
 
                 field.Name = fieldName;
@@ -415,7 +416,7 @@ public static class DataRetriever {
         if (missingArt.Count > 0) {
             string spriteAtlasPath = FieldsRemoteArtPath + ".spriteatlas";
             SpriteAtlas spriteAtlas = new SpriteAtlas();
-            UnityEngine.Object folder = AssetDatabase.LoadAssetAtPath(FieldsRemoteArtPath, typeof(UnityEngine.Object));
+            UnityEngine.Object folder = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(FieldsRemoteArtPath);
             spriteAtlas.Add(new UnityEngine.Object[] { folder });
             AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
             AssetDatabase.SaveAssets();
@@ -468,7 +469,7 @@ public static class DataRetriever {
         
         var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
         for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
-            Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[iDigimon], typeof(Digimon)) as Digimon;
+            Digimon digimonData = AssetDatabase.LoadAssetAtPath<Digimon>(paths[iDigimon]);
             string digimonLink = WikimonBaseURL + digimonData.LinkSubFix;
 
 
@@ -558,7 +559,7 @@ public static class DataRetriever {
                     attribute = ScriptableObject.CreateInstance<Attribute>();
                     AssetDatabase.CreateAsset(attribute, attributeDataPath);
                 } else {
-                    attribute = AssetDatabase.LoadAssetAtPath(attributeDataPath, typeof(Attribute)) as Attribute;
+                    attribute = AssetDatabase.LoadAssetAtPath<Attribute>(attributeDataPath);
                 }
 
                 attribute.Name = attributeName;
@@ -607,7 +608,7 @@ public static class DataRetriever {
                     type = ScriptableObject.CreateInstance<DigimonType>();
                     AssetDatabase.CreateAsset(type, typeDataPath);
                 } else {
-                    type = AssetDatabase.LoadAssetAtPath(typeDataPath, typeof(DigimonType)) as DigimonType;
+                    type = AssetDatabase.LoadAssetAtPath<DigimonType>(typeDataPath);
                 }
 
                 type.Name = typeName;
@@ -656,7 +657,7 @@ public static class DataRetriever {
                     level = ScriptableObject.CreateInstance<Level>();
                     AssetDatabase.CreateAsset(level, levelDataPath);
                 } else {
-                    level = AssetDatabase.LoadAssetAtPath(levelDataPath, typeof(Level)) as Level;
+                    level = AssetDatabase.LoadAssetAtPath<Level>(levelDataPath);
                 }
 
                 level.Name = levelName;
@@ -686,24 +687,26 @@ public static class DataRetriever {
         }
 
         var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
+        List<(Digimon digimon, EvolutionData evolutionData)> pairtList = new List<(Digimon d, EvolutionData ed)>();
         for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
-            Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[iDigimon], typeof(Digimon)) as Digimon;
-            string digimonLink = WikimonBaseURL + digimonData.LinkSubFix;
-
+            Digimon digimonData = AssetDatabase.LoadAssetAtPath<Digimon>(paths[iDigimon]);
             string evolutionDataPath = $"{DigimonEvolutionsDataPath}/{digimonData.Name.AddresableSafe()} Evolutions.asset";
             EvolutionData evolutionData = GetOrCreateScriptableObject<EvolutionData>(evolutionDataPath);
-            
+            pairtList.Add((digimonData, evolutionData));
+            EditorUtility.SetDirty(evolutionData);
+            EditorUtility.SetDirty(digimonData);
+        }
+        Parallel.For(0, pairtList.Count, (iDigimon, state) => {
+            Digimon digimonData = pairtList[iDigimon].digimon;
+            EvolutionData evolutionData = pairtList[iDigimon].evolutionData;
+            string digimonLink = WikimonBaseURL + digimonData.LinkSubFix;
+
             XmlDocument digimonSite = new XmlDocument();
             try {
                 digimonSite.Load(digimonLink);
 
                 evolutionData.PreEvolutions = ParseEvolutionList("Evolves_From");
                 evolutionData.Evolutions = ParseEvolutionList("Evolves_To");
-
-                digimonData.EvolutionData = new AssetReferenceEvolutionData(AssetDatabase.GUIDFromAssetPath(evolutionDataPath).ToString());
-
-                EditorUtility.SetDirty(evolutionData);
-                EditorUtility.SetDirty(digimonData);
             } catch (Exception ex) {
                 Debug.Log($"{digimonData.Name} - {ex.Message} \n {ex.StackTrace}");
             }
@@ -729,10 +732,10 @@ public static class DataRetriever {
 
                         var auxNode = digimonNode.Name == "b"? digimonNode.FirstChild : digimonNode;
                         
-                        int digimonIndex = digimonDB.Digimons.FindIndex(d => d.Name == name);
+                        Digimon digimon = digimonDB.Digimons.Find(d => d.Name == name);
                         string fuseDigimonLinkSubFix = auxNode?.Attributes?.GetNamedItem("href")?.InnerText;
 
-                        if (digimonIndex < 0 && !string.IsNullOrEmpty(fuseDigimonLinkSubFix)) {
+                        if (digimon == null && !string.IsNullOrEmpty(fuseDigimonLinkSubFix)) {
                             // Sometimes name variants are used for the list, we look for the name used in the profile
                             XmlDocument fuseDigimonSite = new XmlDocument();
                             try {
@@ -751,10 +754,10 @@ public static class DataRetriever {
                                 Debug.Log($"{name} - {ex.Message} \n {ex.StackTrace}");
                             }
 
-                            digimonIndex = digimonDB.Digimons.FindIndex(d => d.Name == name);
+                            digimon = digimonDB.Digimons.Find(d => d.Name == name);
                         }
 
-                        if (digimonIndex >= 0) {
+                        if (digimon != null) {
                             List<Evolution> evolutionMethods = new List<Evolution>();
 
                             EvolutionType baseEvolutionType = EvolutionType.Regular;
@@ -762,7 +765,7 @@ public static class DataRetriever {
                                 baseEvolutionType = EvolutionType.Main;
                             }
                             
-                            EntryIndex digimonEntry = new EntryIndex(typeof(Digimon), digimonIndex);
+                            EntryIndex digimonEntry = new EntryIndex(typeof(Digimon), digimon.Hash);
                             Evolution method = new Evolution { Entry = digimonEntry, DebugName = name, Types = baseEvolutionType, FusionEntries = new EntryIndex[0] };
 
                             bool isWarp = false;
@@ -825,26 +828,28 @@ public static class DataRetriever {
                                             string materialLink = aux?.Attributes?.GetNamedItem("href")?.InnerText;
                                             
                                             XmlDocument materialSite = new XmlDocument();
-                                            try {
-                                                materialSite.Load(WikimonBaseURL + materialLink);
-                                                XmlNode redirectNode = materialSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
-                                                while (redirectNode != null) {
-                                                    materialLink = redirectNode.Attributes.GetNamedItem("href").InnerText;
-                                                    Debug.Log($"Redirecting from {fuseDigimonLinkSubFix} to {materialLink}");
-                                                    fuseDigimonLinkSubFix = materialLink;
-                                                    materialSite.Load(WikimonBaseURL + fuseDigimonLinkSubFix);
-                                                    redirectNode = materialSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
+                                            Digimon fusion = digimonDB.Digimons.Find(d => d.LinkSubFix == materialLink);
+                                            if (fusion == null) {
+                                                try {
+                                                    materialSite.Load(WikimonBaseURL + materialLink);
+                                                    XmlNode redirectNode = materialSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
+                                                    while (redirectNode != null) {
+                                                        materialLink = redirectNode.Attributes.GetNamedItem("href").InnerText;
+                                                        Debug.Log($"Redirecting from {fuseDigimonLinkSubFix} to {materialLink}");
+                                                        fuseDigimonLinkSubFix = materialLink;
+                                                        materialSite.Load(WikimonBaseURL + fuseDigimonLinkSubFix);
+                                                        redirectNode = materialSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
+                                                    }
+                                                    fusion = digimonDB.Digimons.Find(d => d.LinkSubFix == materialLink);
+                                                } catch (Exception ex) {
+                                                    Debug.Log($"{name} - {ex.Message} \n {ex.StackTrace}");
                                                 }
-                                            } catch (Exception ex) {
-                                                Debug.Log($"{name} - {ex.Message} \n {ex.StackTrace}");
                                             }
-                                            int fusionIndex = digimonDB.Digimons.FindIndex(
-                                                d => d.LinkSubFix == materialLink);
-                                            if (fusionIndex > 0) {
+                                            if (fusion != null) {
                                                 method.Types |= EvolutionType.Fusion;
                                                 EntryIndex fusionEntry = new EntryIndex(
                                                     typeof(Digimon), 
-                                                    fusionIndex
+                                                    fusion.Hash
                                                 );
                                                 fusionIDs.Add((fusionEntry, siblingNode.Name == "b"));
                                             }
@@ -938,6 +943,12 @@ public static class DataRetriever {
 
                 return evolutions.Distinct().ToList();
             }
+        });
+
+        foreach(var entry in pairtList) {
+            string evolutionDataPath = $"{DigimonEvolutionsDataPath}/{entry.digimon.Name.AddresableSafe()} Evolutions.asset";
+            entry.digimon.EvolutionData = new AssetReferenceEvolutionData(
+                AssetDatabase.GUIDFromAssetPath(evolutionDataPath).ToString());
         }
 
         AssetDatabase.SaveAssets();
@@ -957,7 +968,7 @@ public static class DataRetriever {
     public static void GenerateDigimonHashes() {
         var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
         for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
-            Digimon digimonData = AssetDatabase.LoadAssetAtPath(paths[iDigimon], typeof(Digimon)) as Digimon;
+            Digimon digimonData = AssetDatabase.LoadAssetAtPath<Digimon>(paths[iDigimon]);
             digimonData.Hash = Hash128.Compute(digimonData.LinkSubFix);
             EditorUtility.SetDirty(digimonData);
         }
@@ -970,28 +981,28 @@ public static class DataRetriever {
     public static void FillDigimonEvolutionType() {
         var paths = Directory.GetFiles(DigimonEvolutionsDataPath, "*.asset").OrderBy(path => path).ToArray();
         for (int iEvolutionData = 0; iEvolutionData < paths.Length; iEvolutionData++) {
-            EvolutionData evolutionData = AssetDatabase.LoadAssetAtPath(paths[iEvolutionData], typeof(EvolutionData)) as EvolutionData;
+            EvolutionData evolutionData = AssetDatabase.LoadAssetAtPath<EvolutionData>(paths[iEvolutionData]);
             for (int iEvolution = 0; iEvolution < evolutionData.PreEvolutions.Count; iEvolution++) {
                 evolutionData.PreEvolutions[iEvolution].Entry = new EntryIndex(
                     typeof(Digimon),
-                    evolutionData.PreEvolutions[iEvolution].Entry.Index
+                    evolutionData.PreEvolutions[iEvolution].Entry.Hash
                 );
                 for (int iFusion = 0; iFusion < evolutionData.PreEvolutions[iEvolution].FusionEntries.Length; iFusion++) {
                     evolutionData.PreEvolutions[iEvolution].FusionEntries[iFusion] = new EntryIndex(
                         typeof(Digimon),
-                        evolutionData.PreEvolutions[iEvolution].FusionEntries[iFusion].Index
+                        evolutionData.PreEvolutions[iEvolution].FusionEntries[iFusion].Hash
                     );
                 }
             }
             for (int iEvolution = 0; iEvolution < evolutionData.Evolutions.Count; iEvolution++) {
                 evolutionData.Evolutions[iEvolution].Entry = new EntryIndex(
                     typeof(Digimon),
-                    evolutionData.Evolutions[iEvolution].Entry.Index
+                    evolutionData.Evolutions[iEvolution].Entry.Hash
                 );
                 for (int iFusion = 0; iFusion < evolutionData.Evolutions[iEvolution].FusionEntries.Length; iFusion++) {
                     evolutionData.Evolutions[iEvolution].FusionEntries[iFusion] = new EntryIndex(
                         typeof(Digimon),
-                        evolutionData.Evolutions[iEvolution].FusionEntries[iFusion].Index
+                        evolutionData.Evolutions[iEvolution].FusionEntries[iFusion].Hash
                     );
                 }
             }

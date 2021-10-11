@@ -1,6 +1,6 @@
 using UnityEngine;
 using System;
-using System.Linq;
+using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine.AddressableAssets;
 
@@ -18,6 +18,7 @@ public interface IEvolvable {
 
 public interface IDatabase {
     IEnumerable<IDataEntry> EntryList { get; }
+    Dictionary<Hash128, IDataEntry> EntryDict { get; }
     HashSet<Hash128> Favorites { get; }
     List<FilterData> RetrieveFiltersData();
     List<ToggleFilterData> RetrieveTogglesData();
@@ -26,23 +27,26 @@ public interface IDatabase {
 [Serializable]
 public class EntryIndex : IEquatable<EntryIndex> {
     [SerializeField] private string _typeName = default;
-    public int Index;
+    public Hash128 Hash;
 
-    public EntryIndex(Type type, int index) {
+    public EntryIndex(Type type, Hash128 hash) {
         Debug.Assert(type.GetInterface(nameof(IDataEntry)) != null, $"Invalid type {type}");
-        _typeName = type.ToString();
-        Index = index;
+        _typeName = type.FullName;
+        Hash = hash;
     }
 
     public IDataEntry FetchEntryData() {
-        IDataEntry result = ApplicationManager.Instance.GetDatabase(Type.GetType(_typeName))?.EntryList.ElementAt(Index);
+        MethodInfo method = typeof(ApplicationManager).GetMethod(nameof(ApplicationManager.Instance.GetDatabase), new Type[0]);
+        MethodInfo generic = method.MakeGenericMethod(Type.GetType(_typeName));
+        IDatabase db = generic.Invoke(ApplicationManager.Instance, null) as IDatabase;
+        IDataEntry result = db?.EntryDict[Hash];
 
         return result;
     }
 
     public bool Equals(EntryIndex other) {
         bool areEqual = this._typeName == other._typeName &&
-            this.Index == other.Index;
+            this.Hash == other.Hash;
 
         return areEqual;
     }
@@ -58,7 +62,7 @@ public class EntryIndex : IEquatable<EntryIndex> {
     }
 
     public override int GetHashCode() {
-        return _typeName.GetHashCode() * Index.GetHashCode();
+        return _typeName.GetHashCode() * Hash.GetHashCode();
     }
 
     public static bool operator ==(EntryIndex entry1, EntryIndex entry2) {

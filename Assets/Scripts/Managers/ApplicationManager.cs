@@ -46,21 +46,16 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         return result;
     }
     
-    public IDatabase GetDatabase(Type type) {
-        if (type.GetInterface(nameof(IDataEntry)) != null) {
-            switch (type.ToString()) {
-                case nameof(Digimon): {
-                    return _centralDB.DigimonDB;
-                }
-                default: {
-                    Debug.LogError("Could not fetch database based on entry");
-                    return null;
-                }
+    public IDatabase GetDatabase<T>() where T : IDataEntry {
+        switch (typeof(T).ToString()) {
+            case nameof(Digimon): {
+                return _centralDB.DigimonDB;
+            }
+            default: {
+                Debug.LogError("Could not fetch database based on entry");
+                return null;
             }
         }
-
-        Debug.LogError($"{type} does not implement IDataEntry");
-        return null;
     }
     
     private void OnApplicationQuit() {
