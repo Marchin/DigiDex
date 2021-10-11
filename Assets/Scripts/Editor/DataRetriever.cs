@@ -705,8 +705,12 @@ public static class DataRetriever {
             try {
                 digimonSite.Load(digimonLink);
 
-                evolutionData.PreEvolutions = ParseEvolutionList("Evolves_From");
-                evolutionData.Evolutions = ParseEvolutionList("Evolves_To");
+                evolutionData.PreEvolutions = ParseEvolutionList("Evolves_From")?
+                    .OrderByDescending(e => e.Types.HasFlag(EvolutionType.Main))
+                    .ToList();
+                evolutionData.Evolutions = ParseEvolutionList("Evolves_To")?
+                    .OrderByDescending(e => e.Types.HasFlag(EvolutionType.Main))
+                    .ToList();
             } catch (Exception ex) {
                 Debug.Log($"{digimonData.Name} - {ex.Message} \n {ex.StackTrace}");
             }
