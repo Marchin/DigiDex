@@ -85,7 +85,7 @@ public class EvolutionsPopup : Popup {
             if (isOn && EvolutionData != null) {
                 _popupData.CurrTab = Tab.From;
                 _toScrollPos = _initialized ? _scroll.verticalNormalizedPosition : 1f;
-                _evolutionList.Populate(EvolutionData.PreEvolutions);
+                _evolutionList.Populate(EvolutionData.PreEvolutions.OrderByDescending(e => e.Types.HasFlag(EvolutionType.Main)));
                 for (int i = 0; i < _evolutionList.Elements.Count; ++i) {
                     _evolutionList.Elements[i].OnPressed = entry => OnEvolutionSelected(entry);
                 }
@@ -99,7 +99,7 @@ public class EvolutionsPopup : Popup {
             if (isOn && EvolutionData != null) {
                 _popupData.CurrTab = Tab.To;
                 _fromScrollPos = _initialized ? _scroll.verticalNormalizedPosition : 1f;
-                _evolutionList.Populate(EvolutionData.Evolutions);
+                _evolutionList.Populate(EvolutionData.Evolutions.OrderByDescending(e => e.Types.HasFlag(EvolutionType.Main)));
                 for (int i = 0; i < _evolutionList.Elements.Count; ++i) {
                     _evolutionList.Elements[i].OnPressed = entry => OnEvolutionSelected(entry);
                 }
