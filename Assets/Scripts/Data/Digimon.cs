@@ -29,7 +29,9 @@ public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
         set => _name = value;
     }
     public string Profile {
-        get => _profile;
+        get => string.IsNullOrEmpty(_profile) ?
+            "No profile available." :
+            _profile;
         set => _profile = value;
     }
     public AssetReferenceAtlasedSprite Sprite {
