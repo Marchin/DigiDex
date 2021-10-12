@@ -83,6 +83,9 @@ public class EvolutionsPopup : Popup {
     private void Awake() {
         _from.onValueChanged.AddListener(isOn => {
             if (isOn && EvolutionData != null) {
+                if (_initialized && _popupData.CurrTab == Tab.From) {
+                    return;
+                }
                 _popupData.CurrTab = Tab.From;
                 _toScrollPos = _initialized ? _scroll.verticalNormalizedPosition : 1f;
                 _evolutionList.Populate(EvolutionData.PreEvolutions);
@@ -97,6 +100,9 @@ public class EvolutionsPopup : Popup {
         });
         _to.onValueChanged.AddListener(isOn => {
             if (isOn && EvolutionData != null) {
+                if (_initialized && _popupData.CurrTab == Tab.To) {
+                    return;
+                }
                 _popupData.CurrTab = Tab.To;
                 _fromScrollPos = _initialized ? _scroll.verticalNormalizedPosition : 1f;
                 _evolutionList.Populate(EvolutionData.Evolutions);
