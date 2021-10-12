@@ -18,6 +18,7 @@ public class ElementScrollList : MonoBehaviour {
     [SerializeField] private RectTransform _elementTemplate = default;
     [SerializeField] private int _maxElements = default;
     private RectTransform[] _elements;
+    private ScrollContent[] _scrollContents;
     private TextMeshProUGUI[] _elementsTexts;
     private List<string> _namesList = new List<string>();
     private float _elementNormalizedHeight;
@@ -41,6 +42,10 @@ public class ElementScrollList : MonoBehaviour {
         set {
             if (_currElementIndex != value) {
                 _currElementIndex = value;
+                foreach (var content in _scrollContents) {
+                    content.enabled = false;
+                }
+                _scrollContents[_currElementIndex].enabled = true;
                 OnSelectedElementChanged?.Invoke(value);
             }
         }
@@ -92,6 +97,7 @@ public class ElementScrollList : MonoBehaviour {
             _elements[iChild - 1] = _scrollRect.content.GetChild(iChild) as RectTransform;
         }
         _elementsTexts = _scrollRect.content.GetComponentsInChildren<TextMeshProUGUI>();
+        _scrollContents = _scrollRect.content.GetComponentsInChildren<ScrollContent>();
 
         PopulateElements();
 
@@ -182,7 +188,7 @@ public class ElementScrollList : MonoBehaviour {
             Vector2 element = _elements[iElement].transform.TransformPoint((_elements[iElement].transform as RectTransform).rect.center);
             float t = Mathf.Abs(viewportCenter.y - element.y) / _scrollRect.viewport.rect.height;
             float sqT = t * t;
-            element.x = viewportCenter.x - Mathf.Lerp(0, _scrollAnimationOffset, sqT);
+            element.x = _scrollRect.content.rect.center.x + _layoutGroup.padding.left - Mathf.Lerp(0, _scrollAnimationOffset, sqT);
             _elements[iElement].transform.localScale = Vector2.one * Mathf.Lerp(1f, _scrollAnimationScale, sqT);
             _elements[iElement].transform.position = element;
             if (minT > t) {
@@ -207,6 +213,9 @@ public class ElementScrollList : MonoBehaviour {
 
         Canvas.ForceUpdateCanvases();
 
+        foreach (var content in _scrollContents) {
+            content.Refresh();
+        }
         float scrollableHeight = _scrollRect.content.rect.height - _scrollRect.viewport.rect.height;
         _elementNormalizedHeight = (_elements[0].rect.height + _layoutGroup.spacing) /  scrollableHeight;
     }
