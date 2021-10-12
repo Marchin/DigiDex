@@ -185,12 +185,12 @@ public class ElementScrollList : MonoBehaviour {
         Vector2 selectedElementPos = Vector2.zero;
         int currElementIndex = 0;
         for (int iElement = 0; iElement < _elements.Length; iElement++) {
-            Vector2 element = _elements[iElement].transform.TransformPoint((_elements[iElement].transform as RectTransform).rect.center);
+            Vector2 element = _elements[iElement].TransformPoint(_elements[iElement].rect.center);
             float t = Mathf.Abs(viewportCenter.y - element.y) / _scrollRect.viewport.rect.height;
             float sqT = t * t;
-            element.x = _scrollRect.content.rect.center.x + _layoutGroup.padding.left - Mathf.Lerp(0, _scrollAnimationOffset, sqT);
-            _elements[iElement].transform.localScale = Vector2.one * Mathf.Lerp(1f, _scrollAnimationScale, sqT);
-            _elements[iElement].transform.position = element;
+            element.x = viewportCenter.x + _layoutGroup.padding.left - Mathf.Lerp(0, _scrollAnimationOffset, sqT);
+            _elements[iElement].localScale = Vector2.one * Mathf.Lerp(1f, _scrollAnimationScale, sqT);
+            _elements[iElement].position = element;
             if (minT > t) {
                 selectedElementPos = element;
                 minT = t;

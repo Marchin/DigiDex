@@ -18,17 +18,37 @@ public class InformationData {
 public class InformationElement : MonoBehaviour, IDataUIElement<InformationData> {
     [SerializeField] private int _indentWidth = default;
     [SerializeField] private Image _image = default;
-    [SerializeField] private TextMeshProUGUI _text = default;
+    [SerializeField] private GameObject _prefixContainer = default;
+    [SerializeField] private TextMeshProUGUI _prefix = default;
+    [SerializeField] private TextMeshProUGUI _content = default;
     [SerializeField] private Button _moreInfoButton = default;
     [SerializeField] private LayoutGroup _layoutGroup = default;
+    [SerializeField] private ScrollContent _scrollContent = default;
     private AsyncOperationHandle<Sprite> _spriteHandle;
     private CancellationTokenSource _cts;
 
     public void Populate(InformationData data) {
         if (!string.IsNullOrEmpty(data.Prefix)) {
-            _text.text = $"{data.Prefix}: {data.Content}";
+            if (_prefix != null) {
+                _prefix.gameObject.SetActive(true);
+                _prefix.text = $"{data.Prefix}:";
+                _content.text = data.Content;
+            } else {
+                _content.text = $"{data.Prefix}: {data.Content}";
+            }
         } else {
-            _text.text = data.Content;
+            if (_prefix != null) {
+                _prefix.gameObject.SetActive(false);
+            }
+            _content.text = data.Content;
+        }
+
+        if (_prefixContainer != null) {
+            _prefixContainer.SetActive(!string.IsNullOrEmpty(data.Prefix));
+        }
+
+        if (_scrollContent != null) {
+            _scrollContent.Refresh();
         }
 
         _image.gameObject.SetActive(false);

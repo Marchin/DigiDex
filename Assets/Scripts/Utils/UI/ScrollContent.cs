@@ -9,7 +9,7 @@ public class ScrollContent : MonoBehaviour {
     [SerializeField] private RectTransform _container = default;
     [SerializeField] private RectTransform _content = default;
     [SerializeField] private Direction _direction = default;
-    [SerializeField] private float _speed = default;
+    [SerializeField] private float _speed = 128;
     private Vector2 _dirVector;
     private Vector2 _initPivot;
     private Vector2 _initPos;
