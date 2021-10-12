@@ -23,6 +23,7 @@ public class ScrollContent : MonoBehaviour {
         _dirVector = _isVertical ? Vector2.up : Vector2.left;
         _content.pivot = _isVertical ? new Vector2(0.5f, 1f) : new Vector2(0f, 0.5f);
         _initialized = true;
+        Refresh();
     }
 
     private void OnDisable() {
