@@ -14,11 +14,9 @@ public class FilterPopup : Popup {
     [SerializeField] private Button _applyButton = default;
     [SerializeField] private Button _clearButton = default;
     [SerializeField] private Button _closeButton = default;
-    [SerializeField] private Button _sortButton = default;
     [SerializeField] private FilterDataList _filterList = default;
     [SerializeField] private FilterEntryList _filterEntriesList = default;
     [SerializeField] private ToggleList _toggleList = default;
-    [SerializeField] private ToggleList _sortToggleList = default;
     private IEnumerable<FilterData> _filters;
     private IEnumerable<ToggleActionData> _toggles;
     private FilterCallback ApplyCallback;
