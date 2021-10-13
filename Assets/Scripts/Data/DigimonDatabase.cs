@@ -95,13 +95,13 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         return filters;
     }
 
-    public List<ToggleFilterData> RetrieveTogglesData() {
-        List<ToggleFilterData> toggles = new List<ToggleFilterData>();
+    public List<ToggleActionData> RetrieveTogglesData() {
+        List<ToggleActionData> toggles = new List<ToggleActionData>();
 
         toggles.Add(
-            new ToggleFilterData(
+            new ToggleActionData(
                 name: FavoritesToggle,
-                filterAction: (list, isOn) => {
+                action: (list, isOn) => {
                     if (isOn) {
                         return list
                             .Where(o => Favorites.Contains((o as Digimon).Hash))
@@ -113,9 +113,9 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
             )
         );
         toggles.Add(
-            new ToggleFilterData(
+            new ToggleActionData(
                 name: ReverseToggle, 
-                filterAction: (list, isOn) => {
+                action: (list, isOn) => {
                     if (isOn) {
                         return list.Reverse();
                     } else {

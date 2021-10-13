@@ -21,7 +21,7 @@ public interface IDatabase {
     Dictionary<Hash128, IDataEntry> EntryDict { get; }
     HashSet<Hash128> Favorites { get; }
     List<FilterData> RetrieveFiltersData();
-    List<ToggleFilterData> RetrieveTogglesData();
+    List<ToggleActionData> RetrieveTogglesData();
 }
 
 [Serializable]

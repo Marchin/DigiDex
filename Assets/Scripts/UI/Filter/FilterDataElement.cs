@@ -51,11 +51,11 @@ public class FilterData {
     }
 }
 
-public class ToggleFilterData : ToggleData {
-    public Func<IEnumerable<IDataEntry>, bool, IEnumerable<IDataEntry>> _filterAction;
+public class ToggleActionData : ToggleData {
+    public Func<IEnumerable<IDataEntry>, bool, IEnumerable<IDataEntry>> _action;
 
-    public ToggleFilterData(string name, Func<IEnumerable<IDataEntry>, bool, IEnumerable<IDataEntry>> filterAction) : base(name) {
-        _filterAction = filterAction;
+    public ToggleActionData(string name, Func<IEnumerable<IDataEntry>, bool, IEnumerable<IDataEntry>> action) : base(name) {
+        _action = action;
     }
 
     public override object Clone() {
@@ -64,9 +64,9 @@ public class ToggleFilterData : ToggleData {
 
     public IEnumerable<T> Apply<T>(IEnumerable<T> list) where T : IDataEntry {
         // TODO: See if we can do something better with the casting
-        var filteredList = _filterAction?.Invoke(list.Cast<IDataEntry>(), IsOn).Cast<T>();
+        var processedList = _action?.Invoke(list.Cast<IDataEntry>(), IsOn).Cast<T>();
 
-        return filteredList;
+        return processedList;
     }
 }
 

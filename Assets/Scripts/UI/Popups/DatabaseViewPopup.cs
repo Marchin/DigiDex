@@ -13,8 +13,8 @@ using Cysharp.Threading.Tasks.Linq;
 
 public class DatabaseViewPopup : Popup {
     public class PopupData {
-        public List<FilterData> Filters;
-        public List<ToggleFilterData> Toggles;
+        public IEnumerable<FilterData> Filters;
+        public IEnumerable<ToggleActionData> Toggles;
         public string LastQuery;
         public IDatabase DB;
         public string SelectedEntry;
@@ -33,8 +33,8 @@ public class DatabaseViewPopup : Popup {
     private List<AsyncOperationHandle> _entryDataHandles = new List<AsyncOperationHandle>();
     private IEnumerable<IDataEntry> _filteredEntries;
     private IEnumerable<IDataEntry> _currEntries;
-    private List<FilterData> _filters;
-    private List<ToggleFilterData> _toggles;
+    private IEnumerable<FilterData> _filters;
+    private IEnumerable<ToggleActionData> _toggles;
     private string _lastQuery = "";
     private Dictionary<Hash128, IDataEntry> _entryDict;
     private IDatabase _db;
