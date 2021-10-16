@@ -9,13 +9,19 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.AddressableAssets;
 using Cysharp.Threading.Tasks;
 
+public class PopupRestorationData {
+    public Type PopupType;
+    public bool IsFullScreen;
+    public object Data;
+}
+
 public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     private List<Popup> _stack = new List<Popup>();
     private List<AsyncOperationHandle<GameObject>> _handles = new List<AsyncOperationHandle<GameObject>>();
     private GameObject _parentCanvas;
     private CanvasScaler _canvasScaler;
     public event Action OnStackChange;
-    private List<(Type, object)> _restorationData = new List<(Type, object)>();
+    private List<PopupRestorationData> _restorationData = new List<PopupRestorationData>();
     private bool _loadingPopup;
     public bool IsScreenOnPortrait => (Screen.height > Screen.width);
     private ScreenOrientation _lastDeviceOrientation;
@@ -68,7 +74,13 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         T popup = null;
         _loadingPopup = true;
         if (track && ActivePopup != null) {
-            _restorationData.Insert(0, (ActivePopup.GetType(), restore ? ActivePopup.GetRestorationData() : null));
+            var activePopup = ActivePopup;
+            PopupRestorationData restorationData = new PopupRestorationData {
+                PopupType = activePopup.GetType(),
+                IsFullScreen = activePopup.FullScreen,
+                Data = restore ? activePopup.GetRestorationData() : null
+            };
+            _restorationData.Insert(0, restorationData);
         }
 
         while (_stack.Count > 0 && !_stack[0].gameObject.activeSelf) {
@@ -158,9 +170,10 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             int counter = lastVisiblePopup;
             Popup popup = _stack[lastVisiblePopup];
             while (counter >= 0) {
-                (Type type, object content) restorationData = (null, null);
-                restorationData.type = popup.GetType();
-                restorationData.content = popup.GetRestorationData();
+                PopupRestorationData restorationData = null;
+                restorationData.PopupType = popup.GetType();
+                restorationData.IsFullScreen = popup.FullScreen;
+                restorationData.Data = popup.GetRestorationData();
                 RemovePopup(lastVisiblePopup);
                 await RestorePopup(restorationData);
                 popup = _stack[lastVisiblePopup];
@@ -189,26 +202,41 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         }
     }
 
-    public void Back() {
+    public async void Back() {
         if (ActivePopup != null) {
-            (Type type, object content) restorationData = (null, null);
-
+            int startingIndex = -1;
             if (_restorationData.Count > 0) {
-                restorationData = _restorationData[0];
-                _restorationData.RemoveAt(0);
-            }
+                startingIndex = 0;
 
-            if (restorationData.content != null) {
-                RestorePopup(restorationData).Forget();
-            } else {
-                foreach (var popup in _stack) {
-                    if (popup.gameObject.activeSelf) {
-                        popup.OnClose();
-                        popup.gameObject.SetActive(false);
-                        break;
-                    }
+                while ((startingIndex + 1) < _restorationData.Count && !_restorationData[startingIndex].IsFullScreen) {
+                    ++startingIndex;
                 }
             }
+
+            var handle = ApplicationManager.Instance.DisplayLoadingScreen();
+            while (startingIndex >= 0) {
+                PopupRestorationData restorationData = _restorationData[startingIndex];
+
+                if (restorationData.Data != null) {
+                    await RestorePopup(restorationData);
+                } else {
+                    foreach (var popup in _stack) {
+                        if (popup.gameObject.activeSelf) {
+                            popup.OnClose();
+                            popup.gameObject.SetActive(false);
+                            break;
+                        }
+                    }
+                }
+                
+                if (startingIndex == 0) {
+                    _restorationData.RemoveAt(startingIndex);
+                } else {
+                    _restorationData[startingIndex].Data = null;
+                }
+                --startingIndex;
+            }
+            handle.Complete();
 
             OnStackChange?.Invoke();
         } else {
@@ -222,14 +250,14 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         }
 
         while (ActivePopup != null && ActivePopup.GetType() != typeof(T)) {
-            (Type type, object content) restorationData = (null, null);
+            PopupRestorationData restorationData = null;
 
             if (_restorationData.Count > 0) {
                 restorationData = _restorationData[0];
                 _restorationData.RemoveAt(0);
             }
 
-            if (restorationData.type == typeof(T) && restorationData.content != null) {
+            if (restorationData.PopupType == typeof(T) && restorationData.Data != null) {
                 await RestorePopup(restorationData);
             } else {
                 foreach (var popup in _stack) {
@@ -245,15 +273,15 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         OnStackChange?.Invoke();
     }
 
-    private async UniTask RestorePopup((Type type, object content) restorationData) {
+    private async UniTask RestorePopup(PopupRestorationData restorationData) {
         MethodInfo method = this.GetType().GetMethod(nameof(GetOrLoadPopup));
-        MethodInfo generic = method.MakeGenericMethod(restorationData.type);
+        MethodInfo generic = method.MakeGenericMethod(restorationData.PopupType);
         var task = generic.Invoke(this, new object[] { false, false });
         var awaiter = task.GetType().GetMethod("GetAwaiter").Invoke(task, null);
         await UniTask.WaitUntil(() =>
             (awaiter.GetType().GetProperty("IsCompleted").GetValue(awaiter) as bool?) ?? true);
         var result = awaiter.GetType().GetMethod("GetResult");
         Popup popup = result.Invoke(awaiter, null) as Popup;
-        popup.Restore(restorationData.content);
+        popup.Restore(restorationData.Data);
     }
 }
