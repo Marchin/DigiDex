@@ -8,6 +8,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     public const string AttributesFilter = "Attributes";
     public const string TypesFilter = "Types";
     public const string LevelsFilter = "Levels";
+    public const string GroupsFilter = "Groups";
     public const string FavoritesToggle = "Favorites";
     public const string ReverseToggle = "Reverse";
     private const string FavDigimonPref = "fav_digimons";
@@ -16,6 +17,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     public List<Field> Fields;
     public List<Attribute> Attributes;
     public List<DigimonType> Types;
+    public List<DigimonGroup> Groups;
     public List<Level> Levels;
     private HashSet<Hash128> _favorites;
     public HashSet<Hash128> Favorites {
@@ -91,6 +93,16 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
             levelsFilter.Elements.Add(new FilterEntryData { Name = Levels[iLevel].Name });
         }
         filters.Add(levelsFilter);
+
+        FilterData groupsFilter = new FilterData(
+            name: GroupsFilter,
+            getFilteringComponent: element => (element as Digimon).GroupIDs
+        );
+        groupsFilter.Elements = new List<FilterEntryData>(Groups.Count);
+        for (int iGroup = 0; iGroup < Groups.Count; ++iGroup) {
+            groupsFilter.Elements.Add(new FilterEntryData { Name = Groups[iGroup].Name });
+        }
+        filters.Add(groupsFilter);
 
         return filters;
     }

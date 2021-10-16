@@ -30,7 +30,7 @@ public class MessagePopup : Popup {
         _title.text = string.IsNullOrEmpty(title) ? "Message" : title;
         _image.gameObject.SetActive(false);
         _spriteReference = spriteReference;
-        if (_spriteReference.RuntimeKeyIsValid()) {
+        if (_spriteReference?.RuntimeKeyIsValid() ?? false) {
             Addressables.LoadAssetAsync<Sprite>(spriteReference).Completed += operation => {
                 if (operation.Status == AsyncOperationStatus.Succeeded) {
                     _image.sprite = operation.Result;
@@ -57,7 +57,7 @@ public class MessagePopup : Popup {
     }
 
     public override void OnClose() {
-        if (_spriteReference.RuntimeKeyIsValid()) {
+        if (_spriteReference?.RuntimeKeyIsValid() ?? false) {
             _spriteReference.ReleaseAsset();
         }
     }
