@@ -65,6 +65,14 @@ MonoBehaviour:
     m_Address: MessagePopup (Vertical)
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: dfdac0f39cc48f04683d184f73b19156
+    m_Address: EvolutionDetailsPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e2358e70c96306944bfad0db48cbe699
+    m_Address: EvolutionDetailsPopup (Vertical)
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 540ef4b002fba424d86242275961d112, type: 2}
   m_SchemaSet:
