@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class CopyGraphicsColor : MonoBehaviour {
-    [SerializeField] private Graphic _button = default;
+    [SerializeField] private Graphic _graphic = default;
     [SerializeField] private List<Image> _images = default;
 
     private void Update() {
@@ -11,13 +11,16 @@ public class CopyGraphicsColor : MonoBehaviour {
     }   
 
     private void OnValidate() {
-        ApplyColor();
+        if (_graphic != null) {
+            ApplyColor();
+        }
     }
 
     private void ApplyColor() {
-        Color color = _button.color * _button.canvasRenderer.GetColor();
-        foreach (Image images in _images) {
-            images.color = color;
+        Color color = _graphic.color * _graphic.canvasRenderer.GetColor();
+        foreach (Image image in _images) {
+            color.a = image.color.a;
+            image.color = color;
         }
     }
 }

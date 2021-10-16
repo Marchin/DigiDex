@@ -22,6 +22,7 @@ public class InformationElement : MonoBehaviour, IDataUIElement<InformationData>
     [SerializeField] private TextMeshProUGUI _prefix = default;
     [SerializeField] private TextMeshProUGUI _content = default;
     [SerializeField] private Button _moreInfoButton = default;
+    [SerializeField] private GameObject _moreInfoVisual = default;
     [SerializeField] private LayoutGroup _layoutGroup = default;
     [SerializeField] private ScrollContent _scrollContent = default;
     private AsyncOperationHandle<Sprite> _spriteHandle;
@@ -74,6 +75,7 @@ public class InformationElement : MonoBehaviour, IDataUIElement<InformationData>
 
         _moreInfoButton.onClick.RemoveAllListeners();
         _moreInfoButton.onClick.AddListener(() => data.OnMoreInfo?.Invoke());
-        _moreInfoButton.gameObject.SetActive(data.OnMoreInfo != null);
+        _moreInfoButton.interactable = data.OnMoreInfo != null;
+        _moreInfoVisual.gameObject.SetActive(data.OnMoreInfo != null);
     }
 }

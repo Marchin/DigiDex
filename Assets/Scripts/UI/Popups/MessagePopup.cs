@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using System.Collections.Generic;
+using System.Threading;
 
 public class MessagePopup : Popup {
     public class PopupData {
@@ -17,7 +17,8 @@ public class MessagePopup : Popup {
     [SerializeField] private Image _image = default;
     [SerializeField] private Button _closeButton = default;
     private AssetReferenceAtlasedSprite _spriteReference;
-    private AsyncOperation _spriteHandle;
+    private AsyncOperationHandle _spriteHandle;
+    private CancellationTokenSource _cts;
 
     private void Awake() {
         _closeButton.onClick.AddListener(PopupManager.Instance.Back);
@@ -26,18 +27,16 @@ public class MessagePopup : Popup {
     public void Populate(string message, string title = "", 
         AssetReferenceAtlasedSprite spriteReference = null
     ) {
+        _cts.Renew();
+        if (_spriteHandle.IsValid()) {
+            Addressables.Release(_spriteHandle);
+        }
+
         _content.text = message;
         _title.text = string.IsNullOrEmpty(title) ? "Message" : title;
         _image.gameObject.SetActive(false);
         _spriteReference = spriteReference;
-        if (_spriteReference?.RuntimeKeyIsValid() ?? false) {
-            Addressables.LoadAssetAsync<Sprite>(spriteReference).Completed += operation => {
-                if (operation.Status == AsyncOperationStatus.Succeeded) {
-                    _image.sprite = operation.Result;
-                    _image.gameObject.SetActive(operation.Result != null);
-                }
-            };
-        }
+        _spriteHandle = UnityUtils.LoadSprite(_image, _spriteReference, _cts.Token);
     }
 
     public override object GetRestorationData() {
@@ -57,8 +56,8 @@ public class MessagePopup : Popup {
     }
 
     public override void OnClose() {
-        if (_spriteReference?.RuntimeKeyIsValid() ?? false) {
-            _spriteReference.ReleaseAsset();
+        if (_spriteHandle.IsValid()) {
+            Addressables.Release(_spriteHandle);
         }
     }
 }
