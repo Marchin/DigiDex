@@ -170,10 +170,11 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             int counter = lastVisiblePopup;
             Popup popup = _stack[lastVisiblePopup];
             while (counter >= 0) {
-                PopupRestorationData restorationData = null;
-                restorationData.PopupType = popup.GetType();
-                restorationData.IsFullScreen = popup.FullScreen;
-                restorationData.Data = popup.GetRestorationData();
+                PopupRestorationData restorationData = new PopupRestorationData {
+                    PopupType = popup.GetType(),
+                    IsFullScreen = popup.FullScreen,
+                    Data = popup.GetRestorationData()
+                };
                 RemovePopup(lastVisiblePopup);
                 await RestorePopup(restorationData);
                 popup = _stack[lastVisiblePopup];
