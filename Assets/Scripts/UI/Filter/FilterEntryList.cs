@@ -7,8 +7,11 @@ public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IP
     [System.NonSerialized] public bool IsMouseOut;
     private float accum = 0f;
     private bool _wasScrolling;
+    public float OriginalScrollHeight { get; private set; }
 
     private void Awake() {
+        RectTransform scrollRectTransform = transform as RectTransform;
+        OriginalScrollHeight = scrollRectTransform.rect.height;
         OnPopulate += _ => {
             IsMouseOut = false;
             accum = 0f;

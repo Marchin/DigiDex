@@ -86,7 +86,6 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
             } else {
                 RectTransform rectTransform = transform as RectTransform;
                 RectTransform scrollRectTransform = _filterData.List.transform as RectTransform;
-                scrollRectTransform.sizeDelta = new Vector2(rectTransform.rect.width, scrollRectTransform.rect.height);
                 if (rectTransform.position.y < (0.5f * Screen.height)) {
                     scrollRectTransform.pivot = new Vector2(0.5f, 0f);
                     Vector2 topCenter = new Vector2(
@@ -94,6 +93,10 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
                         rectTransform.rect.yMax
                     );
                     scrollRectTransform.position = rectTransform.TransformPoint(topCenter);
+                    scrollRectTransform.sizeDelta = new Vector2(
+                        rectTransform.rect.width, 
+                        Mathf.Min(_filterData.List.OriginalScrollHeight,
+                            Screen.height - scrollRectTransform.position.y));
                 } else {
                     scrollRectTransform.pivot = new Vector2(0.5f, 1f);
                     Vector2 bottomCenter = new Vector2(
@@ -101,6 +104,9 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
                         rectTransform.rect.yMin
                     );
                     scrollRectTransform.position = rectTransform.TransformPoint(bottomCenter);
+                    scrollRectTransform.sizeDelta = new Vector2(
+                        rectTransform.rect.width, 
+                        Mathf.Min(_filterData.List.OriginalScrollHeight, scrollRectTransform.position.y));
                 }
 
                 _filterData.List.Populate(_filterData.Elements);
