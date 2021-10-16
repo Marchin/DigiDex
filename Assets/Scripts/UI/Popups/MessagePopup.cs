@@ -36,7 +36,9 @@ public class MessagePopup : Popup {
         _title.text = string.IsNullOrEmpty(title) ? "Message" : title;
         _image.gameObject.SetActive(false);
         _spriteReference = spriteReference;
-        _spriteHandle = UnityUtils.LoadSprite(_image, _spriteReference, _cts.Token);
+        if (_spriteReference?.RuntimeKeyIsValid() ?? false) {
+            _spriteHandle = UnityUtils.LoadSprite(_image, _spriteReference, _cts.Token);
+        }
     }
 
     public override object GetRestorationData() {

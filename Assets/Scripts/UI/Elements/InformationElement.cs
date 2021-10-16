@@ -76,6 +76,9 @@ public class InformationElement : MonoBehaviour, IDataUIElement<InformationData>
         _moreInfoButton.onClick.RemoveAllListeners();
         _moreInfoButton.onClick.AddListener(() => data.OnMoreInfo?.Invoke());
         _moreInfoButton.interactable = data.OnMoreInfo != null;
-        _moreInfoVisual.gameObject.SetActive(data.OnMoreInfo != null);
+
+        if (_moreInfoVisual != null) {
+            _moreInfoVisual.gameObject.SetActive(data.OnMoreInfo != null);
+        }
     }
 }
