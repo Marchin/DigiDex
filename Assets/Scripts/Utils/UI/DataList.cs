@@ -156,6 +156,10 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
     }
 
     public void Clear() {
+        if (_overflowDisplay != null) {
+            _overflowDisplay.SetActive(false);
+        }
+
         for (int iElement = 0; iElement < _elements.Count; ++iElement) {
             _elements[iElement].gameObject.SetActive(false);
         }
