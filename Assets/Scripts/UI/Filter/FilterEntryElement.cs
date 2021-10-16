@@ -35,9 +35,18 @@ public class FilterEntryElement : MonoBehaviour, IDataUIElement<FilterEntryData>
     [SerializeField] private Toggle _excludeToggle = default;
     [SerializeField] private Image _image = default;
     [SerializeField] private TextMeshProUGUI _label = default;
+    [SerializeField] private ScrollContent _scrollContent = default;
     private FilterEntryData _entryData;
     private AsyncOperationHandle<Sprite> _spriteHandle;
     private CancellationTokenSource _cts;
+    public bool IsScrollContentOn {
+        get => (_scrollContent != null) ? _scrollContent.enabled : false;
+        set {
+            if (_scrollContent != null) {
+                _scrollContent.enabled = value;
+            }
+        }
+    }
 
     private void Awake() {
         _requiredToggle.onValueChanged.AddListener(isOn => {

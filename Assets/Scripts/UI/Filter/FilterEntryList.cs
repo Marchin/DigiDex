@@ -1,13 +1,12 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IPointerEnterHandler, IPointerExitHandler {
-    [SerializeField] private float _hideInSecs = 1f;
-    [SerializeField] private ScrollRect _scroll = default;
+    [SerializeField] private float _hideInSecs = 2f;
     [System.NonSerialized] public UnityEngine.Object LastCaller;
     [System.NonSerialized] public bool IsMouseOut;
     private float accum = 0f;
+    private bool _wasScrolling;
 
     private void Awake() {
         OnPopulate += _ => {
@@ -21,7 +20,7 @@ public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IP
     }
 
     private void Update() {
-        if (IsMouseOut && !Application.isMobilePlatform) {
+        if (false && IsMouseOut && !Application.isMobilePlatform) {
             accum += Time.unscaledDeltaTime;
             if (accum >= _hideInSecs) {
                 accum = 0f;
@@ -30,6 +29,14 @@ public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IP
         } else {
             accum = 0;
         }
+        
+        bool isScrolling = _scroll.velocity.sqrMagnitude > 0f;
+        if (isScrolling != _wasScrolling) {
+            foreach (var element in Elements) {
+                element.IsScrollContentOn = !isScrolling;
+            }
+        }
+        _wasScrolling = isScrolling;
     }
 
     public void OnPointerEnter(PointerEventData eventData) {

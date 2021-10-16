@@ -28,4 +28,11 @@ public class CustomScrollRect : ScrollRect {
         velocity = prevVelocity;
     }
 
+    public void CustomSetHorizontalNormalizedPosition(float value) {
+        float anchoredXBeforeSet = content.anchoredPosition.x;
+        var prevVelocity = velocity;
+        SetNormalizedPosition(value, 0);
+        m_ContentStartPosition += new Vector2(content.anchoredPosition.x - anchoredXBeforeSet, 0f);
+        velocity = prevVelocity;
+    }
 }

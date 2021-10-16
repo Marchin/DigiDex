@@ -10,6 +10,7 @@ public class ElementScrollList : MonoBehaviour {
     // We already tried forcing a canvas update and/or waiting until end of frame
     // This was the most consistent
     public const int FrameDelayToAnimateList = 2;
+    private const float ElementReuseScrollPoint = 0.3f;
     [SerializeField] private float _scrollAnimationOffset = 550f;
     [SerializeField] private float _scrollAnimationScale = 0.2f;
     [SerializeField] private float _scrollCenteringSpeedMul = 2f;
@@ -23,7 +24,6 @@ public class ElementScrollList : MonoBehaviour {
     private List<string> _namesList = new List<string>();
     private float _elementNormalizedHeight;
     private float _elementWidth;
-    private float _elementReuseScrollPoint = 0.3f;
     private int _currElementScrollIndex;
     private RectTransform CurrenElement => _elements[_currElementIndex];
     private bool _fixingListPosition = false;
@@ -161,12 +161,12 @@ public class ElementScrollList : MonoBehaviour {
         int newScrollIndex = _currElementScrollIndex;
         if (_currElementScrollIndex < (_namesList.Count - _elements.Length) &&
             _scrollRect.velocity.y > 0f &&
-            newPos.y < ((_elementReuseScrollPoint))
+            newPos.y < ((ElementReuseScrollPoint))
         ) {
             newScrollIndex++;
             CurrElementIndex--;
             _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y + _elementNormalizedHeight);
-        } else if (_currElementScrollIndex > 0 && _scrollRect.velocity.y < 0f && newPos.y > (1f - (_elementReuseScrollPoint))) {
+        } else if (_currElementScrollIndex > 0 && _scrollRect.velocity.y < 0f && newPos.y > (1f - (ElementReuseScrollPoint))) {
             newScrollIndex--;
             CurrElementIndex++;
             _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y - _elementNormalizedHeight);
