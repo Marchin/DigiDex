@@ -27,7 +27,11 @@ public class MessagePopup : Popup {
     public void Populate(string message, string title = "", 
         AssetReferenceAtlasedSprite spriteReference = null
     ) {
-        _cts.Renew();
+        if (_cts != null) {
+            _cts.Cancel();
+            _cts.Dispose();
+        }
+        _cts = new CancellationTokenSource();
         if (_spriteHandle.IsValid()) {
             Addressables.Release(_spriteHandle);
         }

@@ -42,13 +42,17 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 2f91ed1118a3da04283b1aab9437025d, type: 3}
   - {fileID: 21300000, guid: 5c9b77619ef8ae24f948c699e7e30622, type: 3}
   - {fileID: 21300000, guid: e03a42c1f3c9bfb4197ca0df3b0e1a7a, type: 3}
+  - {fileID: 21300000, guid: ab90b0924ca34a048bf9f5a6edcd07de, type: 3}
   - {fileID: 21300000, guid: 9049cdb2a28bb4647a9400bdda607ade, type: 3}
+  - {fileID: 21300000, guid: cfd7b823b76c26248817d3ab26498c59, type: 3}
   - {fileID: 21300000, guid: d8bc289333dd90c44af3710cacfeefa3, type: 3}
   - {fileID: 21300000, guid: 370a4584b57fe904f8c7579cdb96118c, type: 3}
+  - {fileID: 21300000, guid: 0ed4df76bc0998c439883849b78051e6, type: 3}
   - {fileID: 21300000, guid: 94b13bd63efcfbb47aca3400d118b2c7, type: 3}
   - {fileID: 21300000, guid: 70150367f59effe41af51a71efb3505d, type: 3}
   - {fileID: 21300000, guid: 35991189482289447a31767289ead085, type: 3}
   - {fileID: 21300000, guid: bf49087a50ec0994b9c741fa75d54106, type: 3}
+  - {fileID: 21300000, guid: 6abdb12b4e06b484faa054d912d10f4e, type: 3}
   - {fileID: 21300000, guid: bdc6f52bd41ed7a4b9b077f385ab8f7f, type: 3}
   - {fileID: 21300000, guid: 357a413be0e4c694cae118424b9e46b5, type: 3}
   - {fileID: 21300000, guid: 98fcc3ccddc9fff4f924b85260174a4f, type: 3}
@@ -65,13 +69,17 @@ SpriteAtlas:
   - Circle Border
   - Question Mark
   - Tab
+  - Details Icon
   - Checkmark
+  - Rounded Square Big
   - Circle Gradient
   - Button
+  - Evolution Line
   - Arrow Thick
   - Missing Digimon
   - Vertical Gradient
   - Plus
+  - Back
   - Circle
   - Search
   - Forbidden

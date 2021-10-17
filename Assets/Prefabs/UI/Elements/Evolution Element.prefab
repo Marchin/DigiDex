@@ -1004,7 +1004,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.009789959, g: 0.19743073, b: 0.41509432, a: 1}
+  m_Color: {r: 0, g: 0.17713664, b: 0.3962264, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1194,7 +1194,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.16078432, g: 0.52156866, b: 0.87843144, a: 1}
+  m_Color: {r: 0, g: 0.41823912, b: 0.8018868, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1395,6 +1395,12 @@ MonoBehaviour:
   _root: {fileID: 8319715530253563686}
   _maxDisplayCount: 3
   _overflowDisplay: {fileID: 8021033024255888756}
+  _scroll: {fileID: 0}
+  _layoutGroup: {fileID: 0}
+  _direction: 0
+  _fakeScrollBar: {fileID: 0}
+  _fakeScrollBarHandle: {fileID: 0}
+  _scrollBarHandler: {fileID: 0}
 --- !u!1 &8319715530258214823
 GameObject:
   m_ObjectHideFlags: 0
@@ -1623,6 +1629,12 @@ MonoBehaviour:
   _root: {fileID: 8319715530339285721}
   _maxDisplayCount: 0
   _overflowDisplay: {fileID: 0}
+  _scroll: {fileID: 0}
+  _layoutGroup: {fileID: 0}
+  _direction: 0
+  _fakeScrollBar: {fileID: 0}
+  _fakeScrollBarHandle: {fileID: 0}
+  _scrollBarHandler: {fileID: 0}
 --- !u!1 &8319715530382710272
 GameObject:
   m_ObjectHideFlags: 0

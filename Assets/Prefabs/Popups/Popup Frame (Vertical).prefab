@@ -17,6 +17,21 @@ PrefabInstance:
       propertyPath: m_HorizontalAlignment
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 853329456248755646, guid: a72097bba0445c641b72399f00ea77e1,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 853329456248755646, guid: a72097bba0445c641b72399f00ea77e1,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 853329456248755646, guid: a72097bba0445c641b72399f00ea77e1,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2392878045709103919, guid: a72097bba0445c641b72399f00ea77e1,
         type: 3}
       propertyPath: m_AnchorMax.y

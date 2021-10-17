@@ -96,6 +96,12 @@ MonoBehaviour:
   _root: {fileID: 7307005982173879506}
   _maxDisplayCount: 0
   _overflowDisplay: {fileID: 0}
+  _scroll: {fileID: 0}
+  _layoutGroup: {fileID: 0}
+  _direction: 0
+  _fakeScrollBar: {fileID: 0}
+  _fakeScrollBarHandle: {fileID: 0}
+  _scrollBarHandler: {fileID: 0}
 --- !u!114 &6881036208925403827
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -554,6 +560,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1073617538173860893, guid: fd982396f3850ce458aa477e20b2ae2a,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2669547046673808306, guid: fd982396f3850ce458aa477e20b2ae2a,
         type: 3}
       propertyPath: m_AnchorMax.y

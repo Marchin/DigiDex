@@ -89,12 +89,4 @@ public static class UnityUtils {
             return default;
         }
     }
-
-    public static void Renew(this CancellationTokenSource cts) {
-        if (cts != null) {
-            cts.Cancel();
-            cts.Dispose();
-        }
-        cts = new CancellationTokenSource();
-    }
 }
