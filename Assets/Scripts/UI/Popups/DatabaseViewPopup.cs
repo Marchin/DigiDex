@@ -219,7 +219,7 @@ public class DatabaseViewPopup : Popup {
             _lastQuery = popupData.LastQuery;
             ReApplyFilterAndRefresh();
             await UniTask.DelayFrame(ElementScrollList.FrameDelayToAnimateList + 1);
-            _elementScrollList.ScrollTo(popupData.SelectedEntry);
+            _elementScrollList.ScrollTo(popupData.SelectedEntry, withAnimation: true);
         }
     }
 

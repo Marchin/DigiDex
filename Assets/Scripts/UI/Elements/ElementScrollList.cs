@@ -220,7 +220,7 @@ public class ElementScrollList : MonoBehaviour {
         _elementNormalizedHeight = (_elements[0].rect.height + _layoutGroup.spacing) /  scrollableHeight;
     }
 
-    public void ScrollTo(string name) {
+    public async void ScrollTo(string name, bool withAnimation = false) {
         enabled = false;
         int index = _namesList.IndexOf(name);
         if (index >= 0) {
@@ -242,6 +242,12 @@ public class ElementScrollList : MonoBehaviour {
             int newIndex = _currElementIndex + _currElementScrollIndex;
             _scrollRect.verticalNormalizedPosition = 1f - _currElementIndex * _elementNormalizedHeight;
             OnConfirmed?.Invoke(newIndex);
+
+            if (withAnimation) {
+                await UniTask.DelayFrame(FrameDelayToAnimateList,
+                    cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this));
+                AnimateElements();
+            }
         }
         enabled = true;
     }
