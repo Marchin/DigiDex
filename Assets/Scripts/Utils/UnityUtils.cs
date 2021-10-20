@@ -89,4 +89,13 @@ public static class UnityUtils {
             return default;
         }
     }
+
+    
+    public static void AdjustToSafeZone(this RectTransform rect) {
+        rect.offsetMin = Screen.safeArea.min;
+        rect.offsetMax = new Vector2(
+            Screen.safeArea.xMax - Screen.width,
+            Screen.safeArea.yMax - Screen.height
+        );
+    }
 }

@@ -1,0 +1,54 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+using System.Linq;
+using Cysharp.Threading.Tasks;
+
+public class MainMenu : MonoBehaviour {
+    [SerializeField] private CanvasScaler _canvasScaler = default;
+    [SerializeField] private ButtonElementList _databaseList = default;
+    [SerializeField] private Button _loginButton = default;
+    [SerializeField] private Button _logoutButton = default;
+    [SerializeField] private TextMeshProUGUI _currentMail = default;
+
+    private async void Start() {
+        await UniTask.WaitUntil(() => ApplicationManager.Instance.Initialized);
+
+        (_canvasScaler.transform as RectTransform).AdjustToSafeZone();
+        PopupManager.Instance.RegisterCanvasScalerForRotationScaling(_canvasScaler);
+
+        var buttonDataList = ApplicationManager.Instance.GetDatabases()
+            .Select(db => new ButtonData {
+                Text = db.DisplayName,
+                Callback = () => {
+                    PopupManager.Instance.GetOrLoadPopup<DatabaseViewPopup>().
+                        ContinueWith(popup => popup.Populate(db));
+                }
+            });
+        _databaseList.Populate(buttonDataList);
+        
+        _loginButton.onClick.AddListener(async () => {
+            await UserDataManager.Instance.Login();
+            RefreshButtons();
+        });
+        _logoutButton.onClick.AddListener(() => {
+            UserDataManager.Instance.LogOut();
+            RefreshButtons();
+        });
+
+        RefreshButtons();
+    }
+
+    private void RefreshButtons() {
+        if (UserDataManager.Instance.IsUserLoggedIn) {
+            _loginButton.gameObject.SetActive(false);
+            _logoutButton.gameObject.SetActive(true);
+            _currentMail.gameObject.SetActive(true);
+            _currentMail.text = UserDataManager.Instance.UserData.EmailAddress;
+        } else {
+            _loginButton.gameObject.SetActive(true);
+            _logoutButton.gameObject.SetActive(false);
+            _currentMail.gameObject.SetActive(false);
+        }
+    }
+}

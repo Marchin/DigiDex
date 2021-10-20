@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -15,6 +14,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     public AssetReferenceAtlasedSprite MissingSpirte => _missingSprite;
     private List<Handle> _loadingScreenHandles = new List<Handle>();
     private CentralDatabase _centralDB;
+    public bool Initialized { get; private set; }
     
     private async void Start() {
         await Addressables.InitializeAsync();
@@ -26,8 +26,9 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
             return;
         }
 
-        var databaseViewPopup = await PopupManager.Instance.GetOrLoadPopup<DatabaseViewPopup>();
-        databaseViewPopup.Populate(_centralDB.DigimonDB);
+        await UserDataManager.Instance.Sync();
+
+        Initialized = true;
     }
 
     public IDatabase GetDatabase(IDataEntry entry) {
@@ -57,9 +58,17 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
             }
         }
     }
+
+    public List<IDatabase> GetDatabases() => _centralDB?.GetDatabases();
     
     private void OnApplicationQuit() {
-        _centralDB.DigimonDB.SaveFavorites();
+        UserDataManager.Instance.SaveAllData();
+    }
+    
+    private void OnApplicationFocus(bool focus) {
+        if (!focus) {
+            UserDataManager.Instance.SaveAllData();
+        }
     }
     
     private void Update() {

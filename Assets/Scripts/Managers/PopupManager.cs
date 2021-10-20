@@ -20,6 +20,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     private List<AsyncOperationHandle<GameObject>> _handles = new List<AsyncOperationHandle<GameObject>>();
     private GameObject _parentCanvas;
     private CanvasScaler _canvasScaler;
+    private List<CanvasScaler> _registeredCanvasScalers = new List<CanvasScaler>();
     public event Action OnStackChange;
     private List<PopupRestorationData> _restorationData = new List<PopupRestorationData>();
     private bool _loadingPopup;
@@ -49,8 +50,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         _parentCanvas = UnityUtils.GetOrGenerateRootGO("Popup Canvas");
         _parentCanvas.GetOrAddComponent<Canvas>();
         _canvasScaler = _parentCanvas.GetOrAddComponent<CanvasScaler>();
+        RegisterCanvasScalerForRotationScaling(_canvasScaler);
         RefreshReferenceResolution();
-        _canvasScaler.matchWidthOrHeight = IsScreenOnPortrait ? 0f : 1f;
         _lastDeviceOrientation = Screen.orientation;
     }
 
@@ -61,12 +62,14 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     }
 
     private void RefreshReferenceResolution() {
-        if (IsScreenOnPortrait != (_canvasScaler.referenceResolution.y > _canvasScaler.referenceResolution.x)) {
-            _canvasScaler.referenceResolution = new Vector2(
-                _canvasScaler.referenceResolution.y,
-                _canvasScaler.referenceResolution.x
-            );
-            _canvasScaler.matchWidthOrHeight = IsScreenOnPortrait ? 0f : 1f;
+        foreach (var canvasScaler in _registeredCanvasScalers) {
+            if (IsScreenOnPortrait != (canvasScaler.referenceResolution.y > canvasScaler.referenceResolution.x)) {
+                canvasScaler.referenceResolution = new Vector2(
+                    canvasScaler.referenceResolution.y,
+                    canvasScaler.referenceResolution.x
+                );
+                canvasScaler.matchWidthOrHeight = IsScreenOnPortrait ? 0f : 1f;
+            }
         }
     }
 
@@ -127,7 +130,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 var handle = Addressables.InstantiateAsync(popupName, _parentCanvas.transform);
                 _handles.Insert(0, handle);
                 popup = (await handle).GetComponent<T>();
-                AdjustToSafeZone(popup.transform as RectTransform);
+                (popup.transform as RectTransform)?.AdjustToSafeZone();
                 _stack.Insert(0, popup);
             }
         }
@@ -138,14 +141,6 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         return popup;
     }
 
-    private void AdjustToSafeZone(RectTransform rect) {
-        rect.offsetMin = Screen.safeArea.min;
-        rect.offsetMax = new Vector2(
-            Screen.safeArea.xMax - Screen.width,
-            Screen.safeArea.yMax - Screen.height
-        );
-    }
-    
     private async void RefreshScaler() {
         RefreshReferenceResolution();
         if (_loadingPopup || ActivePopup == null) return;
@@ -196,7 +191,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
 
         if (Screen.orientation != _lastDeviceOrientation) {
             foreach (var popup in _stack) {
-                AdjustToSafeZone(popup.transform as RectTransform);
+                (popup.transform as RectTransform).AdjustToSafeZone();
             }
 
             _lastDeviceOrientation = Screen.orientation;
@@ -214,34 +209,42 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 }
             }
 
-            var handle = ApplicationManager.Instance.DisplayLoadingScreen();
-            while (startingIndex >= 0) {
-                PopupRestorationData restorationData = _restorationData[startingIndex];
+            if (startingIndex >= 0) {
+                var handle = ApplicationManager.Instance.DisplayLoadingScreen();
+                while (startingIndex >= 0) {
+                    PopupRestorationData restorationData = _restorationData[startingIndex];
 
-                if (restorationData.Data != null) {
-                    await RestorePopup(restorationData);
-                } else {
-                    foreach (var popup in _stack) {
-                        if (popup.gameObject.activeSelf) {
-                            popup.OnClose();
-                            popup.gameObject.SetActive(false);
-                            break;
-                        }
+                    if (restorationData.Data != null) {
+                        await RestorePopup(restorationData);
+                    } else {
+                        CloseActivePopup();
                     }
+                    
+                    if (startingIndex == 0) {
+                        _restorationData.RemoveAt(startingIndex);
+                    } else {
+                        _restorationData[startingIndex].Data = null;
+                    }
+                    --startingIndex;
                 }
-                
-                if (startingIndex == 0) {
-                    _restorationData.RemoveAt(startingIndex);
-                } else {
-                    _restorationData[startingIndex].Data = null;
-                }
-                --startingIndex;
+                handle.Complete();
+            } else {
+                CloseActivePopup();
             }
-            handle.Complete();
 
             OnStackChange?.Invoke();
         } else {
             UnityUtils.Quit();
+        }
+
+        void CloseActivePopup() {
+            foreach (var popup in _stack) {
+                if (popup.gameObject.activeSelf) {
+                    popup.OnClose();
+                    popup.gameObject.SetActive(false);
+                    break;
+                }
+            }
         }
     }
 
@@ -284,5 +287,17 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         var result = awaiter.GetType().GetMethod("GetResult");
         Popup popup = result.Invoke(awaiter, null) as Popup;
         popup.Restore(restorationData.Data);
+    }
+
+    public void RegisterCanvasScalerForRotationScaling(CanvasScaler canvasScaler) {
+        if (canvasScaler != null && !_registeredCanvasScalers.Contains(canvasScaler)) {
+            _registeredCanvasScalers.Add(canvasScaler);
+        }
+    }
+
+    public void UnregisterCanvasScalerForRotationScaling(CanvasScaler canvasScaler) {
+        if (canvasScaler != null && _registeredCanvasScalers.Contains(canvasScaler)) {
+            _registeredCanvasScalers.Remove(canvasScaler);
+        }
     }
 }

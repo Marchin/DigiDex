@@ -4,6 +4,8 @@ using UnityEngine;
 using Newtonsoft.Json;
 
 public class DigimonDatabase : ScriptableObject, IDatabase {
+    public string DisplayName => "Digimons";
+
     public const string FieldsFilter = "Fields";
     public const string AttributesFilter = "Attributes";
     public const string TypesFilter = "Types";
@@ -24,6 +26,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         get {
             if (_favorites == null) {
                 _favorites = LoadFavorites();
+                UserDataManager.Instance.OnBeforeSave += SaveFavorites;
             }
             return _favorites;
         }
@@ -140,15 +143,15 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         return toggles;
     }
 
-    public void SaveFavorites() {
+    private void SaveFavorites() {
         if (_favorites != null) {
             string jsonData = JsonConvert.SerializeObject(_favorites.Select(h => h.ToString()));
-            PlayerPrefs.SetString(FavDigimonPref, jsonData);
+            UserDataManager.Instance.Save(FavDigimonPref, jsonData);
         }
     }
 
     private HashSet<Hash128> LoadFavorites() {
-        string jsonData = PlayerPrefs.GetString(FavDigimonPref, "");
+        string jsonData = UserDataManager.Instance.Load(FavDigimonPref);
         var strings = JsonConvert.DeserializeObject<List<string>>(jsonData) ?? new List<string>();
         var hashesList = strings.Select(s => Hash128.Parse(s)).ToList();
         HashSet<Hash128> result = new HashSet<Hash128>(hashesList);

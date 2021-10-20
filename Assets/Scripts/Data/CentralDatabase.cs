@@ -17,6 +17,7 @@ public interface IEvolvable {
 }
 
 public interface IDatabase {
+    string DisplayName { get; }
     IEnumerable<IDataEntry> EntryList { get; }
     Dictionary<Hash128, IDataEntry> EntryDict { get; }
     HashSet<Hash128> Favorites { get; }
@@ -85,4 +86,13 @@ public class EntryIndex : IEquatable<EntryIndex> {
 public class CentralDatabase : ScriptableObject {
     public const string CentralDBAssetName = "Central Database";
     public DigimonDatabase DigimonDB;
+
+    public List<IDatabase> GetDatabases() {
+        List<IDatabase> result = new List<IDatabase>();
+
+        // TODO: See if we can automate this through reflection
+        result.Add(DigimonDB);
+
+        return result;
+    }
 }
