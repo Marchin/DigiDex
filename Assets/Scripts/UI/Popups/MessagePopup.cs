@@ -4,18 +4,22 @@ using UnityEngine.UI;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using System.Threading;
+using System.Collections.Generic;
 
 public class MessagePopup : Popup {
     public class PopupData {
         public string Message;
         public string Title;
         public AssetReferenceAtlasedSprite SpriteReference;
+        public List<ButtonData> ButtonOptionsList;
     }
 
     [SerializeField] private TextMeshProUGUI _title = default;
     [SerializeField] private TextMeshProUGUI _content = default;
     [SerializeField] private Image _image = default;
     [SerializeField] private Button _closeButton = default;
+    [SerializeField] private ButtonElementList _buttonList = default;
+    private List<ButtonData> _buttonOptionsList;
     private AssetReferenceAtlasedSprite _spriteReference;
     private AsyncOperationHandle _spriteHandle;
     private CancellationTokenSource _cts;
@@ -25,7 +29,8 @@ public class MessagePopup : Popup {
     }
 
     public void Populate(string message, string title = "", 
-        AssetReferenceAtlasedSprite spriteReference = null
+        AssetReferenceAtlasedSprite spriteReference = null,
+        List<ButtonData> buttonOptionsList = null
     ) {
         if (_cts != null) {
             _cts.Cancel();
@@ -43,13 +48,16 @@ public class MessagePopup : Popup {
         if (_spriteReference?.RuntimeKeyIsValid() ?? false) {
             _spriteHandle = UnityUtils.LoadSprite(_image, _spriteReference, _cts.Token);
         }
+        _buttonOptionsList = buttonOptionsList;
+        _buttonList.Populate(_buttonOptionsList);
     }
 
     public override object GetRestorationData() {
         PopupData popupData = new PopupData {
             Message = _content.text,
             Title = _title.text,
-            SpriteReference = _spriteReference
+            SpriteReference = _spriteReference,
+            ButtonOptionsList = _buttonOptionsList
         };
 
         return popupData;
@@ -57,7 +65,7 @@ public class MessagePopup : Popup {
 
     public override void Restore(object data) {
         if (data is PopupData popupData) {
-            Populate(popupData.Message, popupData.Title, popupData.SpriteReference);
+            Populate(popupData.Message, popupData.Title, popupData.SpriteReference, popupData.ButtonOptionsList);
         }
     }
 
