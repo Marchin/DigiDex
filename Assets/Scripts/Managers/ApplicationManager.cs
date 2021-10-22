@@ -61,16 +61,6 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
 
     public List<IDatabase> GetDatabases() => _centralDB?.GetDatabases();
     
-    private void OnApplicationQuit() {
-        UserDataManager.Instance.SaveAllData();
-    }
-    
-    private void OnApplicationFocus(bool focus) {
-        if (!focus) {
-            UserDataManager.Instance.SaveAllData();
-        }
-    }
-    
     private void Update() {
         if (Input.GetKeyDown(KeyCode.Escape)) {
             PopupManager.Instance.Back();

@@ -78,9 +78,9 @@ public class EntryViewPopup : Popup {
         
         _favoriteButton.onValueChanged.AddListener(isOn => {
             if (isOn) {
-                _db.Favorites.Add(_entry.Hash);
+                _db.AddFavorite(_entry.Hash);
             } else {
-                _db.Favorites.Remove(_entry.Hash);
+                _db.RemoveFavorite(_entry.Hash);
             }
         });
     }

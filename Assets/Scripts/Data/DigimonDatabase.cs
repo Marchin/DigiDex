@@ -22,15 +22,15 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     public List<DigimonGroup> Groups;
     public List<Level> Levels;
     private HashSet<Hash128> _favorites;
-    public HashSet<Hash128> Favorites {
+    private HashSet<Hash128> FavoritesInternal {
         get {
             if (_favorites == null) {
                 _favorites = LoadFavorites();
-                UserDataManager.Instance.OnBeforeSave += SaveFavorites;
             }
             return _favorites;
         }
     }
+    public IReadOnlyCollection<Hash128> Favorites => FavoritesInternal;
     private Dictionary<Hash128, Digimon> _digimonDict;
     public Dictionary<Hash128, Digimon> DigimonDict {
         get {
@@ -50,6 +50,15 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         }
     }
 
+    public void AddFavorite(Hash128 entry) {
+        FavoritesInternal.Add(entry);
+        SaveFavorites();
+    }
+
+    public void RemoveFavorite(Hash128 entry) {
+        FavoritesInternal.Remove(entry);
+        SaveFavorites();
+    }
 
     public List<FilterData> RetrieveFiltersData() {
         List<FilterData> filters = new List<FilterData>();

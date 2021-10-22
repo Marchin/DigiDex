@@ -7,6 +7,7 @@ public class ToggleData : ICloneable {
     public string Name;
     public bool IsOn;
 
+    public ToggleData() {}
     public ToggleData(string name) {
         Name = name;
     }

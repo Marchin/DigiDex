@@ -29,12 +29,12 @@ public class MainMenu : MonoBehaviour {
         
         _loginButton.onClick.AddListener(async () => {
             await UserDataManager.Instance.Login();
-            RefreshButtons();
         });
         _logoutButton.onClick.AddListener(() => {
             UserDataManager.Instance.LogOut();
-            RefreshButtons();
         });
+
+        UserDataManager.Instance.OnAuthChanged += RefreshButtons;
 
         RefreshButtons();
     }

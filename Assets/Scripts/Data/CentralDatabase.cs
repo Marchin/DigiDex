@@ -20,7 +20,9 @@ public interface IDatabase {
     string DisplayName { get; }
     IEnumerable<IDataEntry> EntryList { get; }
     Dictionary<Hash128, IDataEntry> EntryDict { get; }
-    HashSet<Hash128> Favorites { get; }
+    IReadOnlyCollection<Hash128> Favorites { get; }
+    void AddFavorite(Hash128 entry);
+    void RemoveFavorite(Hash128 entry);
     List<FilterData> RetrieveFiltersData();
     List<ToggleActionData> RetrieveTogglesData();
 }
