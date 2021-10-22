@@ -909,10 +909,10 @@ RectTransform:
   m_Father: {fileID: 4225431140402159313}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 24, y: 652}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4225431140283854402
 CanvasRenderer:
@@ -1278,7 +1278,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00030517578}
+  m_AnchoredPosition: {x: 0, y: 0.00036621094}
   m_SizeDelta: {x: -0.000030517578, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &4225431140502004895
@@ -1373,14 +1373,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _template: {fileID: 4225431141593136591}
   _root: {fileID: 4225431140502004866}
-  _maxDisplayCount: 0
+  _maxDisplayCount: 8
   _overflowDisplay: {fileID: 0}
-  _scroll: {fileID: 0}
-  _layoutGroup: {fileID: 0}
+  _scroll: {fileID: 4983059009258339670}
+  _layoutGroup: {fileID: 4225431140502004864}
   _direction: 0
-  _fakeScrollBar: {fileID: 0}
-  _fakeScrollBarHandle: {fileID: 0}
-  _scrollBarHandler: {fileID: 0}
+  _fakeScrollBar: {fileID: 4225431141695070233}
+  _fakeScrollBarHandle: {fileID: 4225431140283854404}
+  _scrollBarHandler: {fileID: 6998893994090107575}
 --- !u!1 &4225431140867516858
 GameObject:
   m_ObjectHideFlags: 0
@@ -2257,7 +2257,7 @@ GameObject:
   - component: {fileID: 4225431141695070233}
   - component: {fileID: 4225431141695070228}
   - component: {fileID: 4225431141695070231}
-  - component: {fileID: 4225431141695070230}
+  - component: {fileID: 6998893994090107575}
   m_Layer: 5
   m_Name: Scrollbar Vertical
   m_TagString: Untagged
@@ -2283,7 +2283,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 16, y: -20}
+  m_SizeDelta: {x: 24, y: -20}
   m_Pivot: {x: 1, y: 1}
 --- !u!222 &4225431141695070228
 CanvasRenderer:
@@ -2323,7 +2323,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &4225431141695070230
+--- !u!114 &6998893994090107575
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2332,46 +2332,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 4225431141695070232}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a4db7a114972834c8e4117be1d82ba3, type: 3}
+  m_Script: {fileID: 11500000, guid: e9bbb4b190ac7634dbe18110a7621d5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 4225431140283854405}
-  m_HandleRect: {fileID: 4225431140283854404}
-  m_Direction: 2
-  m_Value: 0
-  m_Size: 1
-  m_NumberOfSteps: 0
-  m_OnValueChanged:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!1 &4225431141889954033
 GameObject:
   m_ObjectHideFlags: 0
@@ -2663,14 +2626,14 @@ MonoBehaviour:
   m_Content: {fileID: 4225431140502004866}
   m_Horizontal: 0
   m_Vertical: 1
-  m_MovementType: 1
+  m_MovementType: 2
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
   m_ScrollSensitivity: 1
   m_Viewport: {fileID: 4225431141898887467}
   m_HorizontalScrollbar: {fileID: 0}
-  m_VerticalScrollbar: {fileID: 4225431141695070230}
+  m_VerticalScrollbar: {fileID: 0}
   m_HorizontalScrollbarVisibility: 0
   m_VerticalScrollbarVisibility: 0
   m_HorizontalScrollbarSpacing: 0

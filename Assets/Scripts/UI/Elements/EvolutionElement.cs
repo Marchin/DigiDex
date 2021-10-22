@@ -40,15 +40,8 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
 
         _name.text = entry.Name;
 
-        if (entry.Sprite.RuntimeKeyIsValid()) {
-            AsyncOperationHandle<Sprite> spriteHandle = Addressables.LoadAssetAsync<Sprite>(entry.Sprite);
-            _handles.Add(spriteHandle);
-            await spriteHandle.WithCancellation(_cts.Token).ContinueWith(sprite => {
-                _entryImage.sprite = sprite;
-                _entryImage.gameObject.SetActive(sprite != null);
-            });
-        }
-
+        var entryImageHandle = UnityUtils.LoadSprite(_entryImage, entry.Sprite, _cts.Token);
+        _handles.Add(entryImageHandle);
         List<UniTask<Sprite>> spritesTasks = new List<UniTask<Sprite>>(data.FusionEntries.Length);
         for (int iFusionID = 0; iFusionID < data.FusionEntries.Length; ++iFusionID) {
             IDataEntry fusion = data.FusionEntries[iFusionID].FetchEntryData();
@@ -62,8 +55,10 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
 
         _evolutionTypeIndicators.Populate(data.GetEvolutionColors());
 
-        Sprite[] sprites = await UniTask.WhenAll(spritesTasks);
-        _fusionSprites.Populate(sprites);
+        var sprites = await UniTask.WhenAll(spritesTasks).SuppressCancellationThrow();
+        if (!sprites.IsCanceled) {
+            _fusionSprites.Populate(sprites.Result);
+        }
     }
 
     public void SetSelected(bool state) {
