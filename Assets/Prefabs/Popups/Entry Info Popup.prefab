@@ -58,7 +58,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.17713664, b: 0.3962264, a: 1}
+  m_Color: {r: 0, g: 0.20595926, b: 0.46226418, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -608,7 +608,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.17713664, b: 0.3962264, a: 1}
+  m_Color: {r: 0, g: 0.20595926, b: 0.46226418, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1435,7 +1435,6 @@ GameObject:
   m_Component:
   - component: {fileID: 8836179056402880809}
   - component: {fileID: 8836179056402880811}
-  - component: {fileID: 8836179056402880810}
   - component: {fileID: 8836179056402880813}
   - component: {fileID: 8836179056402880812}
   m_Layer: 5
@@ -1474,36 +1473,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8836179056402880808}
   m_CullTransparentMesh: 1
---- !u!114 &8836179056402880810
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8836179056402880808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.17713664, b: 0.3962264, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &8836179056402880813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1601,7 +1570,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.17713664, b: 0.3962264, a: 1}
+  m_Color: {r: 0, g: 0.20595926, b: 0.46226418, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3380,12 +3349,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0e2946fb2dd69e842b3a4ea8148ba4ad, type: 3}
---- !u!224 &7782810393895887332 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 6988440144843376363, guid: 0e2946fb2dd69e842b3a4ea8148ba4ad,
-    type: 3}
-  m_PrefabInstance: {fileID: 935048432938772239}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &7782810393895887333 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6988440144843376362, guid: 0e2946fb2dd69e842b3a4ea8148ba4ad,
@@ -3398,6 +3361,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!224 &7782810393895887332 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 6988440144843376363, guid: 0e2946fb2dd69e842b3a4ea8148ba4ad,
+    type: 3}
+  m_PrefabInstance: {fileID: 935048432938772239}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2916799661145093734
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3897,12 +3866,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4810d66e8ab88f84383f4787cc6b05f2, type: 3}
---- !u!224 &8836179057763448977 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 5970339205127343863, guid: 4810d66e8ab88f84383f4787cc6b05f2,
-    type: 3}
-  m_PrefabInstance: {fileID: 2916799661145093734}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &8836179057763448978 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5970339205127343860, guid: 4810d66e8ab88f84383f4787cc6b05f2,
@@ -3915,6 +3878,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c3502ea8796273419ea4198245c0e95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!224 &8836179057763448977 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 5970339205127343863, guid: 4810d66e8ab88f84383f4787cc6b05f2,
+    type: 3}
+  m_PrefabInstance: {fileID: 2916799661145093734}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3030591876915726384
 PrefabInstance:
   m_ObjectHideFlags: 0

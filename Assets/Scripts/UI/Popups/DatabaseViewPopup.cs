@@ -27,6 +27,7 @@ public class DatabaseViewPopup : Popup {
     [SerializeField] private Button _profileButton = default;
     [SerializeField] private ElementScrollList _elementScrollList = default;
     [SerializeField] private Button _filterButton = default;
+    [SerializeField] private Button _closeButton = default;
     [SerializeField] private GameObject _activeFilterIndicator = default;
     [SerializeField] private GameObject _loadingWheel = default;
     private CancellationTokenSource _entryDataCTS;
@@ -102,6 +103,7 @@ public class DatabaseViewPopup : Popup {
         _searchInput.onValueChanged.AddListener(OnInputChanged);
         _clearSearch.onClick.AddListener(() => _searchInput.text = "");
 
+        _closeButton.onClick.AddListener(PopupManager.Instance.Back);
         _profileButton.onClick.AddListener(() => {
             PopupManager.Instance.GetOrLoadPopup<EntryViewPopup>().ContinueWith(popup => {
                 Action prev = null;

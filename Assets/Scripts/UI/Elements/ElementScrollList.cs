@@ -130,7 +130,7 @@ public class ElementScrollList : MonoBehaviour {
         _namesList = nameList;
 
         if (!string.IsNullOrEmpty(lastName) && _namesList.Contains(lastName)) {
-            ScrollTo(lastName);
+            ScrollTo(lastName, withAnimation: true);
         } else {
             ResetScroll();
         }
