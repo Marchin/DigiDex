@@ -59,7 +59,7 @@ MonoBehaviour:
   m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 800, y: 112}
+  m_CellSize: {x: 800, y: 124}
   m_Spacing: {x: 36, y: 64}
   m_Constraint: 1
   m_ConstraintCount: 2
@@ -375,7 +375,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.1137255, b: 0.25490198, a: 1}
+  m_Color: {r: 0, g: 0.13725491, b: 0.3019608, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -548,7 +548,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.7921569, b: 0.0017617319, a: 1}
+  m_Color: {r: 0, g: 0.7921569, b: 0.0017617319, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -713,7 +713,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.20595926, b: 0.46226418, a: 1}
+  m_Color: {r: 0, g: 0.17713664, b: 0.3962264, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1466,7 +1466,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.7924528, g: 0, b: 0, a: 1}
+  m_Color: {r: 0.7924528, g: 0, b: 0, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1592,7 +1592,7 @@ PrefabInstance:
     - target: {fileID: 2050426151852804313, guid: 9cc7ec6329d951c429229217793d31a4,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 80
+      value: 96
       objectReference: {fileID: 0}
     - target: {fileID: 2050426151852804313, guid: 9cc7ec6329d951c429229217793d31a4,
         type: 3}
@@ -1622,7 +1622,7 @@ PrefabInstance:
     - target: {fileID: 2117980561547478624, guid: 9cc7ec6329d951c429229217793d31a4,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 80
+      value: 96
       objectReference: {fileID: 0}
     - target: {fileID: 2117980561547478624, guid: 9cc7ec6329d951c429229217793d31a4,
         type: 3}
@@ -1652,7 +1652,7 @@ PrefabInstance:
     - target: {fileID: 2583614599804154814, guid: 9cc7ec6329d951c429229217793d31a4,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 80
+      value: 96
       objectReference: {fileID: 0}
     - target: {fileID: 2583614599804154814, guid: 9cc7ec6329d951c429229217793d31a4,
         type: 3}
@@ -1812,7 +1812,7 @@ PrefabInstance:
     - target: {fileID: 6438679082157736128, guid: 9cc7ec6329d951c429229217793d31a4,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 80
+      value: 96
       objectReference: {fileID: 0}
     - target: {fileID: 6438679082157736128, guid: 9cc7ec6329d951c429229217793d31a4,
         type: 3}
@@ -2183,6 +2183,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 5035571974287137095}
     m_Modifications:
+    - target: {fileID: 1086660288111396637, guid: 689ebb65524a66c4286aa8e33311f836,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 0.3019608
+      objectReference: {fileID: 0}
+    - target: {fileID: 1086660288111396637, guid: 689ebb65524a66c4286aa8e33311f836,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.13725491
+      objectReference: {fileID: 0}
     - target: {fileID: 2411855694945035022, guid: 689ebb65524a66c4286aa8e33311f836,
         type: 3}
       propertyPath: m_AnchorMax.y
@@ -2247,6 +2257,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Toggle Element
+      objectReference: {fileID: 0}
+    - target: {fileID: 8325861834802081404, guid: 689ebb65524a66c4286aa8e33311f836,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 0.3962264
+      objectReference: {fileID: 0}
+    - target: {fileID: 8325861834802081404, guid: 689ebb65524a66c4286aa8e33311f836,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.17713664
       objectReference: {fileID: 0}
     - target: {fileID: 8815748333778317525, guid: 689ebb65524a66c4286aa8e33311f836,
         type: 3}
@@ -2352,6 +2372,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8868905440488559106, guid: 689ebb65524a66c4286aa8e33311f836,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 0.9622642
+      objectReference: {fileID: 0}
+    - target: {fileID: 8868905440488559106, guid: 689ebb65524a66c4286aa8e33311f836,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.9143527
+      objectReference: {fileID: 0}
+    - target: {fileID: 8868905440488559106, guid: 689ebb65524a66c4286aa8e33311f836,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 0.87602353
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 689ebb65524a66c4286aa8e33311f836, type: 3}
