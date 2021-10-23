@@ -27,6 +27,7 @@ public class ElementScrollList : MonoBehaviour {
     private int _currElementScrollIndex;
     private RectTransform CurrenElement => _elements[_currElementIndex];
     private bool _fixingListPosition = false;
+    private bool _initialized = false;
     private Action<int> OnConfirmed;
     public event Action OnBeginDrag;
     public event Action OnEndDrag;
@@ -65,51 +66,56 @@ public class ElementScrollList : MonoBehaviour {
             return;
         }
 
+        if (!_initialized) {
+            for (int i = 0; i < _maxElements; i++) {
+                Instantiate(_elementTemplate, _scrollRect.content);
+            }
+
+            _scrollRect.OnBeginDragEvent += () => {
+                _fixingListPosition = false;
+                OnBeginDrag?.Invoke();
+            };
+            _scrollRect.OnEndDragEvent += () => {
+                _fixingListPosition = !IsEmpty;
+                OnEndDrag?.Invoke();
+            };
+
+            Canvas.ForceUpdateCanvases();
+
+            _elementWidth = _elementTemplate.rect.width;
+            _elementTemplate.gameObject.SetActive(false);
+
+            _elements = new RectTransform[_scrollRect.content.childCount - 1];
+            for (int iChild = 1; iChild < _scrollRect.content.childCount; ++iChild) {
+                _elements[iChild - 1] = _scrollRect.content.GetChild(iChild) as RectTransform;
+            }
+            _elementsTexts = _scrollRect.content.GetComponentsInChildren<TextMeshProUGUI>();
+            _scrollContents = _scrollRect.content.GetComponentsInChildren<ScrollContent>();
+            _scrollRect.onValueChanged.AddListener(OnScroll);
+
+            _initialized = true;
+        }
+
         OnConfirmed = onConfirmed;
-
         _namesList = nameList;
-
-        int elementCount = Mathf.Min(nameList.Count, _maxElements);
-        for (int i = 0; i < elementCount; i++) {
-            Instantiate(_elementTemplate, _scrollRect.content);
-        }
-
-        _scrollRect.OnBeginDragEvent += () => {
-            _fixingListPosition = false;
-            OnBeginDrag?.Invoke();
-        };
-        _scrollRect.OnEndDragEvent += () => {
-            _fixingListPosition = !IsEmpty;
-            OnEndDrag?.Invoke();
-        };
-
-        Canvas.ForceUpdateCanvases();
-        
-        // Add padding so that the top and botton elementns can be centered when scrolling
-        _layoutGroup.padding.top = _layoutGroup.padding.bottom =
-            Mathf.RoundToInt(0.5f * (_scrollRect.viewport.rect.height - _elementTemplate.rect.height));
-
-        _elementWidth = _elementTemplate.rect.width;
-        _elementTemplate.gameObject.SetActive(false);
-
-        _elements = new RectTransform[_scrollRect.content.childCount - 1];
-        for (int iChild = 1; iChild < _scrollRect.content.childCount; ++iChild) {
-            _elements[iChild - 1] = _scrollRect.content.GetChild(iChild) as RectTransform;
-        }
-        _elementsTexts = _scrollRect.content.GetComponentsInChildren<TextMeshProUGUI>();
-        _scrollContents = _scrollRect.content.GetComponentsInChildren<ScrollContent>();
+        _currElementScrollIndex = 0;
+        _currElementIndex = 0;
 
         PopulateElements();
-
         OnConfirmed?.Invoke(0);
-
-        _scrollRect.onValueChanged.AddListener(OnScroll);
-
-        _scrollRect.normalizedPosition = Vector2.up;
+        // Add padding so that the top and bottom elements can be centered when scrolling
+        _layoutGroup.padding.top = _layoutGroup.padding.bottom =
+            Mathf.CeilToInt(0.5f * (_scrollRect.viewport.rect.height - _elements[0].rect.height));
+        _layoutGroup.enabled = false;
+        _layoutGroup.enabled = true;
 
         // HACK: If we don't wait these frames the elements don't get properly animated
         await UniTask.DelayFrame(FrameDelayToAnimateList,
             cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this));
+
+        Canvas.ForceUpdateCanvases();
+
+        _scrollRect.normalizedPosition = Vector2.up;
         AnimateElements();
     }
 
