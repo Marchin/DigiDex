@@ -12,11 +12,10 @@ public class MainMenu : MonoBehaviour {
     [SerializeField] private TextMeshProUGUI _currentMail = default;
 
     private async void Start() {
-        await UniTask.WaitUntil(() => ApplicationManager.Instance.Initialized);
-
         (_canvasScaler.transform as RectTransform).AdjustToSafeZone();
         PopupManager.Instance.RegisterCanvasScalerForRotationScaling(_canvasScaler);
-
+        await UniTask.WaitUntil(() => ApplicationManager.Instance.Initialized);
+        
         var buttonDataList = ApplicationManager.Instance.GetDatabases()
             .Select(db => new ButtonData {
                 Text = db.DisplayName,
