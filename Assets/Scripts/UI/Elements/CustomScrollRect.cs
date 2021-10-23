@@ -7,6 +7,7 @@ public class CustomScrollRect : ScrollRect {
     public bool BeingDragged { get; private set; }
     public event Action OnBeginDragEvent;
     public event Action OnEndDragEvent;
+    private Handle _performanceHandle = null;
 
     public override void OnBeginDrag(PointerEventData eventData) {
         base.OnBeginDrag(eventData);
@@ -18,6 +19,24 @@ public class CustomScrollRect : ScrollRect {
         base.OnEndDrag(eventData);
         OnEndDragEvent?.Invoke();
         BeingDragged = false;
+    }
+
+    private void Update() {
+        float vel = velocity.sqrMagnitude;
+        bool isHandleNull = _performanceHandle == null;
+        if (isHandleNull != (velocity.sqrMagnitude <= 0.01f)) {
+            if (isHandleNull) {
+                _performanceHandle = PerformanceManager.Instance.RequestHighPerformance();
+            } else {
+                _performanceHandle.Complete();
+                _performanceHandle = null;
+            }
+        }
+    }
+
+    protected override void OnDisable() {
+        base.OnDisable();
+        _performanceHandle?.Complete();
     }
 
     public void CustomSetVerticalNormalizedPosition(float value) {

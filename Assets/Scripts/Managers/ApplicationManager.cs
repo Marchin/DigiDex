@@ -4,11 +4,6 @@ using UnityEngine.AddressableAssets;
 using Cysharp.Threading.Tasks;
 
 public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
-    public class Handle {
-        public bool IsComplete { get; private set; }
-        public void Complete() => IsComplete = true;
-    }
-
     [SerializeField] private GameObject _loadingScreen = default;
     [SerializeField] private AssetReferenceAtlasedSprite _missingSprite = default;
     public AssetReferenceAtlasedSprite MissingSpirte => _missingSprite;
@@ -78,7 +73,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         return handle;
     }
 
-    public async void HideLoadingScreenOnceFinished() {
+    private async void HideLoadingScreenOnceFinished() {
         _loadingScreen.SetActive(true);
         await UniTask.WaitUntil(() => _loadingScreenHandles.TrueForAll(h => h.IsComplete));
         _loadingScreen.SetActive(false);
