@@ -161,6 +161,7 @@ public class EvolutionsPopup : Popup {
             PopupManager.Instance.GetOrLoadPopup<EvolutionGlossaryPopup>().Forget());
         _closeButton.onClick.AddListener(PopupManager.Instance.Back);
         _dbViewButton.onClick.AddListener(() => PopupManager.Instance.ClearStackUntilPopup<DatabaseViewPopup>());
+        _evolutionList.OnRefresh += RefreshSelected;
         _loadingWheel.SetActive(false);
     }
 
@@ -261,9 +262,12 @@ public class EvolutionsPopup : Popup {
                 _inspectedEntryImage.gameObject.SetActive(sprite != null);
             }).SuppressCancellationThrow().Forget();
         }
+        RefreshSelected();
+    }
 
+    private void RefreshSelected() {
         foreach (var element in _evolutionList.Elements) {
-            element.SetSelected(element.Data == evolution);
+            element.SetSelected(element.Data == _popupData.CurrTabEvolution);
         }
     }
     

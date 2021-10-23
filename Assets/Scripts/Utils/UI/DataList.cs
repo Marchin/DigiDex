@@ -30,6 +30,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
 	private List<T> _elements = new List<T>();
     public IReadOnlyList<T> Elements => _elements;
     public event Action<List<D>> OnPopulate;
+    public event Action OnRefresh;
 	private List<T> _pool = new List<T>();
     private List<D> _data;
     private int _baseIndex;
@@ -153,6 +154,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
         for (int iData = _baseIndex, iElement = 0; iElement < _elements.Count; ++iData, ++iElement) {
             _elements[iElement].Populate(_data[iData]);
         }
+        OnRefresh?.Invoke();
     }
 
     public void Clear() {
