@@ -62,9 +62,11 @@ public class MessagePopup : Popup {
         }
         _toggleDataList = toggleDataList;
         _toggleList.Populate(_toggleDataList);
+        _toggleList.gameObject.SetActive(toggleDataList != null && toggleDataList.Count > 0);
 
         _buttonDataList = buttonDataList;
         _buttonList.Populate(_buttonDataList);
+        _buttonList.gameObject.SetActive(_buttonDataList != null && _buttonDataList.Count > 0);
     }
 
     public override object GetRestorationData() {
