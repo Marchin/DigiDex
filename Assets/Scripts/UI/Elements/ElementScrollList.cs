@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ public class ElementScrollList : MonoBehaviour {
     // This was the most consistent
     public const int FrameDelayToAnimateList = 2;
     private const float ElementReuseScrollPoint = 0.3f;
+    private const float MinHandleHeight = 24f;
     [SerializeField] private float _scrollAnimationOffset = 550f;
     [SerializeField] private float _scrollAnimationScale = 0.2f;
     [SerializeField] private float _scrollCenteringSpeedMul = 2f;
@@ -18,6 +20,9 @@ public class ElementScrollList : MonoBehaviour {
     [SerializeField] private VerticalLayoutGroup _layoutGroup = default;
     [SerializeField] private RectTransform _elementTemplate = default;
     [SerializeField] private int _maxElements = default;
+    [SerializeField] private RectTransform _fakeScrollBar = default;
+    [SerializeField] private RectTransform _fakeScrollBarHandle = default;
+    [SerializeField] private DragHandler _scrollBarHandler = default;
     private RectTransform[] _elements;
     private ScrollContent[] _scrollContents;
     private TextMeshProUGUI[] _elementsTexts;
@@ -27,7 +32,7 @@ public class ElementScrollList : MonoBehaviour {
     private int _currElementScrollIndex;
     private RectTransform CurrenElement => _elements[_currElementIndex];
     private bool _fixingListPosition = false;
-    private bool _initialized = false;
+    private float _handleSizeAdjustment = 0f;
     private Action<int> OnConfirmed;
     public event Action OnBeginDrag;
     public event Action OnEndDrag;
@@ -55,45 +60,55 @@ public class ElementScrollList : MonoBehaviour {
         get => _currElementScrollIndex + _currElementIndex;
         set {
             value = UnityUtils.Repeat(value, _namesList.Count);
-            ScrollTo(_namesList[value]);
+            ScrollTo(value);
             OnConfirmed?.Invoke(value);
         }
+    }
+
+    private void Awake() {
+        for (int i = 0; i < _maxElements; i++) {
+            Instantiate(_elementTemplate, _scrollRect.content);
+        }
+
+        _scrollRect.OnBeginDragEvent += () => {
+            _fixingListPosition = false;
+            OnBeginDrag?.Invoke();
+        };
+        _scrollRect.OnEndDragEvent += () => {
+            _fixingListPosition = !IsEmpty;
+            OnEndDrag?.Invoke();
+        };
+
+        _scrollBarHandler.OnPointerUpCall += eventData => {
+            _fixingListPosition = true;
+        };
+        _scrollBarHandler.OnPointerDownCall += eventData => {
+            OnScrollBarHandle(eventData);
+            _fixingListPosition = false;
+        };
+        _scrollBarHandler.OnDragCall += eventData => {
+            OnScrollBarHandle(eventData);
+            _fixingListPosition = false;
+        };
+
+        Canvas.ForceUpdateCanvases();
+
+        _elementWidth = _elementTemplate.rect.width;
+        _elementTemplate.gameObject.SetActive(false);
+
+        _elements = new RectTransform[_scrollRect.content.childCount - 1];
+        for (int iChild = 1; iChild < _scrollRect.content.childCount; ++iChild) {
+            _elements[iChild - 1] = _scrollRect.content.GetChild(iChild) as RectTransform;
+        }
+        _elementsTexts = _scrollRect.content.GetComponentsInChildren<TextMeshProUGUI>();
+        _scrollContents = _scrollRect.content.GetComponentsInChildren<ScrollContent>();
+        _scrollRect.onValueChanged.AddListener(OnScroll);
     }
 
     public async void Initialize(List<string> nameList, Action<int> onConfirmed) {
         if (nameList == null) {
             Debug.LogError("List of names is null");
             return;
-        }
-
-        if (!_initialized) {
-            for (int i = 0; i < _maxElements; i++) {
-                Instantiate(_elementTemplate, _scrollRect.content);
-            }
-
-            _scrollRect.OnBeginDragEvent += () => {
-                _fixingListPosition = false;
-                OnBeginDrag?.Invoke();
-            };
-            _scrollRect.OnEndDragEvent += () => {
-                _fixingListPosition = !IsEmpty;
-                OnEndDrag?.Invoke();
-            };
-
-            Canvas.ForceUpdateCanvases();
-
-            _elementWidth = _elementTemplate.rect.width;
-            _elementTemplate.gameObject.SetActive(false);
-
-            _elements = new RectTransform[_scrollRect.content.childCount - 1];
-            for (int iChild = 1; iChild < _scrollRect.content.childCount; ++iChild) {
-                _elements[iChild - 1] = _scrollRect.content.GetChild(iChild) as RectTransform;
-            }
-            _elementsTexts = _scrollRect.content.GetComponentsInChildren<TextMeshProUGUI>();
-            _scrollContents = _scrollRect.content.GetComponentsInChildren<ScrollContent>();
-            _scrollRect.onValueChanged.AddListener(OnScroll);
-
-            _initialized = true;
         }
 
         OnConfirmed = onConfirmed;
@@ -103,6 +118,7 @@ public class ElementScrollList : MonoBehaviour {
 
         PopulateElements();
         OnConfirmed?.Invoke(0);
+        
         // Add padding so that the top and bottom elements can be centered when scrolling
         _layoutGroup.padding.top = _layoutGroup.padding.bottom =
             Mathf.CeilToInt(0.5f * (_scrollRect.viewport.rect.height - _elements[0].rect.height));
@@ -112,8 +128,8 @@ public class ElementScrollList : MonoBehaviour {
         // HACK: If we don't wait these frames the elements don't get properly animated
         await UniTask.DelayFrame(FrameDelayToAnimateList,
             cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this));
-
-        Canvas.ForceUpdateCanvases();
+        
+        // Canvas.ForceUpdateCanvases();
 
         _scrollRect.normalizedPosition = Vector2.up;
         AnimateElements();
@@ -140,6 +156,8 @@ public class ElementScrollList : MonoBehaviour {
         } else {
             ResetScroll();
         }
+        PopulateElements();
+        OnScroll(_scrollRect.normalizedPosition);
     }
 
     private void Update() {
@@ -171,18 +189,45 @@ public class ElementScrollList : MonoBehaviour {
         ) {
             newScrollIndex++;
             CurrElementIndex--;
-            _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y + _elementNormalizedHeight);
-        } else if (_currElementScrollIndex > 0 && _scrollRect.velocity.y < 0f && newPos.y > (1f - (ElementReuseScrollPoint))) {
+            _scrollRect.CustomSetVerticalNormalizedPosition(
+                _scrollRect.normalizedPosition.y + _elementNormalizedHeight);
+        } else if (_currElementScrollIndex > 0 && 
+            _scrollRect.velocity.y < 0f && newPos.y > (1f - (ElementReuseScrollPoint))
+        ) {
             newScrollIndex--;
             CurrElementIndex++;
-            _scrollRect.CustomSetVerticalNormalizedPosition(_scrollRect.normalizedPosition.y - _elementNormalizedHeight);
+            _scrollRect.CustomSetVerticalNormalizedPosition(
+                _scrollRect.normalizedPosition.y - _elementNormalizedHeight);
         }
         if (newScrollIndex != _currElementScrollIndex) {
             _currElementScrollIndex = newScrollIndex;
             PopulateElements();
         }
 
+        float elementsScrolled = _currElementScrollIndex  + 
+            ((1f - _scrollRect.verticalNormalizedPosition) / _elementNormalizedHeight);
+        float newY = -(elementsScrolled / _namesList.Count) *
+            (_fakeScrollBar.rect.height - _handleSizeAdjustment);
+        _fakeScrollBarHandle.anchoredPosition = new Vector2(
+            _fakeScrollBarHandle.anchoredPosition.x,
+            newY - (0.5f * _fakeScrollBarHandle.rect.height)
+        );
+
         AnimateElements();
+    }
+
+    private void OnScrollBarHandle(PointerEventData eventData) {
+        Vector2 pos = eventData.position;
+        RectTransform rect = _fakeScrollBar.transform as RectTransform;
+
+        float minY = rect.TransformPoint(_fakeScrollBar.rect.min).y;
+        float maxY = rect.TransformPoint(_fakeScrollBar.rect.max).y;
+        float scrollPos = Mathf.InverseLerp(minY, maxY, 
+            pos.y + (0.5f * _fakeScrollBarHandle.rect.size.y));
+        float scrolledElements = (1f - scrollPos) * _namesList.Count;
+        float scrolled = Mathf.Min(scrolledElements, _namesList.Count);
+        ScrollTo(scrolled, withAnimation: false);
+        OnScroll(pos);
     }
 
     private void AnimateElements() {
@@ -194,7 +239,8 @@ public class ElementScrollList : MonoBehaviour {
             Vector2 element = _elements[iElement].TransformPoint(_elements[iElement].rect.center);
             float t = Mathf.Abs(viewportCenter.y - element.y) / _scrollRect.viewport.rect.height;
             float sqT = t * t;
-            element.x = viewportCenter.x + _layoutGroup.padding.left - Mathf.Lerp(0, _scrollAnimationOffset, sqT);
+            element.x = viewportCenter.x + _layoutGroup.padding.left - 
+                Mathf.Lerp(0, _scrollAnimationOffset, sqT);
             _elements[iElement].localScale = Vector2.one * Mathf.Lerp(1f, _scrollAnimationScale, sqT);
             _elements[iElement].position = element;
             if (minT > t) {
@@ -207,8 +253,12 @@ public class ElementScrollList : MonoBehaviour {
     }
 
     private void PopulateElements() {
-        _currElementScrollIndex = Mathf.Min(_currElementScrollIndex, Mathf.Max(_namesList.Count - _elements.Length, 0));
-        for (int iDigimon = _currElementScrollIndex, iElement = 0; iElement < _elements.Length; iDigimon++, iElement++) {
+        _currElementScrollIndex = Mathf.Min(_currElementScrollIndex, 
+            Mathf.Max(_namesList.Count - _elements.Length, 0));
+        for (int iDigimon = _currElementScrollIndex, iElement = 0; 
+            iElement < _elements.Length; iDigimon++,
+            iElement++
+        ) {
             if (iDigimon < _namesList.Count) {
                 _elementsTexts[iElement].text = _namesList[iDigimon];
                 _elements[iElement].gameObject.SetActive(true);
@@ -222,38 +272,67 @@ public class ElementScrollList : MonoBehaviour {
         foreach (var content in _scrollContents) {
             content.Refresh();
         }
+
         float scrollableHeight = _scrollRect.content.rect.height - _scrollRect.viewport.rect.height;
-        _elementNormalizedHeight = (_elements[0].rect.height + _layoutGroup.spacing) /  scrollableHeight;
+        bool showScrollbar = scrollableHeight > _layoutGroup.spacing;
+        if (showScrollbar) {
+            _fakeScrollBar.gameObject.SetActive(true);
+            _elementNormalizedHeight = (_elements[0].rect.height + _layoutGroup.spacing) / scrollableHeight;
+            float handleLength = (1f / ( _namesList.Count)) * _fakeScrollBar.rect.height;
+            if (handleLength < MinHandleHeight) {
+                _handleSizeAdjustment = MinHandleHeight - handleLength;
+                handleLength = MinHandleHeight;
+            } else {
+                _handleSizeAdjustment = 0f;
+            }
+            _fakeScrollBarHandle.anchorMin = new Vector2(0.5f, 1f);
+            _fakeScrollBarHandle.anchorMax = new Vector2(0.5f, 1f);
+            _fakeScrollBarHandle.sizeDelta = new Vector2(_fakeScrollBarHandle.rect.width, handleLength);
+            Vector2 offset = _scrollRect.viewport.offsetMax;
+            offset.x = -Mathf.CeilToInt(_fakeScrollBarHandle.rect.width);
+            _scrollRect.viewport.offsetMax = offset;
+        } else {
+            _fakeScrollBar.gameObject.SetActive(false);
+            Vector2 offset = _scrollRect.viewport.offsetMax;
+            offset.x = 0f;
+            _scrollRect.viewport.offsetMax = offset;
+        }
     }
 
-    public async void ScrollTo(string name, bool withAnimation = false) {
-        enabled = false;
+    public void ScrollTo(string name, bool withAnimation = false) {
         int index = _namesList.IndexOf(name);
-        if (index >= 0) {
-            int halfElementsIndex = Mathf.FloorToInt(
-                (float)Mathf.Min(_elements.Length, _namesList.Count) * 0.5f);
+        ScrollTo(index);
+    }
 
-            if (index < halfElementsIndex) {
-                _currElementIndex = index;
-            } else if (((_namesList.Count - 1) - index) < halfElementsIndex) {
-                _currElementIndex = Mathf.Min(_elements.Length, _namesList.Count) - (_namesList.Count - index);
-            } else {
-                _currElementIndex = halfElementsIndex;
-            }
+    public async void ScrollTo(float scrolled, bool withAnimation = false) {
+        enabled = false;
+        scrolled = Mathf.Clamp(scrolled, 0, _namesList.Count - 1);
+        int halfElementsIndex = Mathf.FloorToInt(
+            (float)Mathf.Min(_elements.Length, _namesList.Count) * 0.5f);
 
-            _currElementScrollIndex = Mathf.Min(index - _currElementIndex, 
-                Mathf.Max(_namesList.Count - _elements.Length, 0));
+        int scrolledIndex = Mathf.RoundToInt(scrolled);
+        if (scrolledIndex < halfElementsIndex) {
+            _currElementIndex = scrolledIndex;
+        } else if (((_namesList.Count - 1) - scrolledIndex) < halfElementsIndex) {
+            _currElementIndex = Mathf.Min(_elements.Length, _namesList.Count) -
+                (_namesList.Count - scrolledIndex);
+        } else {
+            _currElementIndex = halfElementsIndex;
+        }
 
-            PopulateElements();
-            int newIndex = _currElementIndex + _currElementScrollIndex;
-            _scrollRect.verticalNormalizedPosition = 1f - _currElementIndex * _elementNormalizedHeight;
-            OnConfirmed?.Invoke(newIndex);
+        _currElementScrollIndex = Mathf.Min(scrolledIndex - _currElementIndex, 
+            Mathf.Max(_namesList.Count - _elements.Length, 0));
 
-            if (withAnimation) {
-                await UniTask.DelayFrame(FrameDelayToAnimateList,
-                    cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this));
-                AnimateElements();
-            }
+        PopulateElements();
+        int newIndex = _currElementIndex + _currElementScrollIndex;
+        _scrollRect.verticalNormalizedPosition = 
+            1f - (_currElementIndex + (scrolled - scrolledIndex)) * _elementNormalizedHeight;
+        OnConfirmed?.Invoke(newIndex);
+
+        if (withAnimation) {
+            await UniTask.DelayFrame(FrameDelayToAnimateList,
+                cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this));
+            AnimateElements();
         }
         enabled = true;
     }

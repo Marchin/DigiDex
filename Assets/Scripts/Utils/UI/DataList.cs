@@ -16,11 +16,13 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
         Horizontal
     }
 
+    private const float MinHandleLenght = 24f;
     private const float ElementReuseScrollPoint = 0.3f;
     [SerializeField] private T _template = default;
     [SerializeField] private RectTransform _root = default;
     [SerializeField] private int _maxDisplayCount = default;
     [SerializeField] private GameObject _overflowDisplay = default;
+    [Header("Scrolling")]
     [SerializeField] protected CustomScrollRect _scroll = default;
     [SerializeField] private HorizontalOrVerticalLayoutGroup _layoutGroup = default;
     [SerializeField] private Direction _direction = default;
@@ -35,6 +37,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
     private List<D> _data;
     private int _baseIndex;
     private float _elementNormalizedLength;
+    private float _handleSizeAdjustment = 0f;
 
     private void Start() {
         _template.gameObject.SetActive(false);
@@ -118,33 +121,49 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
             _elementNormalizedLength = elementLength / scrollableLength;
             
             if (_fakeScrollBar != null && _fakeScrollBarHandle != null) {
-                _fakeScrollBar.gameObject.SetActive(scrollableLength > 0);
-                float totalLength = (elementLength * _data.Count) - viewportLength;
-                float handleLength = (viewportLength / (elementLength * _data.Count));
+                bool showScrollbar = scrollableLength > 1f;
+                if (showScrollbar) {
+                    _fakeScrollBar.gameObject.SetActive(true);
+                    float scrollBarLength = (_direction == Direction.Horizontal) ?
+                        _fakeScrollBar.rect.width : 
+                        _fakeScrollBar.rect.height;
+                    float handleLength = (viewportLength / (elementLength * _data.Count)) * scrollBarLength;
+                    if (handleLength < MinHandleLenght) {
+                        _handleSizeAdjustment = MinHandleLenght - handleLength;
+                        handleLength = MinHandleLenght;
+                    } else {
+                        _handleSizeAdjustment = 0f;
+                    }
+                    if (_direction == Direction.Horizontal) {
+                        _fakeScrollBarHandle.anchorMin = new Vector2(0f, 0.5f);
+                        _fakeScrollBarHandle.anchorMax = new Vector2(0f, 0.5f);
+                        _fakeScrollBarHandle.sizeDelta = new Vector2(
+                            handleLength,
+                            _fakeScrollBarHandle.rect.height);
+                    } else {
+                        _fakeScrollBarHandle.anchorMin = new Vector2(0.5f, 1f);
+                        _fakeScrollBarHandle.anchorMax = new Vector2(0.5f, 1f);
+                        _fakeScrollBarHandle.sizeDelta = new Vector2(
+                            _fakeScrollBarHandle.rect.width,
+                            handleLength);
+                    }
+                    OnScroll(_scroll.normalizedPosition);
+                } else {
+                    _fakeScrollBar.gameObject.SetActive(false);
+                }
                 if (_direction == Direction.Horizontal) {
-                    _fakeScrollBarHandle.anchorMin = new Vector2(0f, 0.5f);
-                    _fakeScrollBarHandle.anchorMax = new Vector2(0f, 0.5f);
-                    _fakeScrollBarHandle.sizeDelta = new Vector2(
-                        handleLength * _fakeScrollBar.rect.width,
-                        _fakeScrollBarHandle.rect.height);
                     Vector2 offset = _scroll.viewport.offsetMax;
-                    offset.y = (scrollableLength > 0) ? 
+                    offset.y = showScrollbar ? 
                         -Mathf.CeilToInt(_fakeScrollBarHandle.rect.height) :
                         0;
                     _scroll.viewport.offsetMax = offset;
                 } else {
-                    _fakeScrollBarHandle.anchorMin = new Vector2(0.5f, 1f);
-                    _fakeScrollBarHandle.anchorMax = new Vector2(0.5f, 1f);
-                    _fakeScrollBarHandle.sizeDelta = new Vector2(
-                        _fakeScrollBarHandle.rect.width,
-                        handleLength * _fakeScrollBar.rect.height);
                     Vector2 offset = _scroll.viewport.offsetMax;
-                    offset.x = (scrollableLength > 0) ? 
+                    offset.x = showScrollbar ? 
                         -Mathf.CeilToInt(_fakeScrollBarHandle.rect.width) :
                         0;
                     _scroll.viewport.offsetMax = offset;
                 }
-                OnScroll(_scroll.normalizedPosition);
             }
         }
     }
@@ -229,7 +248,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
             if (_direction == Direction.Horizontal) {
                 float elementsScrolled = _baseIndex  + 
                     ((1f - _scroll.horizontalNormalizedPosition) / _elementNormalizedLength);
-                float newX = -(elementsScrolled / _data.Count) * _fakeScrollBar.rect.width;
+                float newX = -(elementsScrolled / _data.Count) * (_fakeScrollBar.rect.width - _handleSizeAdjustment);
                 _fakeScrollBarHandle.anchoredPosition = new Vector2(
                     newX - (0.5f * _fakeScrollBarHandle.rect.width),
                     _fakeScrollBarHandle.anchoredPosition.y
@@ -237,7 +256,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
             } else {
                 float elementsScrolled = _baseIndex  + 
                     ((1f - _scroll.verticalNormalizedPosition) / _elementNormalizedLength);
-                float newY = -(elementsScrolled / _data.Count) * _fakeScrollBar.rect.height;
+                float newY = -(elementsScrolled / _data.Count) * (_fakeScrollBar.rect.height - _handleSizeAdjustment);
                 _fakeScrollBarHandle.anchoredPosition = new Vector2(
                     _fakeScrollBarHandle.anchoredPosition.x,
                     newY - (0.5f * _fakeScrollBarHandle.rect.height)
