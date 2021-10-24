@@ -74,6 +74,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     }
 
     public async UniTask<T> GetOrLoadPopup<T>(bool restore = false, bool track = true) where T : Popup {
+        var lockHandle = ApplicationManager.Instance.LockScreen();
         T popup = null;
         _loadingPopup = true;
         if (track && ActivePopup != null) {
@@ -137,6 +138,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
 
         OnStackChange?.Invoke();
         _loadingPopup = false;
+
+        lockHandle.Complete();
 
         return popup;
     }

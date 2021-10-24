@@ -5,9 +5,11 @@ using Cysharp.Threading.Tasks;
 
 public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     [SerializeField] private GameObject _loadingScreen = default;
+    [SerializeField] private GameObject _inputLock = default;
     [SerializeField] private AssetReferenceAtlasedSprite _missingSprite = default;
     public AssetReferenceAtlasedSprite MissingSpirte => _missingSprite;
     private List<Handle> _loadingScreenHandles = new List<Handle>();
+    private List<Handle> _inputLockingHandles = new List<Handle>();
     private CentralDatabase _centralDB;
     public bool Initialized { get; private set; }
     
@@ -78,5 +80,23 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         await UniTask.WaitUntil(() => _loadingScreenHandles.TrueForAll(h => h.IsComplete));
         _loadingScreen.SetActive(false);
         _loadingScreenHandles.Clear();
+    }
+
+    public Handle LockScreen() {
+        Handle handle = new Handle();
+        _inputLockingHandles.Add(handle);
+
+        if (_inputLockingHandles.Count == 1) {
+            UnlockScreenOnceFinished();
+        }
+
+        return handle;
+    }
+
+    private async void UnlockScreenOnceFinished() {
+        _inputLock.SetActive(true);
+        await UniTask.WaitUntil(() => _inputLockingHandles.TrueForAll(h => h.IsComplete));
+        _inputLock.SetActive(false);
+        _inputLockingHandles.Clear();
     }
 }
