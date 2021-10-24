@@ -188,6 +188,20 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
         _elements.Clear();
     }
 
+    public void ScrollTo(int index) {
+        index = Mathf.Clamp(index, 0, _data.Count - 1);
+        int scrolled = Mathf.Min(index, _data.Count - _elements.Count);
+        _baseIndex = index;
+        Vector2 pos = _scroll.normalizedPosition;
+        if (_direction == Direction.Horizontal) {
+            pos.x = 1f - (scrolled - index) * _elementNormalizedLength;
+        } else {
+            pos.y = 1f - (scrolled - index) * _elementNormalizedLength;
+        }
+        Refresh();
+        _scroll.normalizedPosition = pos;
+    }
+
     private void OnScrollBarHandle(PointerEventData eventData) {
         Vector2 pos = eventData.position;
         RectTransform rect = _fakeScrollBar.transform as RectTransform;

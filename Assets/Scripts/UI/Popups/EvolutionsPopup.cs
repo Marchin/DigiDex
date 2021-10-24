@@ -238,7 +238,7 @@ public class EvolutionsPopup : Popup {
 
         if (initEvolution != null) {
             int index = _popupData.CurrEvolutionList.IndexOf(initEvolution);
-            _scroll.SnapTo(_evolutionList.Elements[index].transform as RectTransform);
+            _evolutionList.ScrollTo(index);
         }
 
         _initialized = true;
