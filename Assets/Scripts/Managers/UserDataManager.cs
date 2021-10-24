@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
     private const string SaveFileName = "DigiDex Save.json";
-    private const string SaveFileCopyName = "DigiDex Save (Copy).json";
+    private const string SaveFileCopyName_date = "DigiDex Save(Copy) {0}.json";
     private const string LocalDataPref = "local_data";
     private const string LastLocalSavePref = "last_local_save";
     private readonly List<string> ListFieldsQuery = new List<string> { "files/name, files/id, files/modifiedTime" };
@@ -68,7 +68,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                             Action keepLocal = async () => {
                                 if (keepCopyToggle.IsOn) {
                                     var copyFile = new UnityGoogleDrive.Data.File {
-                                        Name = SaveFileCopyName + DateTime.Now.ToString(),
+                                        Name = string.Format(SaveFileCopyName_date, DateTime.Now.ToString()),
                                         Content = fileData.Content
                                     };
                                     _ = GoogleDriveFiles.Create(copyFile).Send();
@@ -94,7 +94,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 if (keepCopyToggle.IsOn) {
                                     string localData = PlayerPrefs.GetString(LocalDataPref);
                                     var file = new UnityGoogleDrive.Data.File {
-                                        Name = SaveFileCopyName,
+                                        Name = string.Format(SaveFileCopyName_date, DateTime.Now.ToString()),
                                         Content = Encoding.ASCII.GetBytes(localData)
                                     };
                                     GoogleDriveFiles.Create(file).Send();
