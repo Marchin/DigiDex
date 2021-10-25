@@ -57,7 +57,7 @@ public class ElementScrollList : MonoBehaviour {
         }
     }
     public int CurrentIndex {
-        get => _currElementScrollIndex + _currElementIndex;
+        get => _currElementScrollIndex + CurrElementIndex;
         set {
             value = UnityUtils.Repeat(value, _namesList.Count);
             ScrollTo(value);
@@ -114,7 +114,7 @@ public class ElementScrollList : MonoBehaviour {
         OnConfirmed = onConfirmed;
         _namesList = nameList;
         _currElementScrollIndex = 0;
-        _currElementIndex = 0;
+        CurrElementIndex = 0;
 
         PopulateElements();
         OnConfirmed?.Invoke(0);
@@ -144,10 +144,10 @@ public class ElementScrollList : MonoBehaviour {
         
         string lastName = null;
         if (_namesList != null && _namesList.Count > 0) {
-            lastName = _namesList[_currElementScrollIndex + _currElementIndex];
+            lastName = _namesList[_currElementScrollIndex + CurrElementIndex];
         } else {
             _currElementScrollIndex = 0;
-            _currElementIndex = 0;
+            CurrElementIndex = 0;
         }
         _namesList = nameList;
 
@@ -172,7 +172,7 @@ public class ElementScrollList : MonoBehaviour {
                 }
 
                 if (Mathf.Abs(viewportCenter.y - selectedElementPos.y) < 80f) {
-                    OnConfirmed?.Invoke(_currElementIndex + _currElementScrollIndex);
+                    OnConfirmed?.Invoke(CurrElementIndex + _currElementScrollIndex);
                     if (Mathf.Abs(viewportCenter.y - selectedElementPos.y) < 2f) {
                         _fixingListPosition = false;
                     }
@@ -312,21 +312,21 @@ public class ElementScrollList : MonoBehaviour {
 
         int scrolledIndex = Mathf.RoundToInt(scrolled);
         if (scrolledIndex < halfElementsIndex) {
-            _currElementIndex = scrolledIndex;
+            CurrElementIndex = scrolledIndex;
         } else if (((_namesList.Count - 1) - scrolledIndex) < halfElementsIndex) {
-            _currElementIndex = Mathf.Min(_elements.Length, _namesList.Count) -
+            CurrElementIndex = Mathf.Min(_elements.Length, _namesList.Count) -
                 (_namesList.Count - scrolledIndex);
         } else {
-            _currElementIndex = halfElementsIndex;
+            CurrElementIndex = halfElementsIndex;
         }
 
-        _currElementScrollIndex = Mathf.Min(scrolledIndex - _currElementIndex, 
+        _currElementScrollIndex = Mathf.Min(scrolledIndex - CurrElementIndex, 
             Mathf.Max(_namesList.Count - _elements.Length, 0));
 
         PopulateElements();
-        int newIndex = _currElementIndex + _currElementScrollIndex;
+        int newIndex = CurrElementIndex + _currElementScrollIndex;
         _scrollRect.verticalNormalizedPosition = 
-            1f - (_currElementIndex + (scrolled - scrolledIndex)) * _elementNormalizedHeight;
+            1f - (CurrElementIndex + (scrolled - scrolledIndex)) * _elementNormalizedHeight;
         OnConfirmed?.Invoke(newIndex);
 
         if (withAnimation) {
