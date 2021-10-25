@@ -8,15 +8,18 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 
 public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
+    private const string FolderName = "DigiDex";
     private const string SaveFileName = "DigiDex Save.json";
     private const string SaveFileCopyName_date = "DigiDex Save(Copy) {0}.json";
     private const string LocalDataPref = "local_data";
     private const string LastLocalSavePref = "last_local_save";
+    private const string FolderMimeType = "application/vnd.google-apps.folder";
     private readonly List<string> ListFieldsQuery = new List<string> { "files/name, files/id, files/modifiedTime" };
     private readonly List<string> FileFieldsQuery = new List<string> { "name, id, modifiedTime" };
     private Dictionary<string, string> _dataDict;
     public event Action OnBeforeSave;
     private string _fileID;
+    private string _folderID;
     private GoogleDriveSettings _driveSettings;
     public User UserData { get; private set; }
     public bool IsUserCached => _driveSettings.IsAnyAuthTokenCached();
@@ -53,6 +56,21 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
 
             if (string.IsNullOrEmpty(aboutRequest.Error)) {
                 UserData = aboutRequest.ResponseData.User;
+                
+                var folderRequest = GoogleDriveFiles.List();
+                folderRequest.Q = $"name='Digidex' and mimeType='{FolderMimeType}'";
+                var folderList = await folderRequest.Send();
+                if (folderList.Files != null && folderList.Files.Count > 0) {
+                    _folderID = folderList.Files[0].Id;
+                } else {
+                    var folderFile = new UnityGoogleDrive.Data.File {
+                        Name = FolderName,
+                        MimeType = FolderMimeType
+                    };
+                    var folder = await GoogleDriveFiles.Create(folderFile).Send();
+                    _folderID = folder?.Id;
+                }
+
                 var saveFileLocation = await GetSaveMetadata();
                 if (saveFileLocation != null) {
                     _fileID = saveFileLocation.Id;
@@ -69,7 +87,8 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 if (keepCopyToggle.IsOn) {
                                     var copyFile = new UnityGoogleDrive.Data.File {
                                         Name = string.Format(SaveFileCopyName_date, DateTime.Now.ToString()),
-                                        Content = fileData.Content
+                                        Content = fileData.Content,
+                                        Parents = new List<string> { _folderID }
                                     };
                                     _ = GoogleDriveFiles.Create(copyFile).Send();
                                 }
@@ -77,7 +96,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 string jsonData = PlayerPrefs.GetString(LocalDataPref);
                                 var file = new UnityGoogleDrive.Data.File {
                                     Name = SaveFileName,
-                                    Content = Encoding.ASCII.GetBytes(jsonData)
+                                    Content = Encoding.ASCII.GetBytes(jsonData),
                                 };
                                 var handle = ApplicationManager.Instance.DisplayLoadingScreen();
                                 var updateRequest = UnityGoogleDrive.GoogleDriveFiles.Update(_fileID, file);
@@ -95,7 +114,8 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                     string localData = PlayerPrefs.GetString(LocalDataPref);
                                     var file = new UnityGoogleDrive.Data.File {
                                         Name = string.Format(SaveFileCopyName_date, DateTime.Now.ToString()),
-                                        Content = Encoding.ASCII.GetBytes(localData)
+                                        Content = Encoding.ASCII.GetBytes(localData),
+                                        Parents = new List<string> { _folderID }
                                     };
                                     GoogleDriveFiles.Create(file).Send();
                                 }
@@ -119,9 +139,11 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                             _userConfirmedData = true;
                         }
                     } else {
+                        _userConfirmedData = true;
                     }
                 } else {
-                    Debug.LogError("File Location not found");
+                    Debug.LogWarning("File Location not found");
+                    _userConfirmedData = true;
                 }
             } else {
                 var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
@@ -144,7 +166,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
     private async UniTask<UnityGoogleDrive.Data.File> GetSaveMetadata() {
         var filesRequest = GoogleDriveFiles.List();
         filesRequest.Fields = ListFieldsQuery;
-        filesRequest.Q = $"name='{SaveFileName}'";
+        filesRequest.Q = $"name='{SaveFileName}' and '{_folderID}' in parents";
         await filesRequest.Send();
         var saveFileLocation = filesRequest.ResponseData.Files.Find(f => f.Name == SaveFileName);
         return saveFileLocation;
@@ -185,12 +207,15 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
             RefreshDataDate();
 
             var saveMetadata = await GetSaveMetadata();
-            if (IsUserLoggedIn && saveMetadata.ModifiedTime.Value.Ticks <= localModifiedTime)  {
+            bool noRecordConflicts = (saveMetadata == null) ||
+                (saveMetadata.ModifiedTime.Value.Ticks <= localModifiedTime);
+            if (IsUserLoggedIn && noRecordConflicts)  {
                 var file = new UnityGoogleDrive.Data.File {
                     Name = SaveFileName,
                     Content = Encoding.ASCII.GetBytes(jsonData)
                 };
                 if (string.IsNullOrEmpty(_fileID)) {
+                    file.Parents = new List<string> { _folderID };
                     var createRequest = UnityGoogleDrive.GoogleDriveFiles.Create(file);
                     createRequest.Fields = FileFieldsQuery;
                     file = await createRequest.Send();
