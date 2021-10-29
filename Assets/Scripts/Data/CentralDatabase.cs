@@ -20,11 +20,12 @@ public interface IDatabase {
     string DisplayName { get; }
     IEnumerable<IDataEntry> EntryList { get; }
     Dictionary<Hash128, IDataEntry> EntryDict { get; }
-    IReadOnlyCollection<Hash128> Favorites { get; }
-    void AddFavorite(Hash128 entry);
-    void RemoveFavorite(Hash128 entry);
+    IReadOnlyDictionary<string, HashSet<Hash128>> Lists { get; }
+    void AddEntryToList(string list, Hash128 entry);
+    void RemoveEntryFromList(string list, Hash128 entry);
     List<FilterData> RetrieveFiltersData();
     List<ToggleActionData> RetrieveTogglesData();
+    bool AddList(string name);
 }
 
 [Serializable]

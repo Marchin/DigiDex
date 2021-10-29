@@ -9,8 +9,8 @@ using Newtonsoft.Json;
 
 public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
     private const string FolderName = "DigiDex";
-    private const string SaveFileName = "DigiDex Save.json";
-    private const string SaveFileCopyName_date = "DigiDex Save(Copy) {0}.json";
+    private const string SaveFileName = "DigiDex.json";
+    private const string SaveFileCopyName_date = "DigiDex(Copy) {0}.json";
     private const string LocalDataPref = "local_data";
     private const string LastLocalSavePref = "last_local_save";
     private const string FolderMimeType = "application/vnd.google-apps.folder";
@@ -68,6 +68,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                         MimeType = FolderMimeType
                     };
                     var folder = await GoogleDriveFiles.Create(folderFile).Send();
+                    Debug.LogError(folder);
                     _folderID = folder?.Id;
                 }
 
@@ -97,6 +98,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 var file = new UnityGoogleDrive.Data.File {
                                     Name = SaveFileName,
                                     Content = Encoding.ASCII.GetBytes(jsonData),
+                                    Parents = new List<string> { _folderID }
                                 };
                                 var handle = ApplicationManager.Instance.DisplayLoadingScreen();
                                 var updateRequest = UnityGoogleDrive.GoogleDriveFiles.Update(_fileID, file);

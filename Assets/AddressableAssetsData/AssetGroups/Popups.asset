@@ -73,6 +73,22 @@ MonoBehaviour:
     m_Address: EvolutionDetailsPopup (Vertical)
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: a203ef01fcf4e0043b900aa9e5187768
+    m_Address: InputPopup (Vertical)
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 95d900ddd5d9c3041bd83a34b71bdf2b
+    m_Address: InputPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 08c577e9231f80542b4a2ae447b35d71
+    m_Address: ListsSelectionPopup (Vertical)
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 69ee2d8e97a6c0b4ea635c8f9a10936d
+    m_Address: ListsSelectionPopup
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 540ef4b002fba424d86242275961d112, type: 2}
   m_SchemaSet:

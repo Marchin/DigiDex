@@ -34,7 +34,7 @@ public class EntryViewPopup : Popup {
     [SerializeField] private Toggle _profileToggle = default;
     [SerializeField] private RectTransform _dataContent = default;
     [SerializeField] private RectTransform _profileContent = default;
-    [SerializeField] private Toggle _favoriteButton = default;
+    [SerializeField] private Button _favoriteButton = default;
     [SerializeField] private Button _evolutionButton = default;
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private Button _prevButton = default;
@@ -60,7 +60,8 @@ public class EntryViewPopup : Popup {
         _closeButton.onClick.AddListener(PopupManager.Instance.Back);
         _prevButton.onClick.AddListener(() => _prev?.Invoke());
         _nextButton.onClick.AddListener(() => _next?.Invoke());
-        _dbViewButton.onClick.AddListener(() => PopupManager.Instance.ClearStackUntilPopup<DatabaseViewPopup>());
+        _dbViewButton.onClick.AddListener(() =>
+            PopupManager.Instance.ClearStackUntilPopup<DatabaseViewPopup>());
         _loadingWheel.SetActive(false);
 
         _dataToggle.onValueChanged.AddListener(isOn => {
@@ -76,12 +77,9 @@ public class EntryViewPopup : Popup {
             }
         });
         
-        _favoriteButton.onValueChanged.AddListener(isOn => {
-            if (isOn) {
-                _db.AddFavorite(_entry.Hash);
-            } else {
-                _db.RemoveFavorite(_entry.Hash);
-            }
+        _favoriteButton.onClick.AddListener(async () => {
+            var popup = await PopupManager.Instance.GetOrLoadPopup<ListsSelectionPopup>();
+            popup.Populate(_entry);
         });
     }
 
@@ -109,7 +107,7 @@ public class EntryViewPopup : Popup {
         _profileScroll.verticalNormalizedPosition = 1f;
     
         _profile.text = _entry.Profile;
-        _favoriteButton.isOn = _db.Favorites.Contains(entry.Hash);
+        // _favoriteButton.isOn = _db.Lists.Contains(entry.Hash);
         List<InformationData> informationData = entry.ExtractInformationData();
         _info.Populate(informationData);
         if (entry.Sprite.RuntimeKeyIsValid()) {
@@ -128,7 +126,8 @@ public class EntryViewPopup : Popup {
 
         if (entry is IEvolvable evolvable) {
             if (evolvable.EvolutionDataRef.RuntimeKeyIsValid()) {
-                var evolutionHandle = Addressables.LoadAssetAsync<EvolutionData>(evolvable.EvolutionDataRef);
+                var evolutionHandle = 
+                    Addressables.LoadAssetAsync<EvolutionData>(evolvable.EvolutionDataRef);
                 _dataHandles.Add(evolutionHandle);
                 evolutionHandle.WithCancellation(_cts.Token).ContinueWith(evolutionData => {
                     if (evolutionData != null) {
@@ -144,7 +143,8 @@ public class EntryViewPopup : Popup {
         UniTask.DelayFrame(1).ContinueWith(() => {
             _dataScroll.normalizedPosition = Vector2.up;
             // HACK: Unity for some reason doesn't shrink the viewport at first even though this option is already set
-            _dataScroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
+            _dataScroll.verticalScrollbarVisibility =
+                ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
         }).Forget();
 
         OnPopulate?.Invoke(_entry);

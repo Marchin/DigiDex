@@ -12,6 +12,7 @@ using Cysharp.Threading.Tasks;
 public class PopupRestorationData {
     public Type PopupType;
     public bool IsFullScreen;
+    public bool Vertical;
     public object Data;
 }
 
@@ -73,7 +74,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         }
     }
 
-    public async UniTask<T> GetOrLoadPopup<T>(bool restore = false, bool track = true) where T : Popup {
+    public async UniTask<T> GetOrLoadPopup<T>(bool restore = true, bool track = true) where T : Popup {
         var lockHandle = ApplicationManager.Instance.LockScreen();
         T popup = null;
         _loadingPopup = true;
@@ -82,6 +83,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             PopupRestorationData restorationData = new PopupRestorationData {
                 PopupType = activePopup.GetType(),
                 IsFullScreen = activePopup.FullScreen,
+                Vertical = activePopup.Vertical,
                 Data = restore ? activePopup.GetRestorationData() : null
             };
             _restorationData.Insert(0, restorationData);
@@ -171,6 +173,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 PopupRestorationData restorationData = new PopupRestorationData {
                     PopupType = popup.GetType(),
                     IsFullScreen = popup.FullScreen,
+                    Vertical = popup.Vertical,
                     Data = popup.GetRestorationData()
                 };
                 RemovePopup(lastVisiblePopup);
@@ -209,6 +212,9 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
 
                 while ((startingIndex + 1) < _restorationData.Count && !_restorationData[startingIndex].IsFullScreen) {
                     ++startingIndex;
+                }
+                while (startingIndex > 0 && _restorationData[startingIndex].Vertical == IsScreenOnPortrait) {
+                    --startingIndex;
                 }
             }
 

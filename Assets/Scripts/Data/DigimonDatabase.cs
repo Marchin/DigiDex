@@ -21,8 +21,8 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     public List<DigimonType> Types;
     public List<DigimonGroup> Groups;
     public List<Level> Levels;
-    private HashSet<Hash128> _favorites;
-    private HashSet<Hash128> FavoritesInternal {
+    private Dictionary<string, HashSet<Hash128>> _favorites;
+    private Dictionary<string, HashSet<Hash128>> ListsInternal {
         get {
             if (_favorites == null) {
                 _favorites = LoadFavorites();
@@ -30,7 +30,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
             return _favorites;
         }
     }
-    public IReadOnlyCollection<Hash128> Favorites => FavoritesInternal;
+    public IReadOnlyDictionary<string, HashSet<Hash128>> Lists => ListsInternal;
     private Dictionary<Hash128, Digimon> _digimonDict;
     public Dictionary<Hash128, Digimon> DigimonDict {
         get {
@@ -50,14 +50,35 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         }
     }
 
-    public void AddFavorite(Hash128 entry) {
-        FavoritesInternal.Add(entry);
-        SaveFavorites();
+    public void AddEntryToList(string list, Hash128 entry) {
+        if (ListsInternal.ContainsKey(list)) {
+            ListsInternal[list].Add(entry);
+            SaveFavorites();
+        } else {
+            Debug.LogWarning("List doesn't exist");
+        }
     }
 
-    public void RemoveFavorite(Hash128 entry) {
-        FavoritesInternal.Remove(entry);
-        SaveFavorites();
+    public void RemoveEntryFromList(string list, Hash128 entry) {
+        if (ListsInternal.ContainsKey(list)) {
+            ListsInternal[list].Remove(entry);
+            if (ListsInternal[list].Count == 0) {
+                ListsInternal.Remove(list);
+            }
+            SaveFavorites();
+        } else {
+            Debug.LogWarning("List doesn't exist");
+        }
+    }
+
+    public bool AddList(string name) {
+        if (!ListsInternal.ContainsKey(name)) {
+            ListsInternal.Add(name, new HashSet<Hash128>());
+            SaveFavorites();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public List<FilterData> RetrieveFiltersData() {
@@ -124,20 +145,6 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
 
         toggles.Add(
             new ToggleActionData(
-                name: FavoritesToggle,
-                action: (list, isOn) => {
-                    if (isOn) {
-                        return list
-                            .Where(o => Favorites.Contains((o as Digimon).Hash))
-                            .ToList();
-                    } else {
-                        return list;
-                    }
-                }
-            )
-        );
-        toggles.Add(
-            new ToggleActionData(
                 name: ReverseToggle, 
                 action: (list, isOn) => {
                     if (isOn) {
@@ -154,18 +161,20 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
 
     private void SaveFavorites() {
         if (_favorites != null) {
-            string jsonData = JsonConvert.SerializeObject(_favorites.Select(h => h.ToString()));
+            var lists = _favorites.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
+            string jsonData = JsonConvert.SerializeObject(lists);
             UserDataManager.Instance.Save(FavDigimonPref, jsonData);
         }
     }
 
-    private HashSet<Hash128> LoadFavorites() {
+    private Dictionary<string, HashSet<Hash128>> LoadFavorites() {
         string jsonData = UserDataManager.Instance.Load(FavDigimonPref);
-        var strings = JsonConvert.DeserializeObject<List<string>>(jsonData) ?? new List<string>();
-        var hashesList = strings.Select(s => Hash128.Parse(s)).ToList();
-        HashSet<Hash128> result = new HashSet<Hash128>(hashesList);
+        var strings = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(jsonData) ??
+            new Dictionary<string, List<string>>();
+        var hashesList = strings.ToDictionary(kvp => kvp.Key, 
+            kvp => new HashSet<Hash128>(kvp.Value.Select(s => Hash128.Parse(s))));
 
-        return result;
+        return hashesList;
     }
 
 #if UNITY_EDITOR

@@ -105,7 +105,8 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
 
     private async void CalculateElementNormalizedLength() {
         if (_scroll != null) {
-            await UniTask.WaitForEndOfFrame();
+            await UniTask.WaitForEndOfFrame(cancellationToken: this.GetCancellationTokenOnDestroy())
+                .SuppressCancellationThrow();
             float viewportLength = (_direction == Direction.Horizontal) ? 
                 _scroll.viewport.rect.width :
                 _scroll.viewport.rect.height;
