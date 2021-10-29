@@ -40,6 +40,7 @@ public class EntryViewPopup : Popup {
     [SerializeField] private Button _prevButton = default;
     [SerializeField] private Button _nextButton = default;
     [SerializeField] private Button _dbViewButton = default;
+    [SerializeField] private GameObject _favoriteIndicator = default;
     [SerializeField] private GameObject _nextPrevButtonContainer = default;
     [SerializeField] private GameObject _loadingWheel = default;
     public event Action<IDataEntry> OnPopulate;
@@ -81,6 +82,20 @@ public class EntryViewPopup : Popup {
             var popup = await PopupManager.Instance.GetOrLoadPopup<ListsSelectionPopup>();
             popup.Populate(_entry);
         });
+    }
+
+    private void OnEnable() {
+        PopupManager.Instance.OnStackChange += RefreshFavoriteButton;
+    }
+
+    private void OnDisable() {
+        PopupManager.Instance.OnStackChange -= RefreshFavoriteButton;
+    }
+
+    private void RefreshFavoriteButton() {
+        if (_entry != null) {
+            _favoriteIndicator.SetActive(_db.Lists?.Any(l => l.Value.Contains(_entry.Hash)) ?? false);
+        }
     }
 
     public void Initialize(Action prev, Action next) {
@@ -148,6 +163,7 @@ public class EntryViewPopup : Popup {
         }).Forget();
 
         OnPopulate?.Invoke(_entry);
+        RefreshFavoriteButton();
     }
 
     public override object GetRestorationData() {
