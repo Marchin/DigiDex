@@ -40,7 +40,6 @@ public class DatabaseViewPopup : Popup {
     private Dictionary<Hash128, IDataEntry> _entryDict;
     private IDatabase _db;
     private bool _initialized;
-    
     private IDataEntry _selectedEntry;
     public IDataEntry SelectedEntry {
         get => _selectedEntry;
@@ -76,7 +75,6 @@ public class DatabaseViewPopup : Popup {
                         }
                     }).Forget();
                 }
-
             }
         }
     }
@@ -87,10 +85,15 @@ public class DatabaseViewPopup : Popup {
         _activeFilterIndicator.gameObject.SetActive(false);
 
         _filterButton.onClick.AddListener(async () => {
-            var popup = await PopupManager.Instance.GetOrLoadPopup<FilterPopup>();
+            var popup = await PopupManager.Instance.GetOrLoadPopup<FilterPopup>(restore: false);
             popup.Populate(_filters, _toggles, (filters , toggles) => {
-                _filters = filters;
-                _toggles = toggles;
+                var dbPopup = PopupManager.Instance.GetLoadedPopupOfType<DatabaseViewPopup>();
+                if (dbPopup != null) {
+                    dbPopup._filters = filters;
+                    dbPopup._toggles = toggles;
+                } else {
+                    Debug.LogWarning("DatabasePopup not found to apply filter");
+                }
 
                 // Filters get applied when the popup stack refreshes
             });
@@ -130,7 +133,11 @@ public class DatabaseViewPopup : Popup {
         _initialized = true;
     }
 
-    public void Populate(IDatabase database) {
+    public void Populate(
+        IDatabase database,
+        IEnumerable<FilterData> filters = null,
+        IEnumerable<ToggleActionData> toggles = null
+    ) {
         _db = database;
         _currEntries = _filteredEntries = database.EntryList;
         _elementScrollList.Initialize(
@@ -145,10 +152,11 @@ public class DatabaseViewPopup : Popup {
                 }
             }
         );
-
+        
         _entryDict = _db.EntryList.ToDictionary(e => e.Hash);
-        _toggles = _db.RetrieveTogglesData();
-        _filters = _db.RetrieveFiltersData();
+        _filters = filters ?? _db.RetrieveFiltersData();
+        _toggles = toggles ?? _db.RetrieveTogglesData();
+        Debug.LogError(_toggles.Count());
         ReApplyFilterAndRefresh();
     }
 
@@ -208,16 +216,14 @@ public class DatabaseViewPopup : Popup {
             LastQuery = _lastQuery,
             DB = _db,
             SelectedEntry = SelectedEntry.Name
-        };  
+        };
 
         return data;
     }
 
     public async override void Restore(object data) {
         if (data is PopupData popupData) {
-            Populate(popupData.DB);
-            _filters = popupData.Filters;
-            _toggles = popupData.Toggles;
+            Populate(popupData.DB, popupData.Filters, popupData.Toggles);
             _lastQuery = popupData.LastQuery;
             _searchInput.text = popupData.LastQuery;
             ReApplyFilterAndRefresh();
