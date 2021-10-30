@@ -136,7 +136,8 @@ public class DatabaseViewPopup : Popup {
     public void Populate(
         IDatabase database,
         IEnumerable<FilterData> filters = null,
-        IEnumerable<ToggleActionData> toggles = null
+        IEnumerable<ToggleActionData> toggles = null,
+        string lastQuery = ""
     ) {
         _db = database;
         _currEntries = _filteredEntries = database.EntryList;
@@ -156,6 +157,8 @@ public class DatabaseViewPopup : Popup {
         _entryDict = _db.EntryList.ToDictionary(e => e.Hash);
         _filters = filters ?? _db.RetrieveFiltersData();
         _toggles = toggles ?? _db.RetrieveTogglesData();
+        _lastQuery = lastQuery;
+        _searchInput.text = _lastQuery;
         ReApplyFilterAndRefresh();
     }
 
@@ -173,6 +176,7 @@ public class DatabaseViewPopup : Popup {
         }
 
         if (PopupManager.Instance.ActivePopup == this) {
+            _db.RefreshFilters(ref _filters, ref _toggles);
             _filteredEntries = new List<IDataEntry>(_db.EntryList);
             foreach (var toggle in _toggles) {
                 _filteredEntries = toggle.Apply(_filteredEntries);
@@ -222,10 +226,7 @@ public class DatabaseViewPopup : Popup {
 
     public async override void Restore(object data) {
         if (data is PopupData popupData) {
-            Populate(popupData.DB, popupData.Filters, popupData.Toggles);
-            _lastQuery = popupData.LastQuery;
-            _searchInput.text = popupData.LastQuery;
-            ReApplyFilterAndRefresh();
+            Populate(popupData.DB, popupData.Filters, popupData.Toggles, popupData.LastQuery);
             await UniTask.DelayFrame(ElementScrollList.FrameDelayToAnimateList + 1);
             _elementScrollList.ScrollTo(popupData.SelectedEntry, withAnimation: true);
         }

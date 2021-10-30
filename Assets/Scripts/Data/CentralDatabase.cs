@@ -25,6 +25,7 @@ public interface IDatabase {
     void RemoveEntryFromList(string list, Hash128 entry);
     List<FilterData> RetrieveFiltersData();
     List<ToggleActionData> RetrieveTogglesData();
+    void RefreshFilters(ref IEnumerable<FilterData> filters, ref IEnumerable<ToggleActionData> toggles);
     bool AddList(string name);
 }
 

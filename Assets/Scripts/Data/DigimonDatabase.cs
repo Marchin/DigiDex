@@ -12,7 +12,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     public const string LevelsFilter = "Levels";
     public const string GroupsFilter = "Groups";
     public const string ListsFilter = "Lists";
-    public const string FavoritesToggle = "Favorites";
+    public const string InListToggle = "In List";
     public const string ReverseToggle = "Reverse";
     private const string FavDigimonPref = "fav_digimons";
     public List<Digimon> Digimons;
@@ -142,21 +142,23 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         }
         filters.Add(groupsFilter);
 
-        FilterData listsFilter = new FilterData(
-            name: ListsFilter,
-            getFilteringComponent: element => {
-                List<string> listsNames = Lists.Keys.ToList();
-                return Lists
-                    .Where(kvp => kvp.Value.Contains(element.Hash))
-                    .Select(kvp => listsNames.IndexOf(kvp.Key))
-                    .ToList();
+        if (Lists.Count > 0) {
+            FilterData listsFilter = new FilterData(
+                name: ListsFilter,
+                getFilteringComponent: element => {
+                    List<string> listsNames = Lists.Keys.ToList();
+                    return Lists
+                        .Where(kvp => kvp.Value.Contains(element.Hash))
+                        .Select(kvp => listsNames.IndexOf(kvp.Key))
+                        .ToList();
+                }
+            );
+            listsFilter.Elements = new List<FilterEntryData>(Lists.Count);
+            for (int iList = 0; iList < Lists.Count; ++iList) {
+                listsFilter.Elements.Add(new FilterEntryData { Name = Lists.ElementAt(iList).Key });
             }
-        );
-        listsFilter.Elements = new List<FilterEntryData>(Lists.Count);
-        for (int iList = 0; iList < Lists.Count; ++iList) {
-            listsFilter.Elements.Add(new FilterEntryData { Name = Lists.ElementAt(iList).Key });
+            filters.Add(listsFilter);
         }
-        filters.Add(listsFilter);
 
         return filters;
     }
@@ -177,7 +179,80 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
             )
         );
 
+        if (Lists.Count > 0) {
+            toggles.Add(
+                new ToggleActionData(
+                    name: InListToggle, 
+                    action: (list, isOn) => {
+                        if (isOn) {
+                            return list.Where(e => Lists.Any(kvp => kvp.Value.Contains(e.Hash)));
+                        } else {
+                            return list;
+                        }
+                    }
+                )
+            );
+        }
+
         return toggles;
+    }
+
+    public void RefreshFilters(
+        ref IEnumerable<FilterData> filters, 
+        ref IEnumerable<ToggleActionData> toggles
+    ) {
+        var listFilter = filters.FirstOrDefault(f => f.Name == ListsFilter);
+        if (listFilter != null) {
+            var elements = listFilter.Elements.Where(f => Lists.Any(kvp => kvp.Key == f.Name));
+            listFilter.Elements = elements
+                .Concat(
+                    Lists.Where(kvp => !elements.Any(e => e.Name == kvp.Key))
+                        .Select(kvp => new FilterEntryData { Name = kvp.Key }))
+                .ToList();
+            if (listFilter.Elements.Count() <= 0) {
+                filters = filters.Where(f => f.Name != ListsFilter);
+            }
+        } else {
+            if (Lists.Count > 0) {
+                FilterData listsFilter = new FilterData(
+                    name: ListsFilter,
+                    getFilteringComponent: element => {
+                        List<string> listsNames = Lists.Keys.ToList();
+                        return Lists
+                            .Where(kvp => kvp.Value.Contains(element.Hash))
+                            .Select(kvp => listsNames.IndexOf(kvp.Key))
+                            .ToList();
+                    }
+                );
+                listsFilter.Elements = new List<FilterEntryData>(Lists.Count);
+                for (int iList = 0; iList < Lists.Count; ++iList) {
+                    listsFilter.Elements.Add(new FilterEntryData { Name = Lists.ElementAt(iList).Key });
+                }
+                filters = filters.Append(listsFilter);
+            }
+        }
+
+        var inListToggle = toggles.FirstOrDefault(t => t.Name == InListToggle);
+        if (inListToggle != null) {
+            if (Lists.Count <= 0) {
+                toggles = toggles.Where(t => t.Name != InListToggle);
+            }
+        } else {
+            if (Lists.Count > 0) {
+                toggles = toggles.Append(
+                    new ToggleActionData(
+                        name: InListToggle, 
+                        action: (list, isOn) => {
+                            if (isOn) {
+                                return list.Where(e => Lists.Any(kvp => kvp.Value.Contains(e.Hash)));
+                            } else {
+                                return list;
+                            }
+                        }
+                    )
+                );
+            }
+        }
     }
 
     private void SaveFavorites() {

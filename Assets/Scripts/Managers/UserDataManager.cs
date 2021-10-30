@@ -205,7 +205,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         if (jsonData != _dataOnLoad) {
             PlayerPrefs.SetString(LocalDataPref, jsonData);
             _dataOnLoad = jsonData;
-            long localModifiedTime = long.Parse(PlayerPrefs.GetString(LastLocalSavePref));
+            long localModifiedTime = long.Parse(PlayerPrefs.GetString(LastLocalSavePref, "0"));
             RefreshDataDate();
 
             var saveMetadata = await GetSaveMetadata();
