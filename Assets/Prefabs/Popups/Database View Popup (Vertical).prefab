@@ -613,7 +613,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
-  m_MinWidth: 116
+  m_MinWidth: 140
   m_MinHeight: -1
   m_PreferredWidth: -1
   m_PreferredHeight: -1
@@ -1887,10 +1887,10 @@ MonoBehaviour:
   m_Padding:
     m_Left: 16
     m_Right: 16
-    m_Top: 32
-    m_Bottom: 32
+    m_Top: 22
+    m_Bottom: 22
   m_ChildAlignment: 0
-  m_Spacing: 32
+  m_Spacing: 24
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
@@ -3969,7 +3969,7 @@ PrefabInstance:
     - target: {fileID: 4369968451516858402, guid: 87dba41710c9ffb40a20c32de4f82441,
         type: 3}
       propertyPath: m_MinWidth
-      value: 116
+      value: 140
       objectReference: {fileID: 0}
     - target: {fileID: 4369968451516858402, guid: 87dba41710c9ffb40a20c32de4f82441,
         type: 3}

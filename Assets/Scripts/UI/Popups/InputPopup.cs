@@ -25,7 +25,11 @@ public class InputPopup : Popup {
         _title.text = title;
         OnConfirm = onConfirm;
         _confirmButton.onClick.RemoveAllListeners();
-        _confirmButton.onClick.AddListener(() => OnConfirm(_input.text));
+        _confirmButton.onClick.AddListener(() => {
+            if (!string.IsNullOrEmpty(_input.text)) {
+                OnConfirm(_input.text);
+            }
+        });
     }
 
     public override object GetRestorationData() {
