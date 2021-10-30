@@ -11,6 +11,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     public const string TypesFilter = "Types";
     public const string LevelsFilter = "Levels";
     public const string GroupsFilter = "Groups";
+    public const string ListsFilter = "Lists";
     public const string FavoritesToggle = "Favorites";
     public const string ReverseToggle = "Reverse";
     private const string FavDigimonPref = "fav_digimons";
@@ -90,7 +91,9 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         );
         fieldsFilter.Elements = new List<FilterEntryData>(Fields.Count);
         for (int iField = 0; iField < Fields.Count; ++iField) {
-            fieldsFilter.Elements.Add(new FilterEntryData { Name = Fields[iField].Name, Sprite = Fields[iField].Sprite });
+            fieldsFilter.Elements.Add(
+                new FilterEntryData { Name = Fields[iField].Name, 
+                    Sprite = Fields[iField].Sprite });
         }
         filters.Add(fieldsFilter);
       
@@ -101,7 +104,9 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         );
         attributesFilter.Elements = new List<FilterEntryData>(Attributes.Count);
         for (int iAttribute = 0; iAttribute < Attributes.Count; ++iAttribute) {
-            attributesFilter.Elements.Add(new FilterEntryData { Name = Attributes[iAttribute].Name, Sprite = Attributes[iAttribute].Sprite });
+            attributesFilter.Elements.Add(
+                new FilterEntryData { Name = Attributes[iAttribute].Name,
+                    Sprite = Attributes[iAttribute].Sprite });
         }
         filters.Add(attributesFilter);
 
@@ -136,6 +141,22 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
             groupsFilter.Elements.Add(new FilterEntryData { Name = Groups[iGroup].Name });
         }
         filters.Add(groupsFilter);
+
+        FilterData listsFilter = new FilterData(
+            name: ListsFilter,
+            getFilteringComponent: element => {
+                List<string> listsNames = Lists.Keys.ToList();
+                return Lists
+                    .Where(kvp => kvp.Value.Contains(element.Hash))
+                    .Select(kvp => listsNames.IndexOf(kvp.Key))
+                    .ToList();
+            }
+        );
+        listsFilter.Elements = new List<FilterEntryData>(Lists.Count);
+        for (int iList = 0; iList < Lists.Count; ++iList) {
+            listsFilter.Elements.Add(new FilterEntryData { Name = Lists.ElementAt(iList).Key });
+        }
+        filters.Add(listsFilter);
 
         return filters;
     }

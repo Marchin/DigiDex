@@ -934,7 +934,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.17713664, b: 0.3962264, a: 1}
+  m_Color: {r: 0, g: 0.11372549, b: 0.25490198, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1023,7 +1023,8 @@ MonoBehaviour:
   _fakeScrollBar: {fileID: 8323583020243061417}
   _fakeScrollBarHandle: {fileID: 3635921139847482737}
   _scrollBarHandler: {fileID: 1310336913749002702}
-  _hideInSecs: 0.6
+  _hideInSecs: 2
+  _safeArea: {fileID: 0}
 --- !u!114 &4148036337387786895
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -103,7 +103,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
         OnPopulate?.Invoke(data);
     }
 
-    private async void CalculateElementNormalizedLength() {
+    public async void CalculateElementNormalizedLength() {
         if (_scroll != null) {
             await UniTask.WaitForEndOfFrame(cancellationToken: this.GetCancellationTokenOnDestroy())
                 .SuppressCancellationThrow();

@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public class FilterData {
     public string Name;
@@ -30,11 +31,11 @@ public class FilterData {
     }
 
     public IEnumerable<T> Apply<T>(IEnumerable<T> list) where T : IDataEntry {
-        List<int> requiredLevels = this.Elements
+        List<int> required = this.Elements
             .Where(e => e.State == FilterState.Required)
             .Select(e => this.Elements.IndexOf(e))
             .ToList();
-        List<int> excludedLevels = this.Elements
+        List<int> excluded = this.Elements
             .Where(e => e.State == FilterState.Excluded)
             .Select(e => this.Elements.IndexOf(e))
             .ToList();
@@ -43,8 +44,8 @@ public class FilterData {
             .Where(element => {
                 List<int> filteringComponent = _getFilteringComponent?.Invoke(element);
 
-                return (requiredLevels.Except(filteringComponent).Count() == 0) &&
-                    !excludedLevels.Any(index => filteringComponent.Contains(index));
+                return (required.Except(filteringComponent).Count() == 0) &&
+                    !excluded.Any(index => filteringComponent.Contains(index));
             });
 
         return filteredList;
@@ -76,7 +77,7 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
     private FilterData _filterData;
 
     private void Awake() {
-        _button.onClick.AddListener(() => {
+        _button.onClick.AddListener(async () => {
             if (_filterData == null || _filterData.Elements == null || _filterData.List == null) {
                 return;
             }
@@ -86,31 +87,13 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
             } else {
                 RectTransform rectTransform = transform as RectTransform;
                 RectTransform scrollRectTransform = _filterData.List.transform as RectTransform;
-                if (rectTransform.position.y < (0.5f * Screen.height)) {
-                    scrollRectTransform.pivot = new Vector2(0.5f, 0f);
-                    Vector2 topCenter = new Vector2(
-                        rectTransform.rect.center.x,
-                        rectTransform.rect.yMax
-                    );
-                    scrollRectTransform.position = rectTransform.TransformPoint(topCenter);
-                    scrollRectTransform.sizeDelta = new Vector2(
-                        rectTransform.rect.width, 
-                        Mathf.Min(_filterData.List.OriginalScrollHeight,
-                            Screen.height - scrollRectTransform.position.y));
-                } else {
-                    scrollRectTransform.pivot = new Vector2(0.5f, 1f);
-                    Vector2 bottomCenter = new Vector2(
-                        rectTransform.rect.center.x,
-                        rectTransform.rect.yMin
-                    );
-                    scrollRectTransform.position = rectTransform.TransformPoint(bottomCenter);
-                    scrollRectTransform.sizeDelta = new Vector2(
-                        rectTransform.rect.width, 
-                        Mathf.Min(_filterData.List.OriginalScrollHeight, scrollRectTransform.position.y));
-                }
-
+                
                 _filterData.List.Populate(_filterData.Elements);
                 _filterData.List.gameObject.SetActive(true);
+                await UniTask.DelayFrame(1,
+                    cancellationToken: this.GetCancellationTokenOnDestroy())
+                    .SuppressCancellationThrow();
+                _filterData.List.AdjustPosition(transform as RectTransform);
                 _filterData.List.ResetScroll();
             }
             
