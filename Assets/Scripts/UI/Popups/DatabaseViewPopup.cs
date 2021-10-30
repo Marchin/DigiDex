@@ -152,11 +152,10 @@ public class DatabaseViewPopup : Popup {
                 }
             }
         );
-        
+
         _entryDict = _db.EntryList.ToDictionary(e => e.Hash);
         _filters = filters ?? _db.RetrieveFiltersData();
         _toggles = toggles ?? _db.RetrieveTogglesData();
-        Debug.LogError(_toggles.Count());
         ReApplyFilterAndRefresh();
     }
 
