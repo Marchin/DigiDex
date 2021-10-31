@@ -14,7 +14,6 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     public const string ListsFilter = "Lists";
     public const string InListToggle = "In List";
     public const string ReverseToggle = "Reverse";
-    private const string FavDigimonPref = "fav_digimons";
     public List<Digimon> Digimons;
     public IEnumerable<IDataEntry> EntryList => Digimons.Cast<IDataEntry>();
     public List<Field> Fields;
@@ -22,13 +21,13 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     public List<DigimonType> Types;
     public List<DigimonGroup> Groups;
     public List<Level> Levels;
-    private Dictionary<string, HashSet<Hash128>> _favorites;
+    private Dictionary<string, HashSet<Hash128>> _lists;
     private Dictionary<string, HashSet<Hash128>> ListsInternal {
         get {
-            if (_favorites == null) {
-                _favorites = LoadFavorites();
+            if (_lists == null) {
+                _lists = LoadFavorites();
             }
-            return _favorites;
+            return _lists;
         }
     }
     public IReadOnlyDictionary<string, HashSet<Hash128>> Lists => ListsInternal;
@@ -54,7 +53,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     public void AddEntryToList(string list, Hash128 entry) {
         if (ListsInternal.ContainsKey(list)) {
             ListsInternal[list].Add(entry);
-            SaveFavorites();
+            SaveLists();
         } else {
             Debug.LogWarning("List doesn't exist");
         }
@@ -66,7 +65,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
             if (ListsInternal[list].Count == 0) {
                 ListsInternal.Remove(list);
             }
-            SaveFavorites();
+            SaveLists();
         } else {
             Debug.LogWarning("List doesn't exist");
         }
@@ -75,7 +74,6 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     public bool AddList(string name) {
         if (!ListsInternal.ContainsKey(name)) {
             ListsInternal.Add(name, new HashSet<Hash128>());
-            SaveFavorites();
             return true;
         } else {
             return false;
@@ -255,16 +253,16 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         }
     }
 
-    private void SaveFavorites() {
-        if (_favorites != null) {
-            var lists = _favorites.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
+    private void SaveLists() {
+        if (_lists != null) {
+            var lists = _lists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
             string jsonData = JsonConvert.SerializeObject(lists);
-            UserDataManager.Instance.Save(FavDigimonPref, jsonData);
+            UserDataManager.Instance.Save(DisplayName, jsonData);
         }
     }
 
     private Dictionary<string, HashSet<Hash128>> LoadFavorites() {
-        string jsonData = UserDataManager.Instance.Load(FavDigimonPref);
+        string jsonData = UserDataManager.Instance.Load(DisplayName);
         var strings = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(jsonData) ??
             new Dictionary<string, List<string>>();
         var hashesList = strings.ToDictionary(kvp => kvp.Key, 
@@ -272,11 +270,4 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
 
         return hashesList;
     }
-
-#if UNITY_EDITOR
-    [UnityEditor.MenuItem("Tools/Clear Favorites")]
-    public static void ClearFavorites() {
-        PlayerPrefs.DeleteKey(FavDigimonPref);
-    }
-#endif
 }
