@@ -99,6 +99,22 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
             
             _filterData.List.LastCaller = this;
         });
+
+        PopupManager.Instance.OnWindowResize += OnWindowResize;
+    }
+
+    private void OnDestroy() {
+        PopupManager.Instance.OnWindowResize -= OnWindowResize;
+    }
+
+    private void OnWindowResize() {
+        if (_filterData != null &&
+            _filterData.List != null &&
+            _filterData.List.LastCaller == this &&
+            _filterData.List.gameObject.activeSelf
+        ) {
+            _filterData.List.AdjustPosition(transform as RectTransform);
+        }
     }
 
     public void Populate(FilterData data) {

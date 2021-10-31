@@ -63,7 +63,7 @@ public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IP
                 Mathf.Min(_scroll.content.rect.height, 
                     scrollRectTransform.position.y - yMin));
         }
-        CalculateElementNormalizedLength();
+        CalculateSizes();
     }
 
     public void OnPointerEnter(PointerEventData eventData) {

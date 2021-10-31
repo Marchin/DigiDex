@@ -41,6 +41,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
 
     private void Start() {
         _template.gameObject.SetActive(false);
+        PopupManager.Instance.OnWindowResize += CalculateSizes;
         if (_scroll != null) {
             _scroll.onValueChanged.AddListener(OnScroll);
 
@@ -49,6 +50,10 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
                 _scrollBarHandler.OnDragCall += OnScrollBarHandle;
             }
         }
+    }
+
+    private void OnDestroy() {
+        PopupManager.Instance.OnWindowResize -= CalculateSizes;
     }
 
     public void Populate(IEnumerable<D> data) {
@@ -98,12 +103,12 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
             _elements.RemoveAt(_elements.Count - 1);
         }
 
-        CalculateElementNormalizedLength();
+        CalculateSizes();
 
         OnPopulate?.Invoke(data);
     }
 
-    public async void CalculateElementNormalizedLength() {
+    public async void CalculateSizes() {
         if (_scroll != null) {
             await UniTask.WaitForEndOfFrame(cancellationToken: this.GetCancellationTokenOnDestroy())
                 .SuppressCancellationThrow();

@@ -28,7 +28,6 @@ public class ElementScrollList : MonoBehaviour {
     private TextMeshProUGUI[] _elementsTexts;
     private List<string> _namesList = new List<string>();
     private float _elementNormalizedHeight;
-    private float _elementWidth;
     private int _currElementScrollIndex;
     private RectTransform CurrenElement => _elements[_currElementIndex];
     private bool _fixingListPosition = false;
@@ -92,8 +91,6 @@ public class ElementScrollList : MonoBehaviour {
         };
 
         Canvas.ForceUpdateCanvases();
-
-        _elementWidth = _elementTemplate.rect.width;
         _elementTemplate.gameObject.SetActive(false);
 
         _elements = new RectTransform[_scrollRect.content.childCount - 1];
@@ -103,6 +100,13 @@ public class ElementScrollList : MonoBehaviour {
         _elementsTexts = _scrollRect.content.GetComponentsInChildren<TextMeshProUGUI>();
         _scrollContents = _scrollRect.content.GetComponentsInChildren<ScrollContent>();
         _scrollRect.onValueChanged.AddListener(OnScroll);
+        PopupManager.Instance.OnWindowResize += PopulateElements;
+        PopupManager.Instance.OnWindowResize += AdjustMargins;
+    }
+
+    private void OnDestroy() {
+        PopupManager.Instance.OnWindowResize -= PopulateElements;
+        PopupManager.Instance.OnWindowResize -= AdjustMargins;
     }
 
     public async void Initialize(List<string> nameList, Action<int> onConfirmed) {
@@ -119,17 +123,12 @@ public class ElementScrollList : MonoBehaviour {
         PopulateElements();
         OnConfirmed?.Invoke(0);
         
-        // Add padding so that the top and bottom elements can be centered when scrolling
-        _layoutGroup.padding.top = _layoutGroup.padding.bottom =
-            Mathf.CeilToInt(0.5f * (_scrollRect.viewport.rect.height - _elements[0].rect.height));
-        _layoutGroup.enabled = false;
-        _layoutGroup.enabled = true;
-
+        AdjustMargins();
+        
         // HACK: If we don't wait these frames the elements don't get properly animated
         await UniTask.DelayFrame(FrameDelayToAnimateList,
             cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this));
         
-        // Canvas.ForceUpdateCanvases();
 
         _scrollRect.normalizedPosition = Vector2.up;
         AnimateElements();
@@ -158,6 +157,14 @@ public class ElementScrollList : MonoBehaviour {
         }
         PopulateElements();
         OnScroll(_scrollRect.normalizedPosition);
+    }
+
+    private void AdjustMargins() {
+        // Add padding so that the top and bottom elements can be centered when scrolling
+        _layoutGroup.padding.top = _layoutGroup.padding.bottom =
+            Mathf.CeilToInt(0.5f * (_scrollRect.viewport.rect.height - _elements[0].rect.height));
+        _layoutGroup.enabled = false;
+        _layoutGroup.enabled = true;
     }
 
     private void Update() {
@@ -277,7 +284,8 @@ public class ElementScrollList : MonoBehaviour {
         bool showScrollbar = scrollableHeight > _layoutGroup.spacing;
         if (showScrollbar) {
             _fakeScrollBar.gameObject.SetActive(true);
-            _elementNormalizedHeight = (_elements[0].rect.height + _layoutGroup.spacing) / scrollableHeight;
+            _elementNormalizedHeight = (_elements[0].rect.height + _layoutGroup.spacing) /
+                scrollableHeight;
             float handleLength = (1f / ( _namesList.Count)) * _fakeScrollBar.rect.height;
             if (handleLength < MinHandleHeight) {
                 _handleSizeAdjustment = MinHandleHeight - handleLength;

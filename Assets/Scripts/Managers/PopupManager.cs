@@ -23,10 +23,12 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     private CanvasScaler _canvasScaler;
     private List<CanvasScaler> _registeredCanvasScalers = new List<CanvasScaler>();
     public event Action OnStackChange;
+    public event Action OnWindowResize;
     private List<PopupRestorationData> _restorationData = new List<PopupRestorationData>();
     private bool _loadingPopup;
     public bool IsScreenOnPortrait => (Screen.height > Screen.width);
     private ScreenOrientation _lastDeviceOrientation;
+    private Vector2 _lastScreenSize;
     public Popup ActivePopup {
         get {
             foreach (var popup in _stack) {
@@ -54,6 +56,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         RegisterCanvasScalerForRotationScaling(_canvasScaler);
         RefreshReferenceResolution();
         _lastDeviceOrientation = Screen.orientation;
+        PopupLoop();
     }
 
     private void RemovePopup(int index = 0) {
@@ -192,15 +195,22 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         return popup;
     }
 
-    private void Update() {
-        RefreshScaler();
+    private async void PopupLoop() {
+        while (true) {
+            RefreshScaler();
+            if (Screen.orientation != _lastDeviceOrientation) {
+                foreach (var popup in _stack) {
+                    (popup.transform as RectTransform).AdjustToSafeZone();
+                }
 
-        if (Screen.orientation != _lastDeviceOrientation) {
-            foreach (var popup in _stack) {
-                (popup.transform as RectTransform).AdjustToSafeZone();
+                _lastDeviceOrientation = Screen.orientation;
             }
-
-            _lastDeviceOrientation = Screen.orientation;
+            Vector2 screenSize = new Vector2(Screen.width, Screen.height);
+            if (screenSize != _lastScreenSize) {
+                OnWindowResize?.Invoke();
+                _lastScreenSize = screenSize;
+            }
+            await UniTask.Delay(500);
         }
     }
 
