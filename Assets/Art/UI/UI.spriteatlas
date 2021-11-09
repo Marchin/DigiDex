@@ -41,6 +41,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 9f51b9c0a622e924383fb3dedbee50f1, type: 3}
   - {fileID: 21300000, guid: 2f91ed1118a3da04283b1aab9437025d, type: 3}
   - {fileID: 21300000, guid: 5c9b77619ef8ae24f948c699e7e30622, type: 3}
+  - {fileID: 21300000, guid: b327c8b12ae3e5c479c825d7492c0d66, type: 3}
   - {fileID: 21300000, guid: e03a42c1f3c9bfb4197ca0df3b0e1a7a, type: 3}
   - {fileID: 21300000, guid: ab90b0924ca34a048bf9f5a6edcd07de, type: 3}
   - {fileID: 21300000, guid: 9049cdb2a28bb4647a9400bdda607ade, type: 3}
@@ -68,6 +69,7 @@ SpriteAtlas:
   - Rounded Square
   - Circle Border
   - Question Mark
+  - Copy
   - Tab
   - Details Icon
   - Checkmark

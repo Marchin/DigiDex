@@ -79,7 +79,7 @@ public class EntryViewPopup : Popup {
         });
         
         _favoriteButton.onClick.AddListener(async () => {
-            var popup = await PopupManager.Instance.GetOrLoadPopup<ListsSelectionPopup>();
+            var popup = await PopupManager.Instance.GetOrLoadPopup<ListSelectionPopup>();
             popup.Populate(_entry);
         });
     }

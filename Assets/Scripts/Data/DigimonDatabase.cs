@@ -25,7 +25,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     private Dictionary<string, HashSet<Hash128>> ListsInternal {
         get {
             if (_lists == null) {
-                _lists = LoadFavorites();
+                _lists = LoadLists();
             }
             return _lists;
         }
@@ -261,9 +261,22 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         }
     }
 
-    private Dictionary<string, HashSet<Hash128>> LoadFavorites() {
+    public void CopyToClipboard(IEnumerable<KeyValuePair<string, HashSet<Hash128>>> lists) {
+        if (lists != null) {
+            var serializable = lists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
+            string jsonListData = JsonConvert.SerializeObject(serializable);
+            string copyData = JsonConvert.SerializeObject(new KeyValuePair<string, string>(DisplayName, jsonListData));
+            ApplicationManager.Instance.SaveClipboard(copyData);
+        }
+    }
+
+    private Dictionary<string, HashSet<Hash128>> LoadLists() {
         string jsonData = UserDataManager.Instance.Load(DisplayName);
-        var strings = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(jsonData) ??
+        return ParseListData(jsonData);
+    }
+
+    public Dictionary<string, HashSet<Hash128>> ParseListData(string data) {
+        var strings = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(data) ??
             new Dictionary<string, List<string>>();
         var hashesList = strings.ToDictionary(kvp => kvp.Key, 
             kvp => new HashSet<Hash128>(kvp.Value.Select(s => Hash128.Parse(s))));

@@ -82,11 +82,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
   - m_GUID: 08c577e9231f80542b4a2ae447b35d71
-    m_Address: ListsSelectionPopup (Vertical)
+    m_Address: ListSelectionPopup (Vertical)
     m_ReadOnly: 0
     m_SerializedLabels: []
   - m_GUID: 69ee2d8e97a6c0b4ea635c8f9a10936d
-    m_Address: ListsSelectionPopup
+    m_Address: ListSelectionPopup
     m_ReadOnly: 0
     m_SerializedLabels: []
   m_ReadOnly: 0

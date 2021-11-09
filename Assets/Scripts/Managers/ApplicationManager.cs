@@ -1,9 +1,12 @@
+using System.Text;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using Cysharp.Threading.Tasks;
 
 public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
+    private const string LastClipboardPref = "last_clipboard";
     [SerializeField] private GameObject _loadingScreen = default;
     [SerializeField] private GameObject _inputLock = default;
     [SerializeField] private AssetReferenceAtlasedSprite _missingSprite = default;
@@ -11,12 +14,15 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     private List<Handle> _loadingScreenHandles = new List<Handle>();
     private List<Handle> _inputLockingHandles = new List<Handle>();
     private CentralDatabase _centralDB;
+    private string _lastCopyText;
+    private bool _checkingClipboard;
     public bool Initialized { get; private set; }
     
     private async void Start() {
         await Addressables.InitializeAsync();
 
-        _centralDB = await Addressables.LoadAssetAsync<CentralDatabase>(CentralDatabase.CentralDBAssetName);
+        _centralDB = await Addressables.LoadAssetAsync<CentralDatabase>(
+            CentralDatabase.CentralDBAssetName);
 
         if (_centralDB == null) {
             UnityUtils.Quit();
@@ -25,7 +31,100 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
 
         await UserDataManager.Instance.Sync();
 
+        _lastCopyText = PlayerPrefs.GetString(LastClipboardPref, "");
+
         Initialized = true;
+        CheckClipboard();
+    }
+
+    private void OnApplicationFocus(bool focus) {
+        if (Initialized && focus) {
+            CheckClipboard();
+        }
+    }
+
+    private void OnApplicationQuit() {
+        PlayerPrefs.SetString(LastClipboardPref, _lastCopyText);
+    }
+
+    private async void CheckClipboard() {
+        if (!_checkingClipboard && (GUIUtility.systemCopyBuffer != _lastCopyText)) {
+            _checkingClipboard = true;
+            _lastCopyText = GUIUtility.systemCopyBuffer;
+            if (UserDataManager.Instance.IsValidData(GUIUtility.systemCopyBuffer, out var db, out var data)) {
+                var newLists = data.Where(l => !db.Lists.ContainsKey(l.Key));
+                var listsInConflict = data.Except(newLists);
+                if (listsInConflict.Count() > 0) {
+                    foreach (var list in listsInConflict)  {
+                        const string NameConflict = "Name Conflict";
+
+                        bool renameList = false;
+                        var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                        msgPopup.ShowCloseButton = false;
+                        List<ButtonData> buttons = new List<ButtonData>(2);
+                        buttons.Add(new ButtonData { Text = "Yes", Callback = () => {
+                            renameList = true;
+                            PopupManager.Instance.Back();
+                        }});
+                        buttons.Add(new ButtonData { Text = "No", Callback = PopupManager.Instance.Back });
+                        msgPopup.Populate(
+                            $"There's already a list called {list.Key}," + 
+                                " do you want to rename the new one and add it?",
+                            NameConflict,
+                            buttonDataList: buttons);
+
+                        await UniTask.WaitWhile(() => PopupManager.Instance.ActivePopup == msgPopup);
+
+                        if (renameList) {
+                            var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
+                                inputPopup.Populate($"{list.Key} is already in use please select a new name",
+                                NameConflict,
+                                name => {
+                                    if (!db.Lists.Keys.Contains(name)) {
+                                        db.AddList(name);
+                                        foreach (var entry in list.Value) {
+                                            db.AddEntryToList(name, entry);
+                                        }
+                                        PopupManager.Instance.Back();
+                                    }
+                                }
+                            );
+                            await UniTask.WaitWhile(() => inputPopup.gameObject.activeSelf);
+                        }
+                    }
+                }
+                
+                if (newLists.Count() > 0) {
+                    Debug.LogWarning("New lists");
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var list in newLists) {
+                        sb.AppendLine(list.Key);
+                    }
+                    var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                    msgPopup.ShowCloseButton = false;
+                    List<ButtonData> buttons = new List<ButtonData>(2);
+                    buttons.Add(new ButtonData { Text = "Yes", Callback = () => {
+                        foreach (var list in newLists) {
+                            db.AddList(list.Key);
+                            foreach (var entry in list.Value) {
+                                db.AddEntryToList(list.Key, entry);
+                            }
+                        }
+                        PopupManager.Instance.Back();
+                    }});
+                    buttons.Add(new ButtonData { Text = "No", Callback = PopupManager.Instance.Back });
+                    msgPopup.Populate(sb.ToString(), "Add List", null, buttonDataList: buttons);
+
+                    await UniTask.WaitWhile(() => msgPopup.gameObject.activeSelf);
+                }
+            }
+            _checkingClipboard = false;
+        }
+    }
+    
+    public void SaveClipboard(string data) {
+        _lastCopyText = data;
+        GUIUtility.systemCopyBuffer = data;
     }
 
     public IDatabase GetDatabase(IDataEntry entry) {

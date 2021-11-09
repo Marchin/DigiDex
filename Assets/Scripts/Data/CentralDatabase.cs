@@ -27,6 +27,8 @@ public interface IDatabase {
     List<ToggleActionData> RetrieveTogglesData();
     void RefreshFilters(ref IEnumerable<FilterData> filters, ref IEnumerable<ToggleActionData> toggles);
     bool AddList(string name);
+    Dictionary<string, HashSet<Hash128>> ParseListData(string data);
+    void CopyToClipboard(IEnumerable<KeyValuePair<string, HashSet<Hash128>>> lists);
 }
 
 [Serializable]
@@ -41,7 +43,8 @@ public class EntryIndex : IEquatable<EntryIndex> {
     }
 
     public IDataEntry FetchEntryData() {
-        MethodInfo method = typeof(ApplicationManager).GetMethod(nameof(ApplicationManager.Instance.GetDatabase), new Type[0]);
+        MethodInfo method = typeof(ApplicationManager).GetMethod(nameof(ApplicationManager.Instance.GetDatabase),
+            new Type[0]);
         MethodInfo generic = method.MakeGenericMethod(Type.GetType(_typeName));
         IDatabase db = generic.Invoke(ApplicationManager.Instance, null) as IDatabase;
         IDataEntry result = db?.EntryDict[Hash];

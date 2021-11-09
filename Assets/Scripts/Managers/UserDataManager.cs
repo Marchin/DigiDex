@@ -1,6 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Text;
+using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityGoogleDrive;
 using UnityGoogleDrive.Data;
@@ -239,5 +240,25 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
 
     private void RefreshDataDate(DateTime time) {
         PlayerPrefs.SetString(LastLocalSavePref, time.Ticks.ToString());
+    }
+
+    public bool IsValidData(string data, out IDatabase db, out Dictionary<string, HashSet<Hash128>> parsedList) {
+        bool isValid = true;
+        parsedList = null;
+        db = null;
+        try {
+            KeyValuePair<string, string> parsedData = JsonConvert.DeserializeObject<KeyValuePair<string, string>>(data);
+            var dbs = ApplicationManager.Instance.GetDatabases();
+            db = dbs.FirstOrDefault(d => d.DisplayName == parsedData.Key);
+            if (db != default) {
+                parsedList = db.ParseListData(parsedData.Value);
+            } else {
+                isValid = false;
+            }
+        } catch {
+            isValid = false;
+        }
+
+        return isValid;
     }
 }

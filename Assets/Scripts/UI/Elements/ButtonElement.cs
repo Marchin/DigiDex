@@ -14,6 +14,7 @@ public class ButtonElement : MonoBehaviour, IDataUIElement<ButtonData> {
 
     public void Populate(ButtonData data) {
         _text.text = data.Text;
+        _button.onClick.RemoveAllListeners();
         _button.onClick.AddListener(() => data.Callback());
     }
 }
