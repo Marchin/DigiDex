@@ -98,8 +98,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 string jsonData = PlayerPrefs.GetString(LocalDataPref);
                                 var file = new UnityGoogleDrive.Data.File {
                                     Name = SaveFileName,
-                                    Content = Encoding.ASCII.GetBytes(jsonData),
-                                    Parents = new List<string> { _folderID }
+                                    Content = Encoding.ASCII.GetBytes(jsonData)
                                 };
                                 var handle = ApplicationManager.Instance.DisplayLoadingScreen();
                                 var updateRequest = UnityGoogleDrive.GoogleDriveFiles.Update(_fileID, file);
