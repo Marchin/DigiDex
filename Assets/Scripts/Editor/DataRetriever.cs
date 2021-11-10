@@ -227,6 +227,24 @@ public static class DataRetriever {
                         }
                     }
 
+                    XmlNodeList dubNode = digimonSite.SelectNodes("/html/body/div/div/div/div/div/div/table/tbody/tr/td/div/table/tbody/tr/td/div/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td[b='Dub:']");
+                    digimonData.DubNames = new List<string>();
+                    if (dubNode?.Count > 0) {
+                        XmlNode test = dubNode.Item(0).NextSibling;
+                        while ((test != null) && (test.InnerText == "")) {
+                            test = test.NextSibling;
+                        }
+                        if (test != null) {
+                            XmlNode child = test.FirstChild;
+                            while (child != null) {
+                                if (child.Name == "i") {
+                                    digimonData.DubNames.Add(child.FirstChild?.InnerText ?? child.InnerText);
+                                }
+                                child = child.NextSibling;
+                            }
+                        }
+                    }
+                    
                     EditorUtility.SetDirty(digimonData);
                     AssetDatabase.SaveAssets();
 

@@ -198,8 +198,10 @@ public class DatabaseViewPopup : Popup {
 
     private void RefreshList() {
         _currEntries = _filteredEntries
-            .Where(entry => entry.Name.ToLower().Contains(_lastQuery.ToLower()))
+            .Where(entry => entry.Name.ToLower().Contains(_lastQuery.ToLower()) ||
+                entry.DubNames.Any(dn => dn.ToLower().Contains(_lastQuery.ToLower())))
             .OrderByDescending(e => e.Name.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture))
+            .ThenByDescending(e => e.DubNames.Any(dn => dn.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture)))
             .ToList();
 
         _elementScrollList.UpdateList(_currEntries.Select(e => e.Name).ToList());

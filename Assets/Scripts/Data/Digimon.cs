@@ -18,6 +18,7 @@ public class AssetReferenceDigimon : AssetReferenceT<Digimon> {
 
 public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
     [SerializeField] private string _name;
+    [SerializeField] private List<string> _dubNames;
     [FormerlySerializedAs("ProfileData")]
     [SerializeField] private string _profile;
     [FormerlySerializedAs("EvolutionData")]
@@ -27,6 +28,10 @@ public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
     public string Name {
         get => _name;
         set => _name = value;
+    }
+    public List<string> DubNames {
+        get => _dubNames;
+        set => _dubNames = value;
     }
     public string Profile {
         get => string.IsNullOrEmpty(_profile) ?
@@ -68,6 +73,13 @@ public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
         
         DigimonDatabase digimonDB = ApplicationManager.Instance.GetDatabase(this) as DigimonDatabase;
         information.Add(new InformationData { Prefix = "Name", Content = Name });
+
+        if (DubNames.Count > 0) {
+            information.Add(new InformationData { Prefix = "Dub Names" });
+            for (int iDubName = 0; iDubName < DubNames.Count; ++iDubName) {
+                information.Add(new InformationData { Content = DubNames[iDubName], IndentLevel = 1 });
+            }
+        }
 
         if (LevelIDs.Count > 0) {
             information.Add(new InformationData { Prefix = "Levels" });
