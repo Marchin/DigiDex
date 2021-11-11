@@ -227,10 +227,10 @@ public static class DataRetriever {
                         }
                     }
 
-                    XmlNodeList dubNode = digimonSite.SelectNodes("/html/body/div/div/div/div/div/div/table/tbody/tr/td/div/table/tbody/tr/td/div/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td[b='Dub:']");
+                    XmlNode dubNode = digimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/table/tbody/tr/td/div/table/tbody/tr/td/div/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td[b='Dub:']");
                     digimonData.DubNames = new List<string>();
-                    if (dubNode?.Count > 0) {
-                        XmlNode test = dubNode.Item(0).NextSibling;
+                    if (dubNode != null) {
+                        XmlNode test = dubNode.NextSibling;
                         while ((test != null) && (test.InnerText == "")) {
                             test = test.NextSibling;
                         }
@@ -245,6 +245,9 @@ public static class DataRetriever {
                         }
                     }
                     
+                    XmlNode debutYearNode = digimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/table/tbody/tr/td/div/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td[contains(text(),'Year Active')]")?.NextSibling;
+                    int.TryParse(debutYearNode?.InnerText, out digimonData.DebutYear);
+
                     EditorUtility.SetDirty(digimonData);
                     AssetDatabase.SaveAssets();
 
@@ -1087,7 +1090,6 @@ public static class DataRetriever {
     }
 
     
-
     [MenuItem("DigiDex/Fill Digimon Evolution Type")]
     public static void FillDigimonEvolutionType() {
         var paths = Directory.GetFiles(DigimonEvolutionsDataPath, "*.asset").OrderBy(path => path).ToArray();
@@ -1121,4 +1123,32 @@ public static class DataRetriever {
         }
         AssetDatabase.SaveAssets();
     }
+
+    
+    // [MenuItem("DigiDex/Test")]
+    // public static void Test() {
+    //     DigimonDatabase digimonDB = GetDigimonDatabase();
+
+    //     var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
+    //     List<Digimon> digimons = new List<Digimon>();
+    //     for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
+    //         Digimon digimonData = AssetDatabase.LoadAssetAtPath<Digimon>(paths[iDigimon]);
+    //         digimons.Add(digimonData);
+    //         EditorUtility.SetDirty(digimonData);
+    //     }
+    //     Parallel.For(0, digimons.Count(), (iDigimon, state) => {
+    //         Digimon digimonData = digimons[iDigimon];
+    //         string digimonLink = WikimonBaseURL + digimonData.LinkSubFix;
+
+    //         XmlDocument digimonSite = new XmlDocument();
+    //         try {
+    //             digimonSite.Load(digimonLink);
+
+    //             // Test Here
+    //         } catch (Exception ex) {
+    //             Debug.Log($"{digimonData.Name} - {ex.Message} \n {ex.StackTrace}");
+    //         }
+    //     });
+    //     AssetDatabase.SaveAssets();
+    // }
 }

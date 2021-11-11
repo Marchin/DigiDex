@@ -57,7 +57,7 @@ public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
         get => _hash;
         set => _hash = value;
     }
-    
+    public int DebutYear;
     public List<int> AttributeIDs;
     public List<int> FieldIDs;
     public List<int> TypeIDs;
@@ -79,6 +79,10 @@ public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
             for (int iDubName = 0; iDubName < DubNames.Count; ++iDubName) {
                 information.Add(new InformationData { Content = DubNames[iDubName], IndentLevel = 1 });
             }
+        }
+
+        if (DebutYear > 0) {
+            information.Add(new InformationData { Prefix = "Debut", Content = DebutYear.ToString() });
         }
 
         if (LevelIDs.Count > 0) {
