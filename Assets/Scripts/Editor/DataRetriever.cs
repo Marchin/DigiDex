@@ -33,7 +33,7 @@ public static class DataRetriever {
     const string LevelListURL = WikimonBaseURL + "/Evolution_Stage";
     const string DigimonGroupListURL = WikimonBaseURL + "/Group";
     const int DigimonsPerAtlas = 3;
-    const string ArtDigimonsPathX = RemoteArtPath + "Digimons/Digimon({0})";
+    const string ArtDigimonsPath = RemoteArtPath + "Digimons/";
     const string DigimonsDataPath = DataPath + "Digimons";
     const string DigimonEvolutionsDataPath = DataPath + "Digimons/Evolutions";
     const string CentralDBPath = DataPath + CentralDatabase.CentralDBAssetName + ".asset";
@@ -41,6 +41,28 @@ public static class DataRetriever {
     const string FieldsRemoteArtPath = RemoteArtPath + "Fields";
     const string FieldsLocalArtPath = LocalArtPath + "Fields";
     const string FieldsDataPath = DataPath + "Fields";
+    const string SpriteAtlasXPath = ArtDigimonsPath + "Digimons ({0}).spriteatlas";
+    private static Dictionary<string, XmlDocument> _digimonSiteData = new Dictionary<string, XmlDocument>();
+
+    private static XmlDocument GetDigimonSite(string digimonLinkSubFix) {
+        if (!_digimonSiteData.ContainsKey(digimonLinkSubFix)) {
+            _digimonSiteData.Add(digimonLinkSubFix, null);
+        }
+        
+        if (_digimonSiteData[digimonLinkSubFix] == null) {
+            string digimonLink = WikimonBaseURL + digimonLinkSubFix;
+            _digimonSiteData[digimonLinkSubFix] = new XmlDocument();
+            _digimonSiteData[digimonLinkSubFix].Load(digimonLink);
+        }
+
+        return _digimonSiteData[digimonLinkSubFix];
+    }
+
+    private static void RemoveDigimonSite(string digimonLinkSubFix) {
+        if (_digimonSiteData.ContainsKey(digimonLinkSubFix)) {
+            _digimonSiteData.Remove(digimonLinkSubFix);
+        }
+    }
 
     private static AddressableAssetGroup GetOrAddAddressableGroup(string name) {
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
@@ -60,7 +82,6 @@ public static class DataRetriever {
         // GenerateLevelList();
 
         // TODO: Add the new images either in the last folder or on a new one depending on the wether the last folder is full
-        
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
 
         if (!Directory.Exists(DigimonsDataPath)) {
@@ -83,30 +104,26 @@ public static class DataRetriever {
 
             if (!string.IsNullOrEmpty(digimonLinkSubFix)) {
                 try {
-                    string digimonLink = WikimonBaseURL + digimonLinkSubFix;
-
-                    XmlDocument digimonSite = new XmlDocument();
-                    digimonSite.Load(digimonLink);
+                    XmlDocument digimonSite = GetDigimonSite(digimonLinkSubFix);
 
                     // Sometimes name variants are used for the list, we look for the name used in the profile
                     XmlNode redirectNode = digimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
                     while (redirectNode != null) {
                         string newLinkSubFix = redirectNode.Attributes.GetNamedItem("href").InnerText;
                         Debug.Log($"Redirecting from {digimonLinkSubFix} to {newLinkSubFix}");
+                        RemoveDigimonSite(digimonLinkSubFix);
                         digimonLinkSubFix = newLinkSubFix;
-                        digimonLink = WikimonBaseURL + digimonLinkSubFix;
-                        digimonSite.Load(digimonLink);
+                        digimonSite = GetDigimonSite(digimonLinkSubFix);
                         redirectNode = digimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
                     }
                     
-                    string artPath = string.Format(ArtDigimonsPathX, digimonsWithArt.Count / DigimonsPerAtlas);
                     string digimonName = digimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
                     string digimonNameSafe = digimonName.AddresableSafe();
-                    string digimonArtPath = artPath + "/" + digimonNameSafe + ".png";
+                    string digimonArtPath = ArtDigimonsPath + digimonNameSafe + ".png";
                     string digimonDataPath = DigimonsDataPath + "/" + digimonNameSafe + ".asset";
 
-                    if (!Directory.Exists(artPath)) {
-                        Directory.CreateDirectory(artPath);
+                    if (!Directory.Exists(ArtDigimonsPath)) {
+                        Directory.CreateDirectory(ArtDigimonsPath);
                     }
                 
                     if (!Directory.Exists(DigimonsDataPath)) {
@@ -169,6 +186,7 @@ public static class DataRetriever {
                     digimonData.FieldIDs = new List<int>();
                     digimonData.TypeIDs = new List<int>();
                     digimonData.LevelIDs = new List<int>();
+                    digimonData.GroupIDs = new List<int>();
                     XmlNodeList properties = digimonSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr");
                     string lastCategory = "";
                     for (int iProperties = 0; iProperties < properties.Count; ++iProperties) {
@@ -258,14 +276,18 @@ public static class DataRetriever {
             }
         }
 
-        int folderCount = Mathf.CeilToInt((float)digimonsWithArt.Count / (float)DigimonsPerAtlas);
-        for (int i = 0; i < folderCount; i++) {
-            string digimonsFoldersI = string.Format(ArtDigimonsPathX, i);
-            string spriteAtlasPath = digimonsFoldersI + ".spriteatlas";
+        var paths = Directory.GetFiles(ArtDigimonsPath, "*.png").OrderBy(s => s).ToArray();
+        int atlasCount = Mathf.CeilToInt((float)digimonsWithArt.Count / (float)DigimonsPerAtlas);
+        int iDigimonArt = 0;
+        for (int i = 0; i < atlasCount; i++) {
+            string spriteAtlasPath = string.Format(SpriteAtlasXPath, i);
             if (!File.Exists(spriteAtlasPath)) {
                 SpriteAtlas spriteAtlas = new SpriteAtlas();
-                UnityEngine.Object folder = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(digimonsFoldersI);
-                spriteAtlas.Add(new UnityEngine.Object[] { folder });
+                UnityEngine.Object[] sprites = new UnityEngine.Object[DigimonsPerAtlas];
+                for (int j = 0; iDigimonArt < paths.Length && j < DigimonsPerAtlas; ++iDigimonArt, ++j) {
+                    sprites[j] = AssetDatabase.LoadAssetAtPath<Sprite>(paths[iDigimonArt]);
+                }
+                spriteAtlas.Add(sprites);
                 AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
             }
         }
@@ -275,9 +297,9 @@ public static class DataRetriever {
 
         SpriteAtlasUtility.PackAllAtlases(EditorUserBuildSettings.activeBuildTarget);
     
-        for (int i = 0; i < folderCount; i++) {
-            string digimonsFoldersI = string.Format(ArtDigimonsPathX, i);
-            string spriteAtlasPath = digimonsFoldersI + ".spriteatlas";
+        digimonsWithArt = digimonsWithArt.OrderBy(d => d.Name).ToList();
+        for (int i = 0; i < atlasCount; i++) {
+            string spriteAtlasPath = string.Format(SpriteAtlasXPath, i);
             string spriteAtlasGUID = AssetDatabase.GUIDFromAssetPath(spriteAtlasPath).ToString();
             addressablesSettings.CreateOrMoveEntry(spriteAtlasGUID, spriteAtlasGroup);
 
@@ -522,11 +544,7 @@ public static class DataRetriever {
         var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
         for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath<Digimon>(paths[iDigimon]);
-            string digimonLink = WikimonBaseURL + digimonData.LinkSubFix;
-
-
-            XmlDocument digimonSite = new XmlDocument();
-            digimonSite.Load(digimonLink);
+            XmlDocument digimonSite = GetDigimonSite(digimonData.LinkSubFix);
 
             digimonData.AttributeIDs = new List<int>();
             digimonData.FieldIDs = new List<int>();
@@ -809,12 +827,8 @@ public static class DataRetriever {
         Parallel.For(0, pairtList.Count, (iDigimon, state) => {
             Digimon digimonData = pairtList[iDigimon].digimon;
             EvolutionData evolutionData = pairtList[iDigimon].evolutionData;
-            string digimonLink = WikimonBaseURL + digimonData.LinkSubFix;
 
-            XmlDocument digimonSite = new XmlDocument();
             try {
-                digimonSite.Load(digimonLink);
-
                 evolutionData.PreEvolutions = ParseEvolutionList("Evolves_From")?
                     .OrderByDescending(e => e.Types.HasFlag(EvolutionType.Main))
                     .ToList();
@@ -832,6 +846,7 @@ public static class DataRetriever {
 
             List<Evolution> ParseEvolutionList(string headerName) {
                 List<Evolution> evolutions = new List<Evolution>();
+                XmlDocument digimonSite = GetDigimonSite(digimonData.LinkSubFix);
 
                 XmlNodeList header = digimonSite.SelectNodes($"/html/body/div/div/div/div/div/div/h2/span[@id='{headerName}']");
                 // Check if there're digimons to be parsed
@@ -851,21 +866,21 @@ public static class DataRetriever {
 
                         if (digimon == null && !string.IsNullOrEmpty(fuseDigimonLinkSubFix)) {
                             // Sometimes name variants are used for the list, we look for the name used in the profile
-                            XmlDocument fuseDigimonSite = new XmlDocument();
                             try {
-                                fuseDigimonSite.Load(WikimonBaseURL + fuseDigimonLinkSubFix);
+                                XmlDocument fuseDigimonSite = GetDigimonSite(fuseDigimonLinkSubFix);
                                 name = fuseDigimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
                                 XmlNode redirectNode = fuseDigimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
                                 while (redirectNode != null) {
                                     string newLinkSubFix = redirectNode.Attributes.GetNamedItem("href").InnerText;
                                     Debug.Log($"Redirecting from {fuseDigimonLinkSubFix} to {newLinkSubFix}");
+                                    RemoveDigimonSite(fuseDigimonLinkSubFix);
                                     fuseDigimonLinkSubFix = newLinkSubFix;
-                                    fuseDigimonSite.Load(WikimonBaseURL + fuseDigimonLinkSubFix);
+                                    fuseDigimonSite = GetDigimonSite(fuseDigimonLinkSubFix);
                                     name = fuseDigimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
                                     redirectNode = fuseDigimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
                                 }
                             } catch (Exception ex) {
-                                Debug.Log($"{name} - {ex.Message} \n {ex.StackTrace}");
+                                Debug.Log($"{name} - {fuseDigimonLinkSubFix} - {ex.Message} \n {ex.StackTrace}");
                             }
 
                             digimon = digimonDB.Digimons.Find(d => d.Name == name);
@@ -941,11 +956,10 @@ public static class DataRetriever {
                                             XmlNode aux = (siblingNode.Name == "b") ? siblingNode.FirstChild : siblingNode;
                                             string materialLink = aux?.Attributes?.GetNamedItem("href")?.InnerText;
                                             
-                                            XmlDocument materialSite = new XmlDocument();
                                             Digimon fusion = digimonDB.Digimons.Find(d => d.LinkSubFix == materialLink);
                                             if (fusion == null) {
                                                 try {
-                                                    materialSite.Load(WikimonBaseURL + materialLink);
+                                                    XmlDocument materialSite = GetDigimonSite(materialLink);
                                                     XmlNode redirectNode = materialSite.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
                                                     while (redirectNode != null) {
                                                         materialLink = redirectNode.Attributes.GetNamedItem("href").InnerText;

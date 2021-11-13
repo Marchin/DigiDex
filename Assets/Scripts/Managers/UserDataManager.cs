@@ -30,6 +30,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
     private long _lastSyncTime;
     private bool _isSaving;
     public event Action OnAuthChanged;
+    public bool IsLoggingIn { get; private set; }
     
     private void Awake() {
         _driveSettings = GoogleDriveSettings.LoadFromResources();
@@ -49,8 +50,9 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         if (IsUserLoggedIn) {
             return;
         }
-        var handle = ApplicationManager.Instance.DisplayLoadingScreen();
         try {
+            IsLoggingIn = true;
+            OnAuthChanged?.Invoke();
             var aboutRequest = UnityGoogleDrive.GoogleDriveAbout.Get();
             aboutRequest.Fields = new List<string> { "user" };
             await aboutRequest.Send();
@@ -69,7 +71,6 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                         MimeType = FolderMimeType
                     };
                     var folder = await GoogleDriveFiles.Create(folderFile).Send();
-                    Debug.LogError(folder);
                     _folderID = folder?.Id;
                 }
 
@@ -108,6 +109,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 _userConfirmedData = true;
                                 RefreshDataDate(file.ModifiedTime.Value);
                                 PopupManager.Instance.Back();
+                                IsLoggingIn = false;
                                 OnAuthChanged?.Invoke();
                                 handle.Complete();
                             };
@@ -127,6 +129,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 _userConfirmedData = true;
                                 RefreshDataDate(saveFileLocation.ModifiedTime.Value);
                                 PopupManager.Instance.Back();
+                                IsLoggingIn = false;
                                 OnAuthChanged?.Invoke();
                             };
 
@@ -139,6 +142,8 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                             popup.Populate(msg, "Data Conflict", buttonDataList: buttons, toggleDataList: toggles);
                         } else {
                             _userConfirmedData = true;
+                            IsLoggingIn = false;
+                            OnAuthChanged?.Invoke();
                         }
                     } else {
                         _userConfirmedData = true;
@@ -153,8 +158,8 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
             }
         } catch (Exception ex) {
             Debug.LogError($"{ex.Message} \n {ex.StackTrace}");
-        } finally {
-            handle.Complete();
+            IsLoggingIn = false;
+            OnAuthChanged?.Invoke();
         }
     }
 

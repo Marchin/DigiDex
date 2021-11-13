@@ -19,6 +19,8 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     public bool Initialized { get; private set; }
     
     private async void Start() {
+        _lastCopyText = PlayerPrefs.GetString(LastClipboardPref, "");
+
         await Addressables.InitializeAsync();
 
         _centralDB = await Addressables.LoadAssetAsync<CentralDatabase>(
@@ -29,9 +31,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
             return;
         }
 
-        await UserDataManager.Instance.Sync();
-
-        _lastCopyText = PlayerPrefs.GetString(LastClipboardPref, "");
+        UserDataManager.Instance.Sync().Forget();
 
         Initialized = true;
         CheckClipboard();
@@ -43,14 +43,11 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         }
     }
 
-    private void OnApplicationQuit() {
-        PlayerPrefs.SetString(LastClipboardPref, _lastCopyText);
-    }
-
     private async void CheckClipboard() {
         if (!_checkingClipboard && (GUIUtility.systemCopyBuffer != _lastCopyText)) {
             _checkingClipboard = true;
             _lastCopyText = GUIUtility.systemCopyBuffer;
+            PlayerPrefs.SetString(LastClipboardPref, _lastCopyText);
             if (UserDataManager.Instance.IsValidData(GUIUtility.systemCopyBuffer, out var db, out var data)) {
                 var newLists = data.Where(l => !db.Lists.ContainsKey(l.Key));
                 var listsInConflict = data.Except(newLists);
@@ -124,6 +121,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     
     public void SaveClipboard(string data) {
         _lastCopyText = data;
+        PlayerPrefs.SetString(LastClipboardPref, _lastCopyText);
         GUIUtility.systemCopyBuffer = data;
     }
 
