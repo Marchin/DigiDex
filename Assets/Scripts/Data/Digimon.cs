@@ -63,7 +63,6 @@ public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
     public List<int> TypeIDs;
     public List<int> LevelIDs;
     public List<int> GroupIDs;
-    public AssetReferenceEvolutionData EvolutionData;
 #if UNITY_EDITOR
     public string LinkSubFix;
 #endif
