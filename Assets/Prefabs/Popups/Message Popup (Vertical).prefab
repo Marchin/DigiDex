@@ -104,6 +104,7 @@ MonoBehaviour:
   _closeButton: {fileID: 8559567450451957097}
   _toggleList: {fileID: 7236481328400525227}
   _buttonList: {fileID: 7416887984619455225}
+  _buttonGrid: {fileID: 2257618421678357936}
 --- !u!1 &3543618808828366716
 GameObject:
   m_ObjectHideFlags: 0
@@ -259,7 +260,7 @@ MonoBehaviour:
   m_StartCorner: 0
   m_StartAxis: 0
   m_CellSize: {x: 420, y: 140}
-  m_Spacing: {x: 118, y: 0}
+  m_Spacing: {x: 118, y: 48}
   m_Constraint: 1
   m_ConstraintCount: 2
 --- !u!114 &7416887984619455225

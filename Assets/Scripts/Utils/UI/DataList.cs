@@ -85,7 +85,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
             if (index < _elements.Count) {
                 element = _elements[index];
             } else if (_pool.Count > 0) {
-                element = _pool[_pool.Count - 1];
+                element = _pool[0];
                 _elements.Add(element);
                 _pool.Remove(element);
             } else {

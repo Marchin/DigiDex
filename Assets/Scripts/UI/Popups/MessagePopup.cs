@@ -12,6 +12,8 @@ public class MessagePopup : Popup {
         public string Title;
         public AssetReferenceAtlasedSprite SpriteReference;
         public List<ButtonData> ButtonOptionsList;
+        public List<ToggleData> ToggleOptionsList;
+        public int Columns;
     }
 
     [SerializeField] private TextMeshProUGUI _title = default;
@@ -20,11 +22,13 @@ public class MessagePopup : Popup {
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private ToggleList _toggleList = default;
     [SerializeField] private ButtonElementList _buttonList = default;
+    [SerializeField] private GridLayoutGroup _buttonGrid = default;
     private List<ButtonData> _buttonDataList;
     private List<ToggleData> _toggleDataList;
     private AssetReferenceAtlasedSprite _spriteReference;
     private AsyncOperationHandle _spriteHandle;
     private CancellationTokenSource _cts;
+    private int _columns;
     public bool ShowCloseButton {
         get => _closeButton.transform.parent.gameObject.activeSelf;
         set {
@@ -39,10 +43,13 @@ public class MessagePopup : Popup {
         _closeButton.onClick.AddListener(PopupManager.Instance.Back);
     }
 
-    public void Populate(string message, string title = "", 
+    public void Populate(
+        string message = "",
+        string title = "", 
         AssetReferenceAtlasedSprite spriteReference = null,
         List<ButtonData> buttonDataList = null,
-        List<ToggleData> toggleDataList = null
+        List<ToggleData> toggleDataList = null,
+        int columns = 2
     ) {
         if (_cts != null) {
             _cts.Cancel();
@@ -54,6 +61,7 @@ public class MessagePopup : Popup {
         }
 
         _content.text = message;
+        _content.gameObject.SetActive(!string.IsNullOrEmpty(_content.text));
         _title.text = string.IsNullOrEmpty(title) ? "Message" : title;
         _image.gameObject.SetActive(false);
         _spriteReference = spriteReference;
@@ -65,8 +73,13 @@ public class MessagePopup : Popup {
         _toggleList.gameObject.SetActive(toggleDataList != null && toggleDataList.Count > 0);
 
         _buttonDataList = buttonDataList;
+        if (_buttonDataList?.Count > 0) {
+            Debug.Log(_buttonDataList[0].Text);
+        }
         _buttonList.Populate(_buttonDataList);
         _buttonList.gameObject.SetActive(_buttonDataList != null && _buttonDataList.Count > 0);
+        _buttonGrid.constraintCount = columns;
+        _columns = columns;
     }
 
     public override object GetRestorationData() {
@@ -74,7 +87,9 @@ public class MessagePopup : Popup {
             Message = _content.text,
             Title = _title.text,
             SpriteReference = _spriteReference,
-            ButtonOptionsList = _buttonDataList
+            ButtonOptionsList = _buttonDataList,
+            ToggleOptionsList = _toggleDataList,
+            Columns = _columns
         };
 
         return popupData;
@@ -86,7 +101,9 @@ public class MessagePopup : Popup {
                 popupData.Message, 
                 popupData.Title, 
                 popupData.SpriteReference, 
-                popupData.ButtonOptionsList
+                popupData.ButtonOptionsList,
+                popupData.ToggleOptionsList,
+                popupData.Columns
             );
         }
     }

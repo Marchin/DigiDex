@@ -465,7 +465,7 @@ MonoBehaviour:
   m_StartCorner: 0
   m_StartAxis: 0
   m_CellSize: {x: 320, y: 100}
-  m_Spacing: {x: 76, y: 0}
+  m_Spacing: {x: 76, y: 48}
   m_Constraint: 1
   m_ConstraintCount: 2
 --- !u!114 &7408801244019165791
@@ -730,6 +730,7 @@ MonoBehaviour:
   _closeButton: {fileID: 5753155842873939719}
   _toggleList: {fileID: 4129037058391310776}
   _buttonList: {fileID: 7408801244019165791}
+  _buttonGrid: {fileID: 5656103323194844018}
 --- !u!1001 &6215630874737745277
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -28,7 +28,7 @@ MonoBehaviour:
   m_ContiguousBundles: 1
   m_StripUnityVersionFromBundleBuild: 0
   m_DisableVisibleSubAssetRepresentations: 0
-  m_ShaderBundleNaming: 0
+  m_ShaderBundleNaming: 1
   m_ShaderBundleCustomNaming: 
   m_MonoScriptBundleNaming: 0
   m_MonoScriptBundleCustomNaming: 
@@ -41,8 +41,15 @@ MonoBehaviour:
   m_GroupAssets:
   - {fileID: 11400000, guid: e8fc41274c4420e4d832e36ee7f06dd3, type: 2}
   - {fileID: 11400000, guid: b2f44df72c0843e488f862bf184f1932, type: 2}
+  - {fileID: 11400000, guid: 4604dee8b93cca143b5523950f993457, type: 2}
+  - {fileID: 11400000, guid: f770295f6e56fbb4f8bd3c0cfbda3fc4, type: 2}
+  - {fileID: 11400000, guid: 750c0783bbd86a44893f46f186f8113c, type: 2}
+  - {fileID: 11400000, guid: 778206a007b60994195c31739bdf29a0, type: 2}
   - {fileID: 11400000, guid: ffd5cc6946d7bde41979e625ec1ef0f9, type: 2}
+  - {fileID: 11400000, guid: ffdabdd5429b87f41b3e47ddc9465947, type: 2}
   - {fileID: 11400000, guid: 674b7f346527c4046b593887395d09e1, type: 2}
+  - {fileID: 11400000, guid: 9aec3a861d729e64f9725ac7c6e7c4c9, type: 2}
+  - {fileID: 11400000, guid: 30f115113c65ab940b186321ce9c2e47, type: 2}
   m_BuildSettings:
     m_CompileScriptsInVirtualMode: 0
     m_CleanupStreamingAssetsAfterBuilds: 1

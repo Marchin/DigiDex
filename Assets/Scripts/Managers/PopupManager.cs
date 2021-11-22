@@ -24,6 +24,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     private List<CanvasScaler> _registeredCanvasScalers = new List<CanvasScaler>();
     public event Action OnStackChange;
     public event Action OnWindowResize;
+    public event Action OnRotation;
     private List<PopupRestorationData> _restorationData = new List<PopupRestorationData>();
     private bool _loadingPopup;
     public bool IsScreenOnPortrait => (Screen.height > Screen.width);
@@ -203,6 +204,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                     (popup.transform as RectTransform).AdjustToSafeZone();
                 }
 
+                OnRotation?.Invoke();
                 _lastDeviceOrientation = Screen.orientation;
             }
             Vector2 screenSize = new Vector2(Screen.width, Screen.height);
