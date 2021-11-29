@@ -73,9 +73,6 @@ public class MessagePopup : Popup {
         _toggleList.gameObject.SetActive(toggleDataList != null && toggleDataList.Count > 0);
 
         _buttonDataList = buttonDataList;
-        if (_buttonDataList?.Count > 0) {
-            Debug.Log(_buttonDataList[0].Text);
-        }
         _buttonList.Populate(_buttonDataList);
         _buttonList.gameObject.SetActive(_buttonDataList != null && _buttonDataList.Count > 0);
         _buttonGrid.constraintCount = columns;

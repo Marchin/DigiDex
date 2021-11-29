@@ -431,6 +431,7 @@ GameObject:
   - component: {fileID: 2212194826019513405}
   - component: {fileID: 8468472764595418212}
   - component: {fileID: 1129223622995770210}
+  - component: {fileID: 4805850309172138869}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -574,6 +575,20 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &4805850309172138869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6970742589525795376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 094c7764478b379419ce03e19defbd66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  doesColorChangeOnHover: 1
+  hoverColor: {r: 0.9811321, g: 0.9626212, b: 0.69882524, a: 1}
 --- !u!1 &7217679894318973207
 GameObject:
   m_ObjectHideFlags: 0
@@ -914,6 +929,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fd982396f3850ce458aa477e20b2ae2a, type: 3}
+--- !u!224 &5992871788958131087 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 4933309846527489481, guid: fd982396f3850ce458aa477e20b2ae2a,
+    type: 3}
+  m_PrefabInstance: {fileID: 1683314957862180422}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &8942314300583661597 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7729634308475143771, guid: fd982396f3850ce458aa477e20b2ae2a,
@@ -926,12 +947,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!224 &5992871788958131087 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 4933309846527489481, guid: fd982396f3850ce458aa477e20b2ae2a,
-    type: 3}
-  m_PrefabInstance: {fileID: 1683314957862180422}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &8559567450451957097 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7031780620901892911, guid: fd982396f3850ce458aa477e20b2ae2a,

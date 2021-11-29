@@ -10,6 +10,8 @@ public class MainMenu : MonoBehaviour {
     [SerializeField] private ButtonElementList _databaseList = default;
     [SerializeField] private Button _loginButton = default;
     [SerializeField] private Button _settingsButton = default;
+    [SerializeField] private Button _twitterButton = default;
+    [SerializeField] private Button _igButton = default;
     [SerializeField] private GameObject _loggingInGO = default;
 
     private async void Start() {
@@ -35,17 +37,40 @@ public class MainMenu : MonoBehaviour {
 
         _settingsButton.onClick.AddListener(async () => {
             List<ButtonData> buttonList = new List<ButtonData>();
-            buttonList.Add(new ButtonData { Text = "Logout", Callback = () => UserDataManager.Instance.LogOut() });
+
+            buttonList.Add(new ButtonData { Text = "Donate", Callback = async () => {
+                var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                msgPopup.Populate(
+                    "Leave us a tip with:\n" +
+                    $"·<color={UnityUtils.LinkColor}><link=\"https://www.paypal.com/paypalme/DigidexApp\">Paypal</link></color>\n" +
+                    $"·<color={UnityUtils.LinkColor}><link=\"https://cafecito.app/digidex\">Mercado Pago</link></color>\n\n" + 
+                    $"Follow us on <color={UnityUtils.LinkColor}><link=\"https://www.patreon.com/Digidex\">Patreon</link></color>");
+            }});
+
+            if (UserDataManager.Instance.IsUserLoggedIn) {
+                buttonList.Add(new ButtonData { Text = "Logout", Callback = () => UserDataManager.Instance.LogOut() });
+            }
+            
             buttonList.Add(new ButtonData { Text = "About", Callback = async () => {
                 var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                 msgPopup.Populate("Digidex doesn't claim ownership of the images, nor the data");
             }});
+
+
             var settingsPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
             settingsPopup.Populate(
                 title: "Settings", 
                 buttonDataList: buttonList,
                 columns: 1
             );
+        });
+
+        _twitterButton.onClick.AddListener(() => {
+            Application.OpenURL("https://twitter.com/DigiDexApp");
+        });
+
+        _igButton.onClick.AddListener(() => {
+            Application.OpenURL("https://www.instagram.com/digidex_app/");
         });
 
         UserDataManager.Instance.OnAuthChanged += RefreshButtons;

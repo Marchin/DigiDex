@@ -40,6 +40,7 @@ SpriteAtlas:
   m_PackedSprites:
   - {fileID: 21300000, guid: 9f51b9c0a622e924383fb3dedbee50f1, type: 3}
   - {fileID: 21300000, guid: 2f91ed1118a3da04283b1aab9437025d, type: 3}
+  - {fileID: 21300000, guid: 0fa86931d7ccd334eb4903dda213c871, type: 3}
   - {fileID: 21300000, guid: 5c9b77619ef8ae24f948c699e7e30622, type: 3}
   - {fileID: 21300000, guid: b327c8b12ae3e5c479c825d7492c0d66, type: 3}
   - {fileID: 21300000, guid: e03a42c1f3c9bfb4197ca0df3b0e1a7a, type: 3}
@@ -58,6 +59,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 35991189482289447a31767289ead085, type: 3}
   - {fileID: 21300000, guid: 0352f70a0e328604cb37b16669e45157, type: 3}
   - {fileID: 21300000, guid: bf49087a50ec0994b9c741fa75d54106, type: 3}
+  - {fileID: 21300000, guid: abed23fad562d394bb12747f021ed734, type: 3}
   - {fileID: 21300000, guid: 6abdb12b4e06b484faa054d912d10f4e, type: 3}
   - {fileID: 21300000, guid: bdc6f52bd41ed7a4b9b077f385ab8f7f, type: 3}
   - {fileID: 21300000, guid: 357a413be0e4c694cae118424b9e46b5, type: 3}
@@ -65,6 +67,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 1f56c22d379adaf46859a9aff9e19842, type: 3}
   - {fileID: 21300000, guid: b8f1844df6878f24f9c51c333e75e9f5, type: 3}
   - {fileID: 21300000, guid: dd49927d3f70e824b9d61aa5ffa8168c, type: 3}
+  - {fileID: 21300000, guid: e23e9c9dad83acf4c8d077baac392861, type: 3}
   - {fileID: 21300000, guid: 2ab1148ea0f57de45821527943b840aa, type: 3}
   - {fileID: 21300000, guid: 43f689ae86fb59c4b829373f3a43bbbf, type: 3}
   - {fileID: 21300000, guid: bfae806f1ef21ff41b585c226bc64ef2, type: 3}
@@ -73,6 +76,7 @@ SpriteAtlas:
   m_PackedSpriteNamesToIndex:
   - Rounded Square
   - Circle Border
+  - App Banner
   - Question Mark
   - Copy
   - Tab
@@ -91,6 +95,7 @@ SpriteAtlas:
   - Vertical Gradient
   - App Icon Bg
   - Plus
+  - Twitter Logo
   - Back
   - Circle
   - Search
@@ -98,6 +103,7 @@ SpriteAtlas:
   - Loading Border
   - DB Icon
   - Horizontal Gradient
+  - Instagram Logo
   - Arrow
   - Favorite
   - Favorite Fill

@@ -313,6 +313,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     public void RegisterCanvasScalerForRotationScaling(CanvasScaler canvasScaler) {
         if (canvasScaler != null && !_registeredCanvasScalers.Contains(canvasScaler)) {
             _registeredCanvasScalers.Add(canvasScaler);
+            RefreshReferenceResolution();
         }
     }
 

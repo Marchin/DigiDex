@@ -13,7 +13,7 @@ public class Handle {
 }
 
 public static class UnityUtils {
-
+    public const string LinkColor = "#feff6e";
     public static bool EditorClosing { get; private set; }
 
     public static void Quit() {
