@@ -1373,7 +1373,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _template: {fileID: 4225431141593136591}
   _root: {fileID: 4225431140502004866}
-  _maxDisplayCount: 8
+  _maxDisplayCount: 12
   _overflowDisplay: {fileID: 0}
   _scroll: {fileID: 4983059009258339670}
   _layoutGroup: {fileID: 4225431140502004864}
@@ -4309,7 +4309,7 @@ PrefabInstance:
     - target: {fileID: 8319715529824011771, guid: d17ca2a167c1dce479d438cd2697ec00,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8319715529824011771, guid: d17ca2a167c1dce479d438cd2697ec00,
         type: 3}
@@ -4319,17 +4319,17 @@ PrefabInstance:
     - target: {fileID: 8319715529824011771, guid: d17ca2a167c1dce479d438cd2697ec00,
         type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8319715529824011771, guid: d17ca2a167c1dce479d438cd2697ec00,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 1048
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8319715529824011771, guid: d17ca2a167c1dce479d438cd2697ec00,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 236
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8319715529824011771, guid: d17ca2a167c1dce479d438cd2697ec00,
         type: 3}
@@ -4369,7 +4369,7 @@ PrefabInstance:
     - target: {fileID: 8319715529824011771, guid: d17ca2a167c1dce479d438cd2697ec00,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 524
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8319715529824011771, guid: d17ca2a167c1dce479d438cd2697ec00,
         type: 3}

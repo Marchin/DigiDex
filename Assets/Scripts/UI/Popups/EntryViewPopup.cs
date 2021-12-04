@@ -183,13 +183,10 @@ public class EntryViewPopup : Popup {
         if (data is PopupData popupData) {
             Initialize(popupData.Prev, popupData.Next);
             Populate(popupData.Entry);
-            await UniTask.DelayFrame(1);
-            Canvas.ForceUpdateCanvases();
+            await UniTask.DelayFrame(ElementScrollList.FrameDelayToAnimateList);
             // Turn both on to adjust scroll
             _dataContent.gameObject.SetActive(true);
             _profileContent.gameObject.SetActive(true);
-            _dataScroll.verticalNormalizedPosition = popupData.DataScrollPos;
-            _profileScroll.verticalNormalizedPosition = popupData.ProfileScrollPos;
             _dataContent.gameObject.SetActive(false);
             _profileContent.gameObject.SetActive(false);
             _currTab = popupData.CurrTab;
@@ -203,6 +200,8 @@ public class EntryViewPopup : Popup {
                     _profileToggle.isOn = true;
                 } break;
             }
+            _dataScroll.verticalNormalizedPosition = popupData.DataScrollPos;
+            _profileScroll.verticalNormalizedPosition = popupData.ProfileScrollPos;
         }
     }
     
