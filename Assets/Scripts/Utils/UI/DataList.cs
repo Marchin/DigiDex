@@ -81,26 +81,27 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
                 }
                 break;
             }
-            T element = null;
-            if (index < _elements.Count) {
-                element = _elements[index];
-            } else if (_pool.Count > 0) {
-                element = _pool[0];
-                _elements.Add(element);
-                _pool.Remove(element);
-            } else {
-                element = Instantiate(_template, _root);
-                element.name = $"{_template.name} ({_elements.Count})";
-                _elements.Add(element);
+            if (index >= _elements.Count) {
+                if (_pool.Count > 0) {
+                    var aux = _pool[0];
+                    _elements.Add(aux);
+                    _pool.Remove(aux);
+                } else {
+                    var aux = Instantiate(_template, _root);
+                    aux.name = $"{_template.name} ({_elements.Count})";
+                    _elements.Add(aux);
+                }
             }
+            T element = _elements[index];
             element.Populate(data[index]);
             element.gameObject.SetActive(true);
         }
 
         while (_elements.Count > index) {
-            _elements[_elements.Count - 1].gameObject.SetActive(false);
-            _pool.Add(_elements[_elements.Count - 1]);
-            _elements.RemoveAt(_elements.Count - 1);
+            int index2 = _elements.Count - 1;
+            _elements[index2].gameObject.SetActive(false);
+            _pool.Insert(0, _elements[index2]);
+            _elements.RemoveAt(index2);
         }
 
         CalculateSizes();
@@ -187,11 +188,12 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
             _overflowDisplay.SetActive(false);
         }
 
-        for (int iElement = 0; iElement < _elements.Count; ++iElement) {
-            _elements[iElement].gameObject.SetActive(false);
+        while (_elements.Count > 0) {
+            int index = _elements.Count - 1;
+            _elements[index].gameObject.SetActive(false);
+            _pool.Insert(0, _elements[index]);
+            _elements.RemoveAt(index);
         }
-        _pool.AddRange(_elements);
-        _elements.Clear();
     }
 
     public void ScrollTo(int index) {
