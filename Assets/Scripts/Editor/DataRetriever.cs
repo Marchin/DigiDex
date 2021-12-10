@@ -1080,7 +1080,10 @@ public static class DataRetriever {
                                 siblingNode = siblingNode?.NextSibling;
                             }
 
-                            if ((evolutionMethods.Count == 0) || (method.Types != baseEvolutionType)) {
+                            if ((evolutionMethods.Count == 0) ||
+                                ((method.Types > EvolutionType.Main) &&
+                                    !(method.Types.HasFlag(EvolutionType.Fusion) && (method.FusionEntries?.Count() ?? 0) == 0))
+                            ) {
                                 evolutionMethods.Add(method);
                             }
 
