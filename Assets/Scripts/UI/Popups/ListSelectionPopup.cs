@@ -4,8 +4,14 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class ListSelectionPopup : Popup {
+    public enum Tab {
+        Add,
+        Copy
+    }
+
     public class PopupData {
         public IDataEntry Entry;
+        public Tab CurrTab;
     }
 
     [SerializeField] private ToggleList _addToggleList = default;
@@ -20,6 +26,7 @@ public class ListSelectionPopup : Popup {
     private List<string> _toCopy = new List<string>();
     private IDataEntry _entry;
     private IDatabase _db;
+    private Tab _currTab;
 
     private void Awake() {
         _closeButton.onClick.AddListener(PopupManager.Instance.Back);
@@ -49,6 +56,8 @@ public class ListSelectionPopup : Popup {
             _copyListContainer.SetActive(true);
             _copyButton.gameObject.SetActive(true);
             PopulateCopyLists();
+
+            _currTab = Tab.Copy;
         });
         _switchToAdd.onClick.AddListener(() => {
             _switchToCopy.gameObject.SetActive(true);
@@ -59,13 +68,24 @@ public class ListSelectionPopup : Popup {
             _copyListContainer.SetActive(false);
             _copyButton.gameObject.SetActive(false);
             PopulateAddRemoveLists();
+
+            _currTab = Tab.Add;
         });
     }
 
-    public void Populate(IDataEntry entry) {
+    public void Populate(IDataEntry entry, Tab currTab = Tab.Add) {
         _entry = entry;
+        _currTab = currTab;
         _db = ApplicationManager.Instance.GetDatabase(entry);
-        _switchToAdd.onClick.Invoke();
+
+        switch (_currTab) {
+            case Tab.Add: {
+                _switchToAdd.onClick.Invoke();
+            } break;
+            case Tab.Copy: {
+                _switchToCopy.onClick.Invoke();
+            } break;
+        }
     }
     
     private void PopulateAddRemoveLists() {
@@ -97,14 +117,14 @@ public class ListSelectionPopup : Popup {
     }
 
     public override object GetRestorationData() {
-        PopupData data = new PopupData { Entry = _entry };
+        PopupData data = new PopupData { Entry = _entry, CurrTab = _currTab };
 
         return data;
     }
 
     public override void Restore(object data) {
         if (data is PopupData popupData) {
-            Populate(popupData.Entry);
+            Populate(popupData.Entry, popupData.CurrTab);
         }
     }
 }
