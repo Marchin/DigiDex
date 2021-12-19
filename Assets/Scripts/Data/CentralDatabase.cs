@@ -1,8 +1,9 @@
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using System;
 using System.Reflection;
 using System.Collections.Generic;
-using UnityEngine.AddressableAssets;
+using Cysharp.Threading.Tasks;
 
 public interface IDataEntry {
     string Name { get; set; }
@@ -27,7 +28,7 @@ public interface IDatabase {
     List<FilterData> RetrieveFiltersData();
     List<ToggleActionData> RetrieveTogglesData();
     void RefreshFilters(ref IEnumerable<FilterData> filters, ref IEnumerable<ToggleActionData> toggles);
-    bool AddList(string name);
+    UniTask<bool> RemoveList(string name);
     Dictionary<string, HashSet<Hash128>> ParseListData(string data);
     void CopyToClipboard(IEnumerable<KeyValuePair<string, HashSet<Hash128>>> lists);
 }

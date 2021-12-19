@@ -78,7 +78,6 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                                 NameConflict,
                                 name => {
                                     if (!db.Lists.Keys.Contains(name)) {
-                                        db.AddList(name);
                                         foreach (var entry in list.Value) {
                                             db.AddEntryToList(name, entry);
                                         }
@@ -102,7 +101,6 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                     List<ButtonData> buttons = new List<ButtonData>(2);
                     buttons.Add(new ButtonData { Text = "Yes", Callback = () => {
                         foreach (var list in newLists) {
-                            db.AddList(list.Key);
                             foreach (var entry in list.Value) {
                                 db.AddEntryToList(list.Key, entry);
                             }

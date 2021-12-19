@@ -6,7 +6,8 @@ using System.Collections.Generic;
 public class ListSelectionPopup : Popup {
     public enum Tab {
         Add,
-        Copy
+        Copy,
+        Delete
     }
 
     public class PopupData {
@@ -16,13 +17,15 @@ public class ListSelectionPopup : Popup {
 
     [SerializeField] private ToggleList _addToggleList = default;
     [SerializeField] private ToggleList _copyToggleList = default;
+    [SerializeField] private ButtonElementList _deleteList = default;
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private Button _addListButton = default;
-    [SerializeField] private Button _copyButton = default;
-    [SerializeField] private Button _switchToCopy = default;
-    [SerializeField] private Button _switchToAdd = default;
+    [SerializeField] private Toggle _switchToAdd = default;
+    [SerializeField] private Toggle _switchToCopy = default;
+    [SerializeField] private Toggle _switchToDelete = default;
     [SerializeField] private GameObject _addListContainer = default;
     [SerializeField] private GameObject _copyListContainer = default;
+    [SerializeField] private GameObject _deleteListContainer = default;
     private List<string> _toCopy = new List<string>();
     private IDataEntry _entry;
     private IDatabase _db;
@@ -33,44 +36,46 @@ public class ListSelectionPopup : Popup {
         _addListButton.onClick.AddListener(async () => {
             var popup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
             popup.Populate("Enter the new list name", "Add List", async name => {
-                if (_db.AddList(name)) {
+                if (!_db.Lists.ContainsKey(name)) {
                     _db.AddEntryToList(name, _entry.Hash);
                     PopupManager.Instance.Back();
                 } else {
                     var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                     msgPopup.Populate("List name already exists", "Name Conflict");
                 }
-                PopulateAddRemoveLists();
+                PopulateAddRemoveList();
             });
         });
-        _copyButton.onClick.AddListener(() => {
-            var listsToCopy = _db.Lists.Where(l => _toCopy.Contains(l.Key));
-            _db.CopyToClipboard(listsToCopy);
-        });
-        _switchToCopy.onClick.AddListener(() => {
-            _switchToCopy.gameObject.SetActive(false);
-            _addListContainer.SetActive(false);
-            _addListButton.gameObject.SetActive(false);
 
-            _switchToAdd.gameObject.SetActive(true);
-            _copyListContainer.SetActive(true);
-            _copyButton.gameObject.SetActive(true);
-            PopulateCopyLists();
+        _switchToAdd.onValueChanged.AddListener(isOn => {
+            _addListContainer.SetActive(isOn);
+            _copyListContainer.SetActive(!isOn);
+            _deleteListContainer.SetActive(!isOn);
 
-            _currTab = Tab.Copy;
-        });
-        _switchToAdd.onClick.AddListener(() => {
-            _switchToCopy.gameObject.SetActive(true);
-            _addListContainer.SetActive(true);
-            _addListButton.gameObject.SetActive(true);
-            
-            _switchToAdd.gameObject.SetActive(false);
-            _copyListContainer.SetActive(false);
-            _copyButton.gameObject.SetActive(false);
-            PopulateAddRemoveLists();
+            PopulateAddRemoveList();
 
             _currTab = Tab.Add;
         });
+        _switchToCopy.onValueChanged.AddListener(isOn => {
+            _addListContainer.SetActive(!isOn);
+            _copyListContainer.SetActive(isOn);
+            _deleteListContainer.SetActive(!isOn);
+
+            PopulateCopyList();
+
+            _currTab = Tab.Copy;
+        });
+        _switchToDelete.onValueChanged.AddListener(isOn => {
+            _addListContainer.SetActive(!isOn);
+            _copyListContainer.SetActive(!isOn);
+            _deleteListContainer.SetActive(isOn);
+
+            PopulateDeleteList();
+
+            _currTab = Tab.Delete;
+        });
+
+        _addToggleList.OnPopulate += _ => _addListButton.transform.parent.SetAsLastSibling();
     }
 
     public void Populate(IDataEntry entry, Tab currTab = Tab.Add) {
@@ -80,15 +85,21 @@ public class ListSelectionPopup : Popup {
 
         switch (_currTab) {
             case Tab.Add: {
-                _switchToAdd.onClick.Invoke();
+                _switchToAdd.isOn = false;
+                _switchToAdd.isOn = true;
             } break;
             case Tab.Copy: {
-                _switchToCopy.onClick.Invoke();
+                _switchToCopy.isOn = false;
+                _switchToCopy.isOn = true;
+            } break;
+            case Tab.Delete: {
+                _switchToDelete.isOn = false;
+                _switchToDelete.isOn = true;
             } break;
         }
     }
     
-    private void PopulateAddRemoveLists() {
+    private void PopulateAddRemoveList() {
         _addToggleList.Populate(_db.Lists.Select(kvp => 
             new ToggleData(kvp.Key, _db.Lists[kvp.Key].Contains(_entry.Hash), isOn => {
                 if (isOn) {
@@ -96,12 +107,12 @@ public class ListSelectionPopup : Popup {
                 } else {
                     _db.RemoveEntryFromList(kvp.Key, _entry.Hash);
                 }
-                PopulateAddRemoveLists();
+                PopulateAddRemoveList();
             }))
         );
     }
 
-    private void PopulateCopyLists() {
+    private void PopulateCopyList() {
         _copyToggleList.Populate(_db.Lists.Select(kvp => 
             new ToggleData(kvp.Key, false, isOn => {
                 if (isOn) {
@@ -111,7 +122,17 @@ public class ListSelectionPopup : Popup {
                         _toCopy.Remove(kvp.Key);
                     }
                 }
-                PopulateAddRemoveLists();
+                var listsToCopy = _db.Lists.Where(l => _toCopy.Contains(l.Key));
+                _db.CopyToClipboard(listsToCopy);
+            }))
+        );
+    }
+
+    private void PopulateDeleteList() {
+        _deleteList.Populate(_db.Lists.Select(kvp => 
+            new ButtonData(kvp.Key, async () => {
+                await _db.RemoveList(kvp.Key);
+                PopulateDeleteList();
             }))
         );
     }

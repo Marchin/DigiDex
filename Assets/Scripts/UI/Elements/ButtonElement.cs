@@ -6,6 +6,13 @@ using UnityEngine.UI;
 public class ButtonData {
     public string Text;
     public Action Callback;
+
+    public ButtonData() {}
+    
+    public ButtonData(string text, Action callback) {
+        Text = text;
+        Callback = callback;
+    }
 }
 
 public class ButtonElement : MonoBehaviour, IDataUIElement<ButtonData> {

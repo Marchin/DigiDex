@@ -2,6 +2,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
+using Cysharp.Threading.Tasks;
 
 public class DigimonDatabase : ScriptableObject, IDatabase {
     public string DisplayName => "Digimons";
@@ -51,12 +52,11 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
     }
 
     public void AddEntryToList(string list, Hash128 entry) {
-        if (ListsInternal.ContainsKey(list)) {
-            ListsInternal[list].Add(entry);
-            SaveLists();
-        } else {
-            Debug.LogWarning("List doesn't exist");
+        if (!ListsInternal.ContainsKey(list)) {
+            ListsInternal.Add(list, new HashSet<Hash128>());
         }
+        ListsInternal[list].Add(entry);
+        SaveLists();
     }
 
     public void RemoveEntryFromList(string list, Hash128 entry) {
@@ -71,13 +71,20 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         }
     }
 
-    public bool AddList(string name) {
-        if (!ListsInternal.ContainsKey(name)) {
-            ListsInternal.Add(name, new HashSet<Hash128>());
-            return true;
-        } else {
-            return false;
+    public async UniTask<bool> RemoveList(string list) {
+        bool result = false;
+        if (ListsInternal.ContainsKey(list)) {
+            var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+            List<ButtonData> buttons = new List<ButtonData>();
+            buttons.Add(new ButtonData("No", PopupManager.Instance.Back));
+            buttons.Add(new ButtonData("Yes", () => {
+                ListsInternal.Remove(list);
+                PopupManager.Instance.Back();
+                SaveLists();
+            }));
+            msgPopup.Populate($"Delete '{list}' list?", "Delete List", buttonDataList: buttons);
         }
+        return result;
     }
 
     public List<FilterData> RetrieveFiltersData() {
