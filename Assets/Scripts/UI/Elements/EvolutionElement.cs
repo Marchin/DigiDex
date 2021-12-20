@@ -11,6 +11,7 @@ using Cysharp.Threading.Tasks;
 
 public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
     [SerializeField] private TextMeshProUGUI _name = default;
+    [SerializeField] private ScrollContent _scrollingText = default;
     [SerializeField] private Image _entryImage = default;
     [SerializeField] private Image _fill = default;
     [SerializeField] private Button _button = default;
@@ -22,6 +23,10 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
     private CancellationTokenSource _cts;
     public Evolution Data { get; private set; }
     public Action<Evolution> OnPressed;
+    public bool ScrollingText {
+        get => _scrollingText.enabled;
+        set => _scrollingText.enabled = value;
+    }
 
     private void Awake() {
         _button.onClick.AddListener(() => OnPressed?.Invoke(Data));

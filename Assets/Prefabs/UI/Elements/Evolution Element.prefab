@@ -1288,6 +1288,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _name: {fileID: 8319715530258214821}
+  _scrollingText: {fileID: 8781084129931792230}
   _entryImage: {fileID: 8319715530382710286}
   _fill: {fileID: 8319715529479112664}
   _button: {fileID: 8319715529824011769}

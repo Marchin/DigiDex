@@ -165,6 +165,12 @@ public class EvolutionsPopup : Popup {
         _loadingWheel.SetActive(false);
     }
 
+    private void Update() {
+        foreach (var element in _evolutionList.Elements) {
+            element.ScrollingText = _scroll.velocity.sqrMagnitude <= 0.001f;
+        }
+    }
+
     public void Populate(IDataEntry entry, EvolutionData evolutionData) {
         var popupData = new PopupData {
             SourceEntry = entry,
@@ -288,3 +294,5 @@ public class EvolutionsPopup : Popup {
         _handles.Clear();
     }
 }
+
+// Disable text scrolling while scrolling
