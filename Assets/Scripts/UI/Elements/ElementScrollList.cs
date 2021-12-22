@@ -121,17 +121,18 @@ public class ElementScrollList : MonoBehaviour {
         CurrElementIndex = 0;
 
         PopulateElements();
-        OnConfirmed?.Invoke(0);
         
         AdjustMargins();
         
         // HACK: If we don't wait these frames the elements don't get properly animated
         await UniTask.DelayFrame(FrameDelayToAnimateList,
             cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this));
-        
 
         _scrollRect.normalizedPosition = Vector2.up;
-        AnimateElements();
+
+        if (_namesList.Count > 0) {
+            ScrollTo(_namesList[0], true);
+        }
     }
 
     public void UpdateList(List<string> nameList) {
