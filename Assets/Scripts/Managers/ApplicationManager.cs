@@ -57,6 +57,11 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                     foreach (var list in listsInConflict)  {
                         const string NameConflict = "Name Conflict";
 
+                        bool areEqual = list.Value.Except(db.Lists[list.Key]).Count() == 0;
+                        if (areEqual) {
+                            continue;
+                        }
+
                         bool renameList = false;
                         var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                         msgPopup.ShowCloseButton = false;
