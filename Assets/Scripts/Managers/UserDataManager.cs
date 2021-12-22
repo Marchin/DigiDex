@@ -14,6 +14,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
     private const string SaveFileCopyName_date = "DigiDex(Copy) {0}.json";
     private const string LocalDataPref = "local_data";
     private const string LastLocalSavePref = "last_local_save";
+    private const string LastLocalSaveUploadedPref = "last_local_save_uploaded";
     private const string FolderMimeType = "application/vnd.google-apps.folder";
     private readonly List<string> ListFieldsQuery = new List<string> { "files/name, files/id, files/modifiedTime" };
     private readonly List<string> FileFieldsQuery = new List<string> { "name, id, modifiedTime" };
@@ -53,6 +54,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         try {
             IsLoggingIn = true;
             OnAuthChanged?.Invoke();
+            var loadingWheelHandle = ApplicationManager.Instance.DisplayLoadingWheel();
             var aboutRequest = UnityGoogleDrive.GoogleDriveAbout.Get();
             aboutRequest.Fields = new List<string> { "user" };
             await aboutRequest.Send();
@@ -82,68 +84,83 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
 
                     if (fileData.Content != null) {
                         long localModifiedTime = long.Parse(PlayerPrefs.GetString(LastLocalSavePref, "0"));
+                        long lastLocalUploadTime = long.Parse(PlayerPrefs.GetString(LastLocalSaveUploadedPref, "0"));
                         if (_dataDict.Count > 0 && saveFileLocation.ModifiedTime.Value.Ticks != localModifiedTime) {
-                            var popup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
-                            popup.ShowCloseButton = false;
-                            ToggleData keepCopyToggle = new ToggleData { Name = "Keep a copy", IsOn = true };
-                            Action keepLocal = async () => {
-                                if (keepCopyToggle.IsOn) {
-                                    var copyFile = new UnityGoogleDrive.Data.File {
-                                        Name = string.Format(SaveFileCopyName_date, DateTime.Now.ToString()),
-                                        Content = fileData.Content,
-                                        Parents = new List<string> { _folderID }
-                                    };
-                                    _ = GoogleDriveFiles.Create(copyFile).Send();
-                                }
+                            if (localModifiedTime > lastLocalUploadTime) {
+                                var popup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                                popup.ShowCloseButton = false;
+                                ToggleData keepCopyToggle = new ToggleData { Name = "Keep a copy", IsOn = true };
+                                Action keepLocal = async () => {
+                                    if (keepCopyToggle.IsOn) {
+                                        var copyFile = new UnityGoogleDrive.Data.File {
+                                            Name = string.Format(SaveFileCopyName_date, DateTime.Now.ToString()),
+                                            Content = fileData.Content,
+                                            Parents = new List<string> { _folderID }
+                                        };
+                                        _ = GoogleDriveFiles.Create(copyFile).Send();
+                                    }
 
-                                string jsonData = PlayerPrefs.GetString(LocalDataPref);
-                                var file = new UnityGoogleDrive.Data.File {
-                                    Name = SaveFileName,
-                                    Content = Encoding.ASCII.GetBytes(jsonData)
-                                };
-                                var handle = ApplicationManager.Instance.DisplayLoadingScreen();
-                                var updateRequest = UnityGoogleDrive.GoogleDriveFiles.Update(_fileID, file);
-                                updateRequest.Fields = FileFieldsQuery;
-                                file = await updateRequest.Send();
-                                _dataOnLoad = jsonData;
-                                _userConfirmedData = true;
-                                RefreshDataDate(file.ModifiedTime.Value);
-                                PopupManager.Instance.Back();
-                                IsLoggingIn = false;
-                                OnAuthChanged?.Invoke();
-                                handle.Complete();
-                            };
-                            Action keepCloud = () => {
-                                if (keepCopyToggle.IsOn) {
-                                    string localData = PlayerPrefs.GetString(LocalDataPref);
+                                    string jsonData = PlayerPrefs.GetString(LocalDataPref);
                                     var file = new UnityGoogleDrive.Data.File {
-                                        Name = string.Format(SaveFileCopyName_date, DateTime.Now.ToString()),
-                                        Content = Encoding.ASCII.GetBytes(localData),
-                                        Parents = new List<string> { _folderID }
+                                        Name = SaveFileName,
+                                        Content = Encoding.ASCII.GetBytes(jsonData)
                                     };
-                                    GoogleDriveFiles.Create(file).Send();
-                                }
+                                    loadingWheelHandle.Complete();
+                                    var handle = ApplicationManager.Instance.DisplayLoadingScreen();
+                                    var updateRequest = UnityGoogleDrive.GoogleDriveFiles.Update(_fileID, file);
+                                    updateRequest.Fields = FileFieldsQuery;
+                                    file = await updateRequest.Send();
+                                    _dataOnLoad = jsonData;
+                                    _userConfirmedData = true;
+                                    RefreshDataDate(file.ModifiedTime.Value);
+                                    PopupManager.Instance.Back();
+                                    IsLoggingIn = false;
+                                    OnAuthChanged?.Invoke();
+                                    handle.Complete();
+                                };
+                                Action keepCloud = () => {
+                                    if (keepCopyToggle.IsOn) {
+                                        string localData = PlayerPrefs.GetString(LocalDataPref);
+                                        var file = new UnityGoogleDrive.Data.File {
+                                            Name = string.Format(SaveFileCopyName_date, DateTime.Now.ToString()),
+                                            Content = Encoding.ASCII.GetBytes(localData),
+                                            Parents = new List<string> { _folderID }
+                                        };
+                                        GoogleDriveFiles.Create(file).Send();
+                                    }
+                                    string jsonData = Encoding.ASCII.GetString(fileData.Content);
+                                    _dataDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData);
+                                    _dataOnLoad = jsonData;
+                                    _userConfirmedData = true;
+                                    RefreshDataDate(saveFileLocation.ModifiedTime.Value);
+                                    PopupManager.Instance.Back();
+                                    IsLoggingIn = false;
+                                    OnAuthChanged?.Invoke();
+                                    loadingWheelHandle.Complete();
+                                };
+
+                                List<ButtonData> buttons = new List<ButtonData>(2);
+                                buttons.Add(new ButtonData { Text = "Local", Callback = keepLocal });
+                                buttons.Add(new ButtonData { Text = "Cloud", Callback = keepCloud });
+                                List<ToggleData> toggles = new List<ToggleData>(1);
+                                toggles.Add(keepCopyToggle);
+                                string msg = "There's a newer version of your data, which one you want to use?";
+                                popup.Populate(msg, "Data Conflict", buttonDataList: buttons, toggleDataList: toggles);
+                            } else {
                                 string jsonData = Encoding.ASCII.GetString(fileData.Content);
                                 _dataDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData);
                                 _dataOnLoad = jsonData;
                                 _userConfirmedData = true;
                                 RefreshDataDate(saveFileLocation.ModifiedTime.Value);
-                                PopupManager.Instance.Back();
                                 IsLoggingIn = false;
                                 OnAuthChanged?.Invoke();
-                            };
-
-                            List<ButtonData> buttons = new List<ButtonData>(2);
-                            buttons.Add(new ButtonData { Text = "Local", Callback = keepLocal });
-                            buttons.Add(new ButtonData { Text = "Cloud", Callback = keepCloud });
-                            List<ToggleData> toggles = new List<ToggleData>(1);
-                            toggles.Add(keepCopyToggle);
-                            string msg = "There's a newer version of your data, which one you want to use?";
-                            popup.Populate(msg, "Data Conflict", buttonDataList: buttons, toggleDataList: toggles);
+                                loadingWheelHandle.Complete();
+                            }
                         } else {
                             _userConfirmedData = true;
                             IsLoggingIn = false;
                             OnAuthChanged?.Invoke();
+                            loadingWheelHandle.Complete();
                         }
                     } else {
                         _userConfirmedData = true;
@@ -213,6 +230,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
             long localModifiedTime = long.Parse(PlayerPrefs.GetString(LastLocalSavePref, "0"));
             RefreshDataDate();
 
+            var loadingWheelHandle = ApplicationManager.Instance.DisplayLoadingWheel();
             var saveMetadata = await GetSaveMetadata();
             bool noRecordConflicts = (saveMetadata == null) ||
                 (saveMetadata.ModifiedTime.Value.Ticks <= localModifiedTime);
@@ -232,7 +250,9 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                     file = await updateRequest.Send();
                 }
                 RefreshDataDate(file.ModifiedTime.Value);
+                PlayerPrefs.SetString(LastLocalSaveUploadedPref, file.ModifiedTime.Value.Ticks.ToString());
             }
+            loadingWheelHandle.Complete();
         }
 
         _isSaving = false;

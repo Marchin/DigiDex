@@ -8,10 +8,12 @@ using Cysharp.Threading.Tasks;
 public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     private const string LastClipboardPref = "last_clipboard";
     [SerializeField] private GameObject _loadingScreen = default;
+    [SerializeField] private GameObject _loadingWheel = default;
     [SerializeField] private GameObject _inputLock = default;
     [SerializeField] private AssetReferenceAtlasedSprite _missingSprite = default;
     public AssetReferenceAtlasedSprite MissingSpirte => _missingSprite;
     private List<Handle> _loadingScreenHandles = new List<Handle>();
+    private List<Handle> _loadingWheelHandles = new List<Handle>();
     private List<Handle> _inputLockingHandles = new List<Handle>();
     private CentralDatabase _centralDB;
     private string _lastCopyText;
@@ -175,6 +177,24 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         await UniTask.WaitUntil(() => _loadingScreenHandles.TrueForAll(h => h.IsComplete));
         _loadingScreen.SetActive(false);
         _loadingScreenHandles.Clear();
+    }
+
+    public Handle DisplayLoadingWheel() {
+        Handle handle = new Handle();
+        _loadingWheelHandles.Add(handle);
+
+        if (_loadingWheelHandles.Count == 1) {
+            HideLoadingWheelOnceFinished();
+        }
+
+        return handle;
+    }
+
+    private async void HideLoadingWheelOnceFinished() {
+        _loadingWheel.SetActive(true);
+        await UniTask.WaitUntil(() => _loadingWheelHandles.TrueForAll(h => h.IsComplete));
+        _loadingWheel.SetActive(false);
+        _loadingWheelHandles.Clear();
     }
 
     public Handle LockScreen() {
