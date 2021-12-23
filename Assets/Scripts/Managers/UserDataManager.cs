@@ -28,7 +28,6 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
     public bool IsUserLoggedIn => UserData != null && _userConfirmedData;
     private string _dataOnLoad;
     private bool _userConfirmedData;
-    private long _lastSyncTime;
     private bool _isSaving;
     public event Action OnAuthChanged;
     public bool IsLoggingIn { get; private set; }
