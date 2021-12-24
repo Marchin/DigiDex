@@ -9,6 +9,8 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 
 public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
+    private const int Version = 1;
+    private const string FileHeader = "DIGIDEX";
     private const string FolderName = "DigiDex";
     private const string SaveFileName = "DigiDex.json";
     private const string SaveFileCopyName_date = "DigiDex(Copy) {0}.json";
@@ -33,11 +35,34 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
     public bool IsLoggingIn { get; private set; }
     
     private void Awake() {
+        _dataDict = new Dictionary<string, string>();
         _driveSettings = GoogleDriveSettings.LoadFromResources();
         string localData = PlayerPrefs.GetString(LocalDataPref);
         _dataOnLoad = localData;
-        _dataDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(localData) ??
-            new Dictionary<string, string>();
+        _dataDict = ParseFileData(localData);
+    }
+
+    private Dictionary<string, string> ParseFileData(string fileContent) {
+        var result = new Dictionary<string, string>();
+
+        int endOfHeader = fileContent.IndexOf('\n');
+        string digidex = fileContent.Substring(0, endOfHeader);
+        if (digidex == FileHeader) {
+            fileContent = fileContent.Substring(endOfHeader + 1, fileContent.Length - (endOfHeader + 1));
+            int endOfVersion = fileContent.IndexOf('\n');
+            int version = int.Parse(fileContent.Substring(0, endOfVersion));
+            if (version == Version) {
+                fileContent = fileContent.Substring(endOfVersion + 1, fileContent.Length - (endOfVersion + 1));
+                result = JsonConvert.DeserializeObject<Dictionary<string, string>>(fileContent);
+                Debug.Log("Data Loaded");
+            } else {
+                Debug.Log("Version Mismatch");
+            }
+        } else {
+            Debug.Log("No Header");
+        }
+
+        return result;
     }
 
     public async UniTask Sync() {
@@ -128,7 +153,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                         GoogleDriveFiles.Create(file).Send();
                                     }
                                     string jsonData = Encoding.ASCII.GetString(fileData.Content);
-                                    _dataDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData);
+                                    _dataDict = ParseFileData(jsonData);
                                     _dataOnLoad = jsonData;
                                     _userConfirmedData = true;
                                     RefreshDataDate(saveFileLocation.ModifiedTime.Value);
@@ -147,7 +172,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 popup.Populate(msg, "Data Conflict", buttonDataList: buttons, toggleDataList: toggles);
                             } else {
                                 string jsonData = Encoding.ASCII.GetString(fileData.Content);
-                                _dataDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData);
+                                _dataDict = ParseFileData(jsonData);
                                 _dataOnLoad = jsonData;
                                 _userConfirmedData = true;
                                 RefreshDataDate(saveFileLocation.ModifiedTime.Value);
@@ -211,7 +236,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
             return "";
         }
     }
-
+    
     public async void SaveAllData() {
         if (_isSaving) {
             return;
@@ -221,13 +246,17 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
 
         OnBeforeSave?.Invoke();
 
-        string jsonData = JsonConvert.SerializeObject(_dataDict);
+        string jsonData = $"DIGIDEX\n{Version}\n{JsonConvert.SerializeObject(_dataDict)}";
 
         if (jsonData != _dataOnLoad) {
             PlayerPrefs.SetString(LocalDataPref, jsonData);
             _dataOnLoad = jsonData;
             long localModifiedTime = long.Parse(PlayerPrefs.GetString(LastLocalSavePref, "0"));
             RefreshDataDate();
+
+            if (!IsUserLoggedIn) {
+                return;
+            }
 
             var loadingWheelHandle = ApplicationManager.Instance.DisplayLoadingWheel();
             var saveMetadata = await GetSaveMetadata();
