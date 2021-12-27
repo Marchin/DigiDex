@@ -46,12 +46,12 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         var result = new Dictionary<string, string>();
 
         int endOfHeader = fileContent.IndexOf('\n');
-        string digidex = fileContent.Substring(0, endOfHeader);
-        if (digidex == FileHeader) {
+        string digidex = fileContent.Substring(0, Mathf.Max(endOfHeader, 0));
+        if (endOfHeader >= 0 && digidex == FileHeader) {
             fileContent = fileContent.Substring(endOfHeader + 1, fileContent.Length - (endOfHeader + 1));
             int endOfVersion = fileContent.IndexOf('\n');
-            int version = int.Parse(fileContent.Substring(0, endOfVersion));
-            if (version == Version) {
+            int version = int.Parse(fileContent.Substring(0, Mathf.Max(endOfVersion, 0)));
+            if (endOfVersion >= 0 && version == Version) {
                 fileContent = fileContent.Substring(endOfVersion + 1, fileContent.Length - (endOfVersion + 1));
                 result = JsonConvert.DeserializeObject<Dictionary<string, string>>(fileContent);
                 Debug.Log("Data Loaded");
