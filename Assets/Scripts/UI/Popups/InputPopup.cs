@@ -11,7 +11,7 @@ public class InputPopup : Popup {
     }
     [SerializeField] private TextMeshProUGUI _title = default;
     [SerializeField] private TextMeshProUGUI _message = default;
-    [SerializeField] private TMP_InputField _input = default;
+    [SerializeField] private InputField _input = default;
     [SerializeField] private Button _confirmButton = default;
     [SerializeField] private Button _closeButton = default;
     private Action<string> OnConfirm;

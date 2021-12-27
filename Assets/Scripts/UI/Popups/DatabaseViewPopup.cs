@@ -21,7 +21,7 @@ public class DatabaseViewPopup : Popup {
     }
 
     [SerializeField] private Image _entryImage = default;
-    [SerializeField] private TMP_InputField _searchInput = default;
+    [SerializeField] private InputField _searchInput = default;
     [SerializeField] private Button _clearSearch = default;
     [SerializeField] private GameObject _searchIcon = default;
     [SerializeField] private Button _profileButton = default;
