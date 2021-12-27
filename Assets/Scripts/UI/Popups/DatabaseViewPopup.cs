@@ -108,7 +108,7 @@ public class DatabaseViewPopup : Popup {
 
         _closeButton.onClick.AddListener(PopupManager.Instance.Back);
         _profileButton.onClick.AddListener(() => {
-            PopupManager.Instance.GetOrLoadPopup<EntryViewPopup>().ContinueWith(popup => {
+            PopupManager.Instance.GetOrLoadPopup<EntryViewPopup>(restore: false).ContinueWith(popup => {
                 Action prev = null;
                 Action next = null;
 

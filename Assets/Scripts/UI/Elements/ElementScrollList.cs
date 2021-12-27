@@ -310,7 +310,7 @@ public class ElementScrollList : MonoBehaviour {
 
     public void ScrollTo(string name, bool withAnimation = false) {
         int index = _namesList.IndexOf(name);
-        ScrollTo(index);
+        ScrollTo(index, withAnimation);
     }
 
     public async void ScrollTo(float scrolled, bool withAnimation = false) {
