@@ -164,10 +164,17 @@ public class DatabaseViewPopup : Popup {
 
     private void OnEnable() {
         PopupManager.Instance.OnStackChange += ReApplyFilterAndRefresh;
+        PopupManager.Instance.OnStackChange += HideKeyboard;
     }
 
     private void OnDisable() {
         PopupManager.Instance.OnStackChange -= ReApplyFilterAndRefresh;
+        PopupManager.Instance.OnStackChange -= HideKeyboard;
+    }
+
+    private void HideKeyboard() {
+        _searchInput.enabled = false;
+        _searchInput.enabled = true;
     }
 
     private void ReApplyFilterAndRefresh() {

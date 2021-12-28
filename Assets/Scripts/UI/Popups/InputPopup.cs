@@ -20,6 +20,19 @@ public class InputPopup : Popup {
         _closeButton.onClick.AddListener(PopupManager.Instance.Back);
     }
 
+    private void OnEnable() {
+        PopupManager.Instance.OnStackChange += HideKeyboard;
+    }
+
+    private void OnDisable() {
+        PopupManager.Instance.OnStackChange -= HideKeyboard;
+    }
+
+    private void HideKeyboard() {
+        _input.enabled = false;
+        _input.enabled = true;
+    }
+
     public void Populate(string message, string title, Action<string> onConfirm) {
         _message.text = message;
         _title.text = title;
