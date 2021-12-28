@@ -89,17 +89,19 @@ public static class DataRetriever {
 
         AddressableAssetGroup group = addressablesSettings.groups.Find(g => g.Name == name);
         if (group == null) {
-            group = addressablesSettings.CreateGroup(name, false, false, false, null);
+            AddressableAssetGroupTemplate template = AssetDatabase.LoadAssetAtPath<AddressableAssetGroupTemplate>
+                ("Assets/AddressableAssetsData/AssetGroupTemplates/Packed Assets.asset");
+            group = addressablesSettings.CreateGroup(name, false, false, false, template.SchemaObjects);
         }
         return group;
     }
 
     [MenuItem("DigiDex/Retrieve Data")]
     public static async void RetrieveData() {
-        // GenerateFieldList();
-        // GenerateAttributeList();
-        // GenerateTypeList();
-        // GenerateLevelList();
+        GenerateFieldList();
+        GenerateAttributeList();
+        GenerateTypeList();
+        GenerateLevelList();
 
         // TODO: Add the new images either in the last folder or on a new one depending on the wether the last folder is full
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
@@ -304,7 +306,7 @@ public static class DataRetriever {
             if (!File.Exists(spriteAtlasPath)) {
                 SpriteAtlas spriteAtlas = new SpriteAtlas();
                 UnityEngine.Object[] sprites = new UnityEngine.Object[Mathf.Min(DigimonsPerAtlas, digimonsWithArt.Count - (DigimonsPerAtlas * i))];
-                for (int j = 0; j < DigimonsPerAtlas; ++iDigimonArt, ++j) {
+                for (int j = 0; j < sprites.Length; ++iDigimonArt, ++j) {
                     sprites[j] = AssetDatabase.LoadAssetAtPath<Sprite>(digimonsWithArt[iDigimonArt].path);
                 }
                 spriteAtlas.Add(sprites);
@@ -360,6 +362,8 @@ public static class DataRetriever {
             g => g.Name == DBGroupName || 
             g.Name == DigimonListGroupName || 
             g.Name == DigimonDataGroupName || 
+            g.Name == DigimonEvolutionDataGroupName || 
+            g.Name == RemoteArtGroupName || 
             g.Name == DigimonSpriteAtlasesGroupName);
         foreach (var group in groups) {
             settings.RemoveGroup(group);
