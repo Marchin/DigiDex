@@ -109,7 +109,7 @@ public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
             information.Add(new InformationData { Prefix = "Groups" });
             for (int iGroup = 0; iGroup < GroupIDs.Count; ++iGroup) {
                 DigimonGroup group = digimonDB.Groups[GroupIDs[iGroup]];
-                Action onMoreInfo = () => PopupManager.Instance.GetOrLoadPopup<MessagePopup>()
+                Action onMoreInfo = () => PopupManager.Instance.GetOrLoadPopup<MessagePopup>(restore: false)
                     .ContinueWith(popup => popup.Populate(group.Description, group.Name))
                     .Forget();
                 information.Add(new InformationData {
@@ -124,7 +124,7 @@ public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
             information.Add(new InformationData { Prefix = "Fields" });
             for (int iField = 0; iField < FieldIDs.Count; ++iField) {
                 Field field = digimonDB.Fields[FieldIDs[iField]];
-                Action onMoreInfo = () => PopupManager.Instance.GetOrLoadPopup<MessagePopup>()
+                Action onMoreInfo = () => PopupManager.Instance.GetOrLoadPopup<MessagePopup>(restore: false)
                     .ContinueWith(popup => popup.Populate(field.Description, field.Name, field.Sprite))
                     .Forget();
                 information.Add(
