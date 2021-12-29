@@ -38,6 +38,7 @@ SpriteAtlas:
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
+  - {fileID: 21300000, guid: e7ab1b20266ae9b4ebab3bae87f93c01, type: 3}
   - {fileID: 21300000, guid: 9f51b9c0a622e924383fb3dedbee50f1, type: 3}
   - {fileID: 21300000, guid: 2f91ed1118a3da04283b1aab9437025d, type: 3}
   - {fileID: 21300000, guid: 0fa86931d7ccd334eb4903dda213c871, type: 3}
@@ -55,6 +56,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 70150367f59effe41af51a71efb3505d, type: 3}
   - {fileID: 21300000, guid: 543d8548fd288ae4e83cf1c8b0327da7, type: 3}
   - {fileID: 21300000, guid: 7b342d784233c0643a5a58cb7167bb2e, type: 3}
+  - {fileID: 21300000, guid: e06d78c8a3f8cc14e927ff182d3295c7, type: 3}
   - {fileID: 21300000, guid: bbd1b4f8547a44d4c8723980c11f6861, type: 3}
   - {fileID: 21300000, guid: 35991189482289447a31767289ead085, type: 3}
   - {fileID: 21300000, guid: 0352f70a0e328604cb37b16669e45157, type: 3}
@@ -65,6 +67,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 357a413be0e4c694cae118424b9e46b5, type: 3}
   - {fileID: 21300000, guid: 98fcc3ccddc9fff4f924b85260174a4f, type: 3}
   - {fileID: 21300000, guid: 1f56c22d379adaf46859a9aff9e19842, type: 3}
+  - {fileID: 21300000, guid: 1beb4a3d7ab2d9f42b4644b8a0ca35ed, type: 3}
   - {fileID: 21300000, guid: b8f1844df6878f24f9c51c333e75e9f5, type: 3}
   - {fileID: 21300000, guid: dd49927d3f70e824b9d61aa5ffa8168c, type: 3}
   - {fileID: 21300000, guid: e23e9c9dad83acf4c8d077baac392861, type: 3}
@@ -74,6 +77,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 34ac6f6f08503d14999b26316c457f09, type: 3}
   - {fileID: 21300000, guid: e3baa0af99e5110479596a0c66269ee0, type: 3}
   m_PackedSpriteNamesToIndex:
+  - App Icon (big)
   - Rounded Square
   - Circle Border
   - App Banner
@@ -91,6 +95,7 @@ SpriteAtlas:
   - Missing Digimon
   - App Icon Fg
   - Title
+  - App Icon Fg2
   - App Icon
   - Vertical Gradient
   - App Icon Bg
@@ -101,6 +106,7 @@ SpriteAtlas:
   - Search
   - Forbidden
   - Loading Border
+  - Title2
   - DB Icon
   - Horizontal Gradient
   - Instagram Logo
