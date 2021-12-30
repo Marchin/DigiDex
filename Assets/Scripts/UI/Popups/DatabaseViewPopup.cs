@@ -30,6 +30,8 @@ public class DatabaseViewPopup : Popup {
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private GameObject _activeFilterIndicator = default;
     [SerializeField] private GameObject _loadingWheel = default;
+    [SerializeField] private GameObject _noEntriesFoundText = default;
+    [SerializeField] private GameObject _highlighter = default;
     private CancellationTokenSource _entryDataCTS;
     private List<AsyncOperationHandle> _entryDataHandles = new List<AsyncOperationHandle>();
     private IEnumerable<IDataEntry> _filteredEntries;
@@ -44,7 +46,7 @@ public class DatabaseViewPopup : Popup {
     public IDataEntry SelectedEntry {
         get => _selectedEntry;
         private set {
-            if (_selectedEntry == value) {
+            if (value != null && _selectedEntry == value) {
                 return;
             }
 
@@ -62,8 +64,8 @@ public class DatabaseViewPopup : Popup {
             _selectedEntry = value;
 
             _entryImage.gameObject.SetActive(false);
-            _loadingWheel.SetActive(true);
             if (_selectedEntry != null) {
+                _loadingWheel.SetActive(true);
                 if (_selectedEntry.Sprite.RuntimeKeyIsValid()) {
                     var spriteHandle = Addressables.LoadAssetAsync<Sprite>(_selectedEntry.Sprite);
                     _entryDataHandles.Add(spriteHandle);
@@ -75,6 +77,17 @@ public class DatabaseViewPopup : Popup {
                         }
                     }).Forget();
                 }
+            } else {
+                _loadingWheel.SetActive(false);
+                var spriteHandle = Addressables.LoadAssetAsync<Sprite>(ApplicationManager.Instance.MissingSpirte);
+                _entryDataHandles.Add(spriteHandle);
+                spriteHandle.WithCancellation(_entryDataCTS.Token).ContinueWith(sprite => {
+                    _loadingWheel.SetActive(false);
+                    if (sprite != null) {
+                        _entryImage.gameObject.SetActive(true);
+                        _entryImage.sprite = sprite;
+                    }
+                }).Forget();
             }
         }
     }
@@ -144,7 +157,7 @@ public class DatabaseViewPopup : Popup {
         _elementScrollList.Initialize(
             nameList: _currEntries.Select(e => e.Name).ToList(),
             onConfirmed: (index) => {
-                if (index >= 0 && index <= _currEntries.Count()) {
+                if (index >= 0 && _currEntries.Count() > 0 && index <= _currEntries.Count()) {
                     SelectedEntry = _currEntries.ElementAt(index);
                     _profileButton.gameObject.SetActive(true);
                 } else {
@@ -213,6 +226,10 @@ public class DatabaseViewPopup : Popup {
             .ToList();
 
         _elementScrollList.UpdateList(_currEntries.Select(e => e.Name).ToList());
+
+        bool isEmpty = _currEntries.Count() == 0;
+        _noEntriesFoundText.SetActive(isEmpty);
+        _highlighter.SetActive(!isEmpty);
     }
 
     private void OnInputChanged(string query) {
@@ -228,7 +245,7 @@ public class DatabaseViewPopup : Popup {
             Toggles = _toggles,
             LastQuery = _lastQuery,
             DB = _db,
-            SelectedEntry = SelectedEntry.Name
+            SelectedEntry = SelectedEntry?.Name
         };
 
         return data;
