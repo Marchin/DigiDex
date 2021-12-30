@@ -1,93 +1,26 @@
 using System.Linq;
 using System.Collections.Generic;
-using UnityEngine;
-using Newtonsoft.Json;
-using Cysharp.Threading.Tasks;
 
-public class DigimonDatabase : ScriptableObject, IDatabase {
-    public string DisplayName => "Digimons";
+public class DigimonDatabase : Database {
+    public override string DisplayName => "Digimons";
 
-    public const string FieldsFilter = "Fields";
-    public const string AttributesFilter = "Attributes";
-    public const string TypesFilter = "Types";
-    public const string LevelsFilter = "Levels";
-    public const string GroupsFilter = "Groups";
-    public const string ListsFilter = "Lists";
-    public const string InListToggle = "In List";
-    public const string ReverseToggle = "Reverse";
+    private const string FieldsFilter = "Fields";
+    private const string AttributesFilter = "Attributes";
+    private const string TypesFilter = "Types";
+    private const string LevelsFilter = "Levels";
+    private const string GroupsFilter = "Groups";
+    private const string ListsFilter = "Lists";
+    private const string InListToggle = "In List";
+    private const string ReverseToggle = "Reverse";
+    public override IEnumerable<IDataEntry> Entries => Digimons;
     public List<Digimon> Digimons;
-    public IEnumerable<IDataEntry> EntryList => Digimons.Cast<IDataEntry>();
     public List<Field> Fields;
     public List<Attribute> Attributes;
     public List<DigimonType> Types;
     public List<DigimonGroup> Groups;
     public List<Level> Levels;
-    private Dictionary<string, HashSet<Hash128>> _lists;
-    private Dictionary<string, HashSet<Hash128>> ListsInternal {
-        get {
-            if (_lists == null) {
-                _lists = LoadLists();
-            }
-            return _lists;
-        }
-    }
-    public IReadOnlyDictionary<string, HashSet<Hash128>> Lists => ListsInternal;
-    private Dictionary<Hash128, Digimon> _digimonDict;
-    public Dictionary<Hash128, Digimon> DigimonDict {
-        get {
-            if (_digimonDict == null) {
-                _digimonDict = Digimons.ToDictionary(d => d.Hash);
-            }
-            return _digimonDict;
-        }
-    }
-    private Dictionary<Hash128, IDataEntry> _entryDict;
-    public Dictionary<Hash128, IDataEntry> EntryDict {
-        get {
-            if (_entryDict == null) {
-                _entryDict = EntryList.ToDictionary(d => d.Hash);
-            }
-            return _entryDict;
-        }
-    }
 
-    public void AddEntryToList(string list, Hash128 entry) {
-        if (!ListsInternal.ContainsKey(list)) {
-            ListsInternal.Add(list, new HashSet<Hash128>());
-        }
-        ListsInternal[list].Add(entry);
-        SaveLists();
-    }
-
-    public void RemoveEntryFromList(string list, Hash128 entry) {
-        if (ListsInternal.ContainsKey(list)) {
-            ListsInternal[list].Remove(entry);
-            if (ListsInternal[list].Count == 0) {
-                ListsInternal.Remove(list);
-            }
-            SaveLists();
-        } else {
-            Debug.LogWarning("List doesn't exist");
-        }
-    }
-
-    public async UniTask<bool> RemoveList(string list) {
-        bool result = false;
-        if (ListsInternal.ContainsKey(list)) {
-            var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
-            List<ButtonData> buttons = new List<ButtonData>();
-            buttons.Add(new ButtonData("No", PopupManager.Instance.Back));
-            buttons.Add(new ButtonData("Yes", () => {
-                ListsInternal.Remove(list);
-                PopupManager.Instance.Back();
-                SaveLists();
-            }));
-            msgPopup.Populate($"Delete '{list}' list?", "Delete List", buttonDataList: buttons);
-        }
-        return result;
-    }
-
-    public List<FilterData> RetrieveFiltersData() {
+    public override List<FilterData> RetrieveFiltersData() {
         List<FilterData> filters = new List<FilterData>();
 
         FilterData fieldsFilter = new FilterData(
@@ -168,7 +101,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         return filters;
     }
 
-    public List<ToggleActionData> RetrieveTogglesData() {
+    public override List<ToggleActionData> RetrieveTogglesData() {
         List<ToggleActionData> toggles = new List<ToggleActionData>();
 
         toggles.Add(
@@ -202,7 +135,7 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         return toggles;
     }
 
-    public void RefreshFilters(
+    public override void RefreshFilters(
         ref IEnumerable<FilterData> filters, 
         ref IEnumerable<ToggleActionData> toggles
     ) {
@@ -260,34 +193,5 @@ public class DigimonDatabase : ScriptableObject, IDatabase {
         }
     }
 
-    private void SaveLists() {
-        if (_lists != null) {
-            var lists = _lists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
-            string jsonData = JsonConvert.SerializeObject(lists);
-            UserDataManager.Instance.Save(DisplayName, jsonData);
-        }
-    }
 
-    public void CopyToClipboard(IEnumerable<KeyValuePair<string, HashSet<Hash128>>> lists) {
-        if (lists != null) {
-            var serializable = lists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
-            string jsonListData = JsonConvert.SerializeObject(serializable);
-            string copyData = JsonConvert.SerializeObject(new KeyValuePair<string, string>(DisplayName, jsonListData));
-            ApplicationManager.Instance.SaveClipboard(copyData);
-        }
-    }
-
-    private Dictionary<string, HashSet<Hash128>> LoadLists() {
-        string jsonData = UserDataManager.Instance.Load(DisplayName);
-        return ParseListData(jsonData);
-    }
-
-    public Dictionary<string, HashSet<Hash128>> ParseListData(string data) {
-        var strings = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(data) ??
-            new Dictionary<string, List<string>>();
-        var hashesList = strings.ToDictionary(kvp => kvp.Key, 
-            kvp => new HashSet<Hash128>(kvp.Value.Select(s => Hash128.Parse(s))));
-
-        return hashesList;
-    }
 }

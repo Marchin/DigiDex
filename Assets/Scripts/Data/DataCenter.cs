@@ -3,7 +3,6 @@ using UnityEngine.AddressableAssets;
 using System;
 using System.Reflection;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 
 public interface IDataEntry {
     string Name { get; set; }
@@ -12,25 +11,13 @@ public interface IDataEntry {
     AssetReferenceAtlasedSprite Sprite { get; set; }
     Hash128 Hash { get; set; }
     List<InformationData> ExtractInformationData();
+#if UNITY_EDITOR
+    string LinkSubFix { get; set; }
+#endif
 }
 
-public interface IEvolvable {
+public interface IEvolvable : IDataEntry {
     AssetReferenceEvolutionData EvolutionDataRef { get; set; }
-}
-
-public interface IDatabase {
-    string DisplayName { get; }
-    IEnumerable<IDataEntry> EntryList { get; }
-    Dictionary<Hash128, IDataEntry> EntryDict { get; }
-    IReadOnlyDictionary<string, HashSet<Hash128>> Lists { get; }
-    void AddEntryToList(string list, Hash128 entry);
-    void RemoveEntryFromList(string list, Hash128 entry);
-    List<FilterData> RetrieveFiltersData();
-    List<ToggleActionData> RetrieveTogglesData();
-    void RefreshFilters(ref IEnumerable<FilterData> filters, ref IEnumerable<ToggleActionData> toggles);
-    UniTask<bool> RemoveList(string name);
-    Dictionary<string, HashSet<Hash128>> ParseListData(string data);
-    void CopyToClipboard(IEnumerable<KeyValuePair<string, HashSet<Hash128>>> lists);
 }
 
 [Serializable]
@@ -45,11 +32,8 @@ public class EntryIndex : IEquatable<EntryIndex> {
     }
 
     public IDataEntry FetchEntryData() {
-        MethodInfo method = typeof(ApplicationManager).GetMethod(nameof(ApplicationManager.Instance.GetDatabase),
-            new Type[0]);
-        MethodInfo generic = method.MakeGenericMethod(Type.GetType(_typeName));
-        IDatabase db = generic.Invoke(ApplicationManager.Instance, null) as IDatabase;
-        IDataEntry result = db?.EntryDict[Hash];
+        IDataEntry typeInstance = Activator.CreateInstance(Type.GetType(_typeName)) as IDataEntry;
+        IDataEntry result = ApplicationManager.Instance.GetDatabase(typeInstance).EntryDict[Hash];
 
         return result;
     }
@@ -92,15 +76,17 @@ public class EntryIndex : IEquatable<EntryIndex> {
    }
 }
 
-public class CentralDatabase : ScriptableObject {
-    public const string CentralDBAssetName = "Central Database";
+public class DataCenter : ScriptableObject {
+    public const string DataCenterAssetName = "Central Database";
     public DigimonDatabase DigimonDB;
+    public AppmonDatabase AppmonDB;
 
-    public List<IDatabase> GetDatabases() {
-        List<IDatabase> result = new List<IDatabase>();
+    public List<Database> GetDatabases() {
+        List<Database> result = new List<Database>();
 
         // TODO: See if we can automate this through reflection
         result.Add(DigimonDB);
+        result.Add(AppmonDB);
 
         return result;
     }

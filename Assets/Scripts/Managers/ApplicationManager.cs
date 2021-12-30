@@ -15,7 +15,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     private List<Handle> _loadingScreenHandles = new List<Handle>();
     private List<Handle> _loadingWheelHandles = new List<Handle>();
     private List<Handle> _inputLockingHandles = new List<Handle>();
-    private CentralDatabase _centralDB;
+    private DataCenter _centralDB;
     private string _lastCopyText;
     private bool _checkingClipboard;
     public bool Initialized { get; private set; }
@@ -25,8 +25,8 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
 
         await Addressables.InitializeAsync();
 
-        _centralDB = await Addressables.LoadAssetAsync<CentralDatabase>(
-            CentralDatabase.CentralDBAssetName);
+        _centralDB = await Addressables.LoadAssetAsync<DataCenter>(
+            DataCenter.DataCenterAssetName);
 
         if (_centralDB == null) {
             UnityUtils.Quit();
@@ -130,12 +130,15 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         GUIUtility.systemCopyBuffer = data;
     }
 
-    public IDatabase GetDatabase(IDataEntry entry) {
-        IDatabase result = null;
+    public Database GetDatabase(IDataEntry entry) {
+        Database result = null;
 
         switch (entry) {
             case Digimon digimon: {
                 result = _centralDB.DigimonDB;
+            } break;
+            case Appmon appmon: {
+                result = _centralDB.AppmonDB;
             } break;
 
             default: {
@@ -146,9 +149,12 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         return result;
     }
     
-    public IDatabase GetDatabase<T>() where T : IDataEntry {
+    public Database GetDatabase<T>() where T : IDataEntry {
         switch (typeof(T).ToString()) {
             case nameof(Digimon): {
+                return _centralDB.DigimonDB;
+            }
+            case nameof(Appmon): {
                 return _centralDB.DigimonDB;
             }
             default: {
@@ -158,7 +164,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         }
     }
 
-    public List<IDatabase> GetDatabases() => _centralDB?.GetDatabases();
+    public List<Database> GetDatabases() => _centralDB?.GetDatabases();
     
     private void Update() {
         if (Input.GetKeyDown(KeyCode.Escape)) {

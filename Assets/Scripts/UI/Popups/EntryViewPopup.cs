@@ -48,7 +48,7 @@ public class EntryViewPopup : Popup {
     private Action _next;
     private List<AsyncOperationHandle> _dataHandles = new List<AsyncOperationHandle>();
     private EvolutionData _currEvolutionData;
-    private IDatabase _db;
+    private Database _db;
     private IDataEntry _entry;
     private CancellationTokenSource _cts;
     private Tab _currTab;

@@ -16,7 +16,7 @@ public class DatabaseViewPopup : Popup {
         public IEnumerable<FilterData> Filters;
         public IEnumerable<ToggleActionData> Toggles;
         public string LastQuery;
-        public IDatabase DB;
+        public Database DB;
         public string SelectedEntry;
     }
 
@@ -38,7 +38,7 @@ public class DatabaseViewPopup : Popup {
     private IEnumerable<ToggleActionData> _toggles;
     private string _lastQuery = "";
     private Dictionary<Hash128, IDataEntry> _entryDict;
-    private IDatabase _db;
+    private Database _db;
     private bool _initialized;
     private IDataEntry _selectedEntry;
     public IDataEntry SelectedEntry {
@@ -134,13 +134,13 @@ public class DatabaseViewPopup : Popup {
     }
 
     public void Populate(
-        IDatabase database,
+        Database database,
         IEnumerable<FilterData> filters = null,
         IEnumerable<ToggleActionData> toggles = null,
         string lastQuery = ""
     ) {
         _db = database;
-        _currEntries = _filteredEntries = database.EntryList;
+        _currEntries = _filteredEntries = database.Entries;
         _elementScrollList.Initialize(
             nameList: _currEntries.Select(e => e.Name).ToList(),
             onConfirmed: (index) => {
@@ -154,7 +154,7 @@ public class DatabaseViewPopup : Popup {
             }
         );
 
-        _entryDict = _db.EntryList.ToDictionary(e => e.Hash);
+        _entryDict = _db.Entries.ToDictionary(e => e.Hash);
         _filters = filters ?? _db.RetrieveFiltersData();
         _toggles = toggles ?? _db.RetrieveTogglesData();
         _lastQuery = lastQuery;
@@ -184,7 +184,7 @@ public class DatabaseViewPopup : Popup {
 
         if (PopupManager.Instance.ActivePopup == this) {
             _db.RefreshFilters(ref _filters, ref _toggles);
-            _filteredEntries = new List<IDataEntry>(_db.EntryList);
+            _filteredEntries = new List<IDataEntry>(_db.Entries);
             foreach (var toggle in _toggles) {
                 _filteredEntries = toggle.Apply(_filteredEntries);
             }

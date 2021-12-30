@@ -16,7 +16,7 @@ public class AssetReferenceDigimon : AssetReferenceT<Digimon> {
     public AssetReferenceDigimon(string guid) : base(guid) {}
 }
 
-public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
+public class Digimon : ScriptableObject, IEvolvable {
     [SerializeField] private string _name;
     [SerializeField] private List<string> _dubNames;
     [FormerlySerializedAs("ProfileData")]
@@ -64,13 +64,14 @@ public class Digimon : ScriptableObject, IDataEntry, IEvolvable {
     public List<int> LevelIDs;
     public List<int> GroupIDs;
 #if UNITY_EDITOR
-    public string LinkSubFix;
+    public string LinkSubFix { get; set; }
 #endif
 
     public List<InformationData> ExtractInformationData() {
         List<InformationData> information = new List<InformationData>();
         
         DigimonDatabase digimonDB = ApplicationManager.Instance.GetDatabase(this) as DigimonDatabase;
+        
         information.Add(new InformationData { Prefix = "Name", Content = Name });
 
         if (DubNames.Count > 0) {

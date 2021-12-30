@@ -294,7 +294,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         PlayerPrefs.SetString(LastLocalSavePref, time.Ticks.ToString());
     }
 
-    public bool IsValidData(string data, out IDatabase db, out Dictionary<string, HashSet<Hash128>> parsedList) {
+    public bool IsValidData(string data, out Database db, out Dictionary<string, HashSet<Hash128>> parsedList) {
         bool isValid = true;
         parsedList = null;
         db = null;

@@ -28,7 +28,7 @@ public class ListSelectionPopup : Popup {
     [SerializeField] private GameObject _deleteListContainer = default;
     private List<string> _toCopy = new List<string>();
     private IDataEntry _entry;
-    private IDatabase _db;
+    private Database _db;
     private Tab _currTab;
 
     private void Awake() {
