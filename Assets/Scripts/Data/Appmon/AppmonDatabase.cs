@@ -23,7 +23,7 @@ public class AppmonDatabase : Database {
         );
         typesFilter.Elements = new List<FilterEntryData>(Types.Count);
         for (int iType = 0; iType < Types.Count; ++iType) {
-            typesFilter.Elements.Add(new FilterEntryData { Name = Types[iType].Name });
+            typesFilter.Elements.Add(new FilterEntryData { Name = Types[iType].Name, Sprite = Types[iType].Sprite });
         }
         filters.Add(typesFilter);
 
