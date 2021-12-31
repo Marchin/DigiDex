@@ -46,7 +46,7 @@ public class MainMenu : MonoBehaviour {
                     "Leave us a tip through:\n" +
                     $"·<color={UnityUtils.LinkColor}><link=\"https://www.paypal.com/paypalme/DigidexApp\">Paypal</link></color>\n" +
                     $"·<color={UnityUtils.LinkColor}><link=\"https://cafecito.app/digidex\">Mercado Pago</link></color>\n\n" + 
-                    $"Follow us on <color={UnityUtils.LinkColor}><link=\"https://www.patreon.com/Digidex\">Patreon</link></color>");
+                    $"Support us on <color={UnityUtils.LinkColor}><link=\"https://www.patreon.com/Digidex\">Patreon</link></color>");
             }});
 
             if (UserDataManager.Instance.IsUserLoggedIn) {
