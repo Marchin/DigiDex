@@ -68,7 +68,7 @@ public class ListSelectionPopup : Popup {
             _infoButton.onClick.AddListener(async () => {
                 var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                 msgPopup.Populate(
-                    "Selected elements will be copied into your clipboard, to the shared them just paste the text.\n" +
+                    "Selected elements will be copied into your clipboard, to the shared them just paste the text.\n\n" +
                         "Your friend can copy that text and when they open the app they will be promted to add the lists.",
                     "Copying Lists");
             });
