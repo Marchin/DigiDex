@@ -17,9 +17,9 @@ public class MainMenu : MonoBehaviour {
 
     private async void Start() {
         RefreshButtons();
-        (_content.transform as RectTransform).AdjustToSafeZone();
         PopupManager.Instance.OnRotation += () => (_content.transform as RectTransform).AdjustToSafeZone();
         PopupManager.Instance.RegisterCanvasScalerForRotationScaling(_canvasScaler);
+        (_content.transform as RectTransform).AdjustToSafeZone();
         _loadingWheel.SetActive(true);
         await UniTask.WaitUntil(() => ApplicationManager.Instance.Initialized);
         
@@ -34,7 +34,18 @@ public class MainMenu : MonoBehaviour {
         _databaseList.Populate(buttonDataList);
         
         _loginButton.onClick.AddListener(async () => {
-            await UserDataManager.Instance.Login();
+            List<ButtonData> buttonList = new List<ButtonData>() {
+                new ButtonData("Log In", async () => {
+                    PopupManager.Instance.Back();
+                    await UserDataManager.Instance.Login();
+                })
+            };
+            var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+            msgPopup.Populate("You can log in with your drive account to sync your lists across devices\n\n" +
+                "Digidex is a fan-made app as such is not authorized by google and you will get some warnings, Digidex is open soruce and you " +
+                $"can review our code <color={UnityUtils.LinkColor}><link=\"https://github.com/Marchin/DigiDex\">here</link></color>",
+                "Log In",
+                buttonDataList: buttonList);
         });
 
         _settingsButton.onClick.AddListener(async () => {
@@ -46,16 +57,22 @@ public class MainMenu : MonoBehaviour {
                     "Leave us a tip through:\n" +
                     $"·<color={UnityUtils.LinkColor}><link=\"https://www.paypal.com/paypalme/DigidexApp\">Paypal</link></color>\n" +
                     $"·<color={UnityUtils.LinkColor}><link=\"https://cafecito.app/digidex\">Mercado Pago</link></color>\n\n" + 
-                    $"Support us on <color={UnityUtils.LinkColor}><link=\"https://www.patreon.com/Digidex\">Patreon</link></color>");
+                    $"Support us on <color={UnityUtils.LinkColor}><link=\"https://www.patreon.com/Digidex\">Patreon</link></color>",
+                    "Support Us");
             }});
 
             if (UserDataManager.Instance.IsUserLoggedIn) {
-                buttonList.Add(new ButtonData { Text = "Logout", Callback = () => UserDataManager.Instance.LogOut() });
+                buttonList.Add(new ButtonData { Text = "Logout", Callback = async () => {
+                        UserDataManager.Instance.LogOut();
+                        var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>(restore: false);
+                        msgPopup.Populate("Logged out");
+                    }
+                });
             }
             
             buttonList.Add(new ButtonData { Text = "About", Callback = async () => {
                 var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
-                msgPopup.Populate("Digidex doesn't claim ownership of the images, nor the data");
+                msgPopup.Populate("DigiDex is a database for all things digimon.\n\nDigiDex doesn't claim ownership of the images nor the data", "About");
             }});
 
 
@@ -76,6 +93,7 @@ public class MainMenu : MonoBehaviour {
         });
 
         UserDataManager.Instance.OnAuthChanged += RefreshButtons;
+        PopupManager.Instance.OnStackChange += RefreshButtons;
         
         _loadingWheel.SetActive(false);
 
