@@ -7,6 +7,7 @@ using Cysharp.Threading.Tasks;
 public class MainMenu : MonoBehaviour {
     [SerializeField] private CanvasScaler _canvasScaler = default;
     [SerializeField] private GameObject _content = default;
+    [SerializeField] private GameObject _loadingWheel = default;
     [SerializeField] private ButtonElementList _databaseList = default;
     [SerializeField] private Button _loginButton = default;
     [SerializeField] private Button _settingsButton = default;
@@ -19,6 +20,7 @@ public class MainMenu : MonoBehaviour {
         (_content.transform as RectTransform).AdjustToSafeZone();
         PopupManager.Instance.OnRotation += () => (_content.transform as RectTransform).AdjustToSafeZone();
         PopupManager.Instance.RegisterCanvasScalerForRotationScaling(_canvasScaler);
+        _loadingWheel.SetActive(true);
         await UniTask.WaitUntil(() => ApplicationManager.Instance.Initialized);
         
         var buttonDataList = ApplicationManager.Instance.GetDatabases()
@@ -74,6 +76,8 @@ public class MainMenu : MonoBehaviour {
         });
 
         UserDataManager.Instance.OnAuthChanged += RefreshButtons;
+        
+        _loadingWheel.SetActive(false);
 
         RefreshButtons();
     }
