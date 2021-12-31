@@ -13,12 +13,14 @@ public class ListSelectionPopup : Popup {
     public class PopupData {
         public IDataEntry Entry;
         public Tab CurrTab;
+        public List<string> ListsToCopy;
     }
 
     [SerializeField] private ToggleList _addToggleList = default;
     [SerializeField] private ToggleList _copyToggleList = default;
     [SerializeField] private ButtonElementList _deleteList = default;
     [SerializeField] private Button _closeButton = default;
+    [SerializeField] private Button _infoButton = default;
     [SerializeField] private Button _addListButton = default;
     [SerializeField] private Toggle _switchToAdd = default;
     [SerializeField] private Toggle _switchToCopy = default;
@@ -26,7 +28,7 @@ public class ListSelectionPopup : Popup {
     [SerializeField] private GameObject _addListContainer = default;
     [SerializeField] private GameObject _copyListContainer = default;
     [SerializeField] private GameObject _deleteListContainer = default;
-    private List<string> _toCopy = new List<string>();
+    private List<string> _listsToCopy = new List<string>();
     private IDataEntry _entry;
     private Database _db;
     private Tab _currTab;
@@ -51,6 +53,7 @@ public class ListSelectionPopup : Popup {
             _addListContainer.SetActive(isOn);
             _copyListContainer.SetActive(!isOn);
             _deleteListContainer.SetActive(!isOn);
+            _infoButton.gameObject.SetActive(false);
 
             PopulateAddRemoveList();
 
@@ -60,6 +63,15 @@ public class ListSelectionPopup : Popup {
             _addListContainer.SetActive(!isOn);
             _copyListContainer.SetActive(isOn);
             _deleteListContainer.SetActive(!isOn);
+            _infoButton.gameObject.SetActive(true);
+            _infoButton.onClick.RemoveAllListeners();
+            _infoButton.onClick.AddListener(async () => {
+                var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                msgPopup.Populate(
+                    "Selected elements will be copied into your clipboard, to the shared them just paste the text.\n" +
+                        "Your friend can copy that text and when they open the app they will be promted to add the lists.",
+                    "Copying Lists");
+            });
 
             PopulateCopyList();
 
@@ -69,6 +81,7 @@ public class ListSelectionPopup : Popup {
             _addListContainer.SetActive(!isOn);
             _copyListContainer.SetActive(!isOn);
             _deleteListContainer.SetActive(isOn);
+            _infoButton.gameObject.SetActive(false);
 
             PopulateDeleteList();
 
@@ -78,9 +91,10 @@ public class ListSelectionPopup : Popup {
         _addToggleList.OnPopulate += _ => _addListButton.transform.parent.SetAsLastSibling();
     }
 
-    public void Populate(IDataEntry entry, Tab currTab = Tab.Add) {
+    public void Populate(IDataEntry entry, Tab currTab = Tab.Add, List<string> listsToCopy = null) {
         _entry = entry;
         _currTab = currTab;
+        _listsToCopy = listsToCopy ?? _listsToCopy;
         _db = ApplicationManager.Instance.GetDatabase(entry);
 
         switch (_currTab) {
@@ -114,15 +128,15 @@ public class ListSelectionPopup : Popup {
 
     private void PopulateCopyList() {
         _copyToggleList.Populate(_db.Lists.Select(kvp => 
-            new ToggleData(kvp.Key, false, isOn => {
+            new ToggleData(kvp.Key, _listsToCopy.Contains(kvp.Key), isOn => {
                 if (isOn) {
-                    _toCopy.Add(kvp.Key);
+                    _listsToCopy.Add(kvp.Key);
                 } else {
-                    if (_toCopy.Contains(kvp.Key)) {
-                        _toCopy.Remove(kvp.Key);
+                    if (_listsToCopy.Contains(kvp.Key)) {
+                        _listsToCopy.Remove(kvp.Key);
                     }
                 }
-                var listsToCopy = _db.Lists.Where(l => _toCopy.Contains(l.Key));
+                var listsToCopy = _db.Lists.Where(l => _listsToCopy.Contains(l.Key));
                 _db.CopyToClipboard(listsToCopy);
             }))
         );
@@ -138,14 +152,18 @@ public class ListSelectionPopup : Popup {
     }
 
     public override object GetRestorationData() {
-        PopupData data = new PopupData { Entry = _entry, CurrTab = _currTab };
+        PopupData data = new PopupData {
+            Entry = _entry,
+            CurrTab = _currTab,
+            ListsToCopy = _listsToCopy
+        };
 
         return data;
     }
 
     public override void Restore(object data) {
         if (data is PopupData popupData) {
-            Populate(popupData.Entry, popupData.CurrTab);
+            Populate(popupData.Entry, popupData.CurrTab, popupData.ListsToCopy);
         }
     }
 }

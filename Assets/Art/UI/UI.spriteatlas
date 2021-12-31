@@ -63,6 +63,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 6abdb12b4e06b484faa054d912d10f4e, type: 3}
   - {fileID: 21300000, guid: bdc6f52bd41ed7a4b9b077f385ab8f7f, type: 3}
   - {fileID: 21300000, guid: 357a413be0e4c694cae118424b9e46b5, type: 3}
+  - {fileID: 21300000, guid: 6020fd3ca47c2324bb255c78f7d1b3e3, type: 3}
   - {fileID: 21300000, guid: 98fcc3ccddc9fff4f924b85260174a4f, type: 3}
   - {fileID: 21300000, guid: 1f56c22d379adaf46859a9aff9e19842, type: 3}
   - {fileID: 21300000, guid: b8f1844df6878f24f9c51c333e75e9f5, type: 3}
@@ -99,6 +100,7 @@ SpriteAtlas:
   - Back
   - Circle
   - Search
+  - Info Icon
   - Forbidden
   - Loading Border
   - DB Icon
