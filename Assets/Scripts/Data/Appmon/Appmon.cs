@@ -89,7 +89,12 @@ public class Appmon : ScriptableObject, IEvolvable {
         if (TypeIDs.Count > 0) {
             information.Add(new InformationData { Prefix = "Type" });
             for (int iType = 0; iType < TypeIDs.Count; ++iType) {
-                information.Add(new InformationData { Content = appmonDB.Types[TypeIDs[iType]].Name, IndentLevel = 1 });
+                AppmonType type = appmonDB.Types[TypeIDs[iType]];
+                information.Add(new InformationData {
+                    Content = type.Name,
+                    SpriteReference = type.Sprite, 
+                    IndentLevel = 1
+                });
             }
         }
    
