@@ -20,7 +20,19 @@ SpriteAtlas:
       readable: 0
       crunchedCompression: 0
       sRGB: 1
-    platformSettings: []
+    platformSettings:
+    - serializedVersion: 3
+      m_BuildTarget: WebGL
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: 29
+      m_TextureCompression: 1
+      m_CompressionQuality: 100
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 1
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
     packingSettings:
       serializedVersion: 2
       padding: 4
@@ -40,7 +52,6 @@ SpriteAtlas:
   m_PackedSprites:
   - {fileID: 21300000, guid: 9f51b9c0a622e924383fb3dedbee50f1, type: 3}
   - {fileID: 21300000, guid: 2f91ed1118a3da04283b1aab9437025d, type: 3}
-  - {fileID: 21300000, guid: 0fa86931d7ccd334eb4903dda213c871, type: 3}
   - {fileID: 21300000, guid: 5c9b77619ef8ae24f948c699e7e30622, type: 3}
   - {fileID: 21300000, guid: b327c8b12ae3e5c479c825d7492c0d66, type: 3}
   - {fileID: 21300000, guid: e03a42c1f3c9bfb4197ca0df3b0e1a7a, type: 3}
@@ -53,11 +64,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 0ed4df76bc0998c439883849b78051e6, type: 3}
   - {fileID: 21300000, guid: 94b13bd63efcfbb47aca3400d118b2c7, type: 3}
   - {fileID: 21300000, guid: 70150367f59effe41af51a71efb3505d, type: 3}
-  - {fileID: 21300000, guid: 543d8548fd288ae4e83cf1c8b0327da7, type: 3}
-  - {fileID: 21300000, guid: 7b342d784233c0643a5a58cb7167bb2e, type: 3}
-  - {fileID: 21300000, guid: bbd1b4f8547a44d4c8723980c11f6861, type: 3}
   - {fileID: 21300000, guid: 35991189482289447a31767289ead085, type: 3}
-  - {fileID: 21300000, guid: 0352f70a0e328604cb37b16669e45157, type: 3}
   - {fileID: 21300000, guid: bf49087a50ec0994b9c741fa75d54106, type: 3}
   - {fileID: 21300000, guid: abed23fad562d394bb12747f021ed734, type: 3}
   - {fileID: 21300000, guid: 6abdb12b4e06b484faa054d912d10f4e, type: 3}
@@ -77,7 +84,6 @@ SpriteAtlas:
   m_PackedSpriteNamesToIndex:
   - Rounded Square
   - Circle Border
-  - App Banner
   - Question Mark
   - Copy
   - Tab
@@ -90,11 +96,7 @@ SpriteAtlas:
   - Evolution Line
   - Arrow Thick
   - Missing Digimon
-  - App Icon Fg
-  - Title
-  - App Icon
   - Vertical Gradient
-  - App Icon Bg
   - Plus
   - Twitter Logo
   - Back
