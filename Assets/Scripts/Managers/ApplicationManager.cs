@@ -155,7 +155,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                 return _centralDB.DigimonDB;
             }
             case nameof(Appmon): {
-                return _centralDB.DigimonDB;
+                return _centralDB.AppmonDB;
             }
             default: {
                 Debug.LogError("Could not fetch database based on entry");
