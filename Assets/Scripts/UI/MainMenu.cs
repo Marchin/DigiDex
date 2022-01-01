@@ -13,7 +13,8 @@ public class MainMenu : MonoBehaviour {
     [SerializeField] private Button _settingsButton = default;
     [SerializeField] private Button _twitterButton = default;
     [SerializeField] private Button _igButton = default;
-    [SerializeField] private GameObject _loggingInGO = default;
+    [SerializeField] private Button _discordButton = default;
+    // [SerializeField] private GameObject _loggingInGO = default;
 
     private async void Start() {
         RefreshButtons();
@@ -92,6 +93,10 @@ public class MainMenu : MonoBehaviour {
             Application.OpenURL("https://www.instagram.com/digidex_app/");
         });
 
+        _discordButton.onClick.AddListener(() => {
+            Application.OpenURL("https://discord.gg/mfH42AMdj8");
+        });
+
         UserDataManager.Instance.OnAuthChanged += RefreshButtons;
         PopupManager.Instance.OnStackChange += RefreshButtons;
         
@@ -101,14 +106,14 @@ public class MainMenu : MonoBehaviour {
     }
 
     private void RefreshButtons() {
-        if (UserDataManager.Instance.IsUserLoggedIn) {
-            _loginButton.gameObject.SetActive(false);
-            _loggingInGO.gameObject.SetActive(false);
-        } else if (UserDataManager.Instance.IsLoggingIn) {
-            _loginButton.gameObject.SetActive(false);
-        } else {
-            _loginButton.gameObject.SetActive(true);
-            _loggingInGO.gameObject.SetActive(false);
-        }
+        // if (UserDataManager.Instance.IsUserLoggedIn) {
+        //     _loginButton.gameObject.SetActive(false);
+        //     _loggingInGO.gameObject.SetActive(false);
+        // } else if (UserDataManager.Instance.IsLoggingIn) {
+        //     _loginButton.gameObject.SetActive(false);
+        // } else {
+        //     _loginButton.gameObject.SetActive(true);
+        //     _loggingInGO.gameObject.SetActive(false);
+        // }
     }
 }

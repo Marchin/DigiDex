@@ -33,7 +33,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
             return;
         }
 
-        UserDataManager.Instance.Sync().Forget();
+        // UserDataManager.Instance.Sync().Forget();
 
         Initialized = true;
         CheckClipboard();
