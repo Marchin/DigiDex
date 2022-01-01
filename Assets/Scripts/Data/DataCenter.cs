@@ -32,8 +32,11 @@ public class EntryIndex : IEquatable<EntryIndex> {
     }
 
     public IDataEntry FetchEntryData() {
-        IDataEntry typeInstance = Activator.CreateInstance(Type.GetType(_typeName)) as IDataEntry;
-        IDataEntry result = ApplicationManager.Instance.GetDatabase(typeInstance).EntryDict[Hash];
+        MethodInfo method = typeof(ApplicationManager).GetMethod(nameof(ApplicationManager.Instance.GetDatabase),
+            new Type[0]);
+        MethodInfo generic = method.MakeGenericMethod(Type.GetType(_typeName));
+        Database db = generic.Invoke(ApplicationManager.Instance, null) as Database;
+        IDataEntry result = db?.EntryDict[Hash];
 
         return result;
     }
