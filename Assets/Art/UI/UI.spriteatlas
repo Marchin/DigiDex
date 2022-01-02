@@ -23,14 +23,14 @@ SpriteAtlas:
     platformSettings:
     - serializedVersion: 3
       m_BuildTarget: WebGL
-      m_MaxTextureSize: 2048
+      m_MaxTextureSize: 4096
       m_ResizeAlgorithm: 0
-      m_TextureFormat: 29
+      m_TextureFormat: 47
       m_TextureCompression: 1
       m_CompressionQuality: 100
       m_CrunchedCompression: 0
       m_AllowsAlphaSplitting: 0
-      m_Overridden: 1
+      m_Overridden: 0
       m_AndroidETC2FallbackOverride: 0
       m_ForceMaximumCompressionQuality_BC6H_BC7: 0
     packingSettings:
@@ -69,7 +69,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: abed23fad562d394bb12747f021ed734, type: 3}
   - {fileID: 21300000, guid: b1d57e0b71316cc4b9c3f3d5f42dac69, type: 3}
   - {fileID: 21300000, guid: 6abdb12b4e06b484faa054d912d10f4e, type: 3}
-  - {fileID: 21300000, guid: bdc6f52bd41ed7a4b9b077f385ab8f7f, type: 3}
   - {fileID: 21300000, guid: 357a413be0e4c694cae118424b9e46b5, type: 3}
   - {fileID: 21300000, guid: 6020fd3ca47c2324bb255c78f7d1b3e3, type: 3}
   - {fileID: 21300000, guid: 98fcc3ccddc9fff4f924b85260174a4f, type: 3}
@@ -102,7 +101,6 @@ SpriteAtlas:
   - Twitter Logo
   - Discord Logo
   - Back
-  - Circle
   - Search
   - Info Icon
   - Forbidden
