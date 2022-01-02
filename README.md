@@ -1,5 +1,5 @@
 # DigiDex
-A database for all things digimon!
+A database app for Digimon!
 
 Download Link: https://digidex.itch.io/app
 
@@ -15,7 +15,7 @@ Navigate through their's evolutions:
 
 ![Digimon Evolutions](https://github.com/Marchin/DigiDex/blob/master/Screenshots/Screenshot%20Evolution%20Popup.png?raw=true)
 
-You can use filters for a more precise searh:
+You can use filters for a more precise search:
 
 ![Digimon Evolutions](https://github.com/Marchin/DigiDex/blob/master/Screenshots/Screenshot%20Filter%20Popup.png?raw=true)
 
