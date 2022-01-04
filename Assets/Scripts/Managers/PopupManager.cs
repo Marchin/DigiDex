@@ -152,7 +152,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
 
     private async void RefreshScaler() {
         RefreshReferenceResolution();
-        if (_loadingPopup || ActivePopup == null) return;
+        if (_loadingPopup || ActivePopup == null || _stack.Count <= 0) return;
 
         if (ActivePopup.Vertical != IsScreenOnPortrait) {
             var handle = ApplicationManager.Instance.DisplayLoadingScreen();
@@ -171,6 +171,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 }
             }
 
+            lastVisiblePopup = Mathf.Min(_stack.Count - 1, lastVisiblePopup);
             int counter = lastVisiblePopup;
             Popup popup = _stack[lastVisiblePopup];
             while (counter >= 0) {
