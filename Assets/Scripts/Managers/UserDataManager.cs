@@ -308,7 +308,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         try {
             KeyValuePair<string, string> parsedData = JsonConvert.DeserializeObject<KeyValuePair<string, string>>(data);
             var dbs = ApplicationManager.Instance.GetDatabases();
-            db = dbs.FirstOrDefault(d => d.DisplayName == parsedData.Key);
+            db = dbs.FirstOrDefault(d => d.DataKey == parsedData.Key);
             if (db != default) {
                 parsedList = db.ParseListData(parsedData.Value);
             } else {

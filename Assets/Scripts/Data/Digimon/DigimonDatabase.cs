@@ -2,7 +2,8 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class DigimonDatabase : Database {
-    public override string DisplayName => "Digimons";
+    public override string DisplayName => "Digimon";
+    public override string DataKey => "Digimons";
 
     private const string FieldsFilter = "Fields";
     private const string AttributesFilter = "Attributes";

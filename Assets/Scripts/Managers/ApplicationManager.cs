@@ -105,14 +105,14 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                 
                 if (newLists.Count() > 0) {
                     listDetected = true;
-                    Debug.LogWarning("New lists");
                     StringBuilder sb = new StringBuilder();
                     foreach (var list in newLists) {
-                        sb.AppendLine(list.Key);
+                        sb.AppendLine($"· {list.Key}");
                     }
                     var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                     msgPopup.ShowCloseButton = false;
                     List<ButtonData> buttons = new List<ButtonData>(2);
+                    buttons.Add(new ButtonData { Text = "No", Callback = PopupManager.Instance.Back });
                     buttons.Add(new ButtonData { Text = "Yes", Callback = () => {
                         foreach (var list in newLists) {
                             foreach (var entry in list.Value) {
@@ -121,7 +121,6 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                         }
                         PopupManager.Instance.Back();
                     }});
-                    buttons.Add(new ButtonData { Text = "No", Callback = PopupManager.Instance.Back });
                     msgPopup.Populate(sb.ToString(), "Add List", null, buttonDataList: buttons);
 
                     await UniTask.WaitWhile(() => msgPopup.gameObject.activeSelf);
