@@ -98,7 +98,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                                     }
                                 }
                             );
-                            await UniTask.WaitWhile(() => inputPopup.gameObject.activeSelf);
+                            await UniTask.WaitWhile(() => (inputPopup != null) && inputPopup.gameObject.activeSelf);
                         }
                     }
                 }
@@ -123,7 +123,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                     }});
                     msgPopup.Populate(sb.ToString(), "Add List", null, buttonDataList: buttons);
 
-                    await UniTask.WaitWhile(() => msgPopup.gameObject.activeSelf);
+                    await UniTask.WaitWhile(() => (msgPopup != null) && msgPopup.gameObject.activeSelf);
                 }
             }
             _checkingClipboard = false;
