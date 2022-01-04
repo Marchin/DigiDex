@@ -161,6 +161,9 @@ public class EntryViewPopup : Popup {
             _dataScroll.verticalScrollbarVisibility =
                 ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
         }).Forget();
+        
+        _dataToggle.isOn = false;
+        _dataToggle.isOn = true;
 
         OnPopulate?.Invoke(_entry);
         RefreshFavoriteButton();
