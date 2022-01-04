@@ -55,6 +55,7 @@ public class ListSelectionPopup : Popup {
             _addListContainer.SetActive(isOn);
             _copyListContainer.SetActive(!isOn);
             _deleteListContainer.SetActive(!isOn);
+            _pasteListButton.gameObject.SetActive(Application.platform == RuntimePlatform.WebGLPlayer);
             _infoButton.gameObject.SetActive(false);
 
             PopulateAddRemoveList();
@@ -65,6 +66,7 @@ public class ListSelectionPopup : Popup {
             _addListContainer.SetActive(!isOn);
             _copyListContainer.SetActive(isOn);
             _deleteListContainer.SetActive(!isOn);
+            _pasteListButton.gameObject.SetActive(false);
             _infoButton.gameObject.SetActive(true);
             _infoButton.onClick.RemoveAllListeners();
             _infoButton.onClick.AddListener(async () => {
@@ -83,6 +85,7 @@ public class ListSelectionPopup : Popup {
             _addListContainer.SetActive(!isOn);
             _copyListContainer.SetActive(!isOn);
             _deleteListContainer.SetActive(isOn);
+            _pasteListButton.gameObject.SetActive(false);
             _infoButton.gameObject.SetActive(false);
 
             PopulateDeleteList();
@@ -90,7 +93,6 @@ public class ListSelectionPopup : Popup {
             _currTab = Tab.Delete;
         });
 
-        _pasteListButton.gameObject.SetActive(Application.platform == RuntimePlatform.WebGLPlayer);
         _pasteListButton.onClick.AddListener(async () => {
             var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
             inputPopup.Populate(
