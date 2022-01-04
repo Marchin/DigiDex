@@ -32,10 +32,7 @@ public class MessagePopup : Popup {
     public bool ShowCloseButton {
         get => _closeButton.transform.parent.gameObject.activeSelf;
         set {
-            _closeButton.transform.parent.gameObject.SetActive(value);
-            if (!Vertical) {
-                _title.alignment = value ? TextAlignmentOptions.Right : TextAlignmentOptions.Center;
-            }
+            _closeButton.gameObject.SetActive(value);
         }
     }
 
