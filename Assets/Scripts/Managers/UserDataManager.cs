@@ -314,8 +314,9 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
             } else {
                 isValid = false;
             }
-        } catch {
+        } catch (Exception ex) {
             isValid = false;
+            Debug.LogError($"{ex.Message} - {ex.Message}");
         }
 
         return isValid;

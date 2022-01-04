@@ -39,9 +39,7 @@ public class InputPopup : Popup {
         OnConfirm = onConfirm;
         _confirmButton.onClick.RemoveAllListeners();
         _confirmButton.onClick.AddListener(() => {
-            if (!string.IsNullOrEmpty(_input.text)) {
-                OnConfirm(_input.text);
-            }
+            OnConfirm(_input.text);
         });
     }
 

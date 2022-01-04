@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public class ListSelectionPopup : Popup {
     public enum Tab {
@@ -28,6 +29,7 @@ public class ListSelectionPopup : Popup {
     [SerializeField] private GameObject _addListContainer = default;
     [SerializeField] private GameObject _copyListContainer = default;
     [SerializeField] private GameObject _deleteListContainer = default;
+    [SerializeField] private Button _pasteListButton = default;
     private List<string> _listsToCopy = new List<string>();
     private IDataEntry _entry;
     private Database _db;
@@ -38,12 +40,12 @@ public class ListSelectionPopup : Popup {
         _addListButton.onClick.AddListener(async () => {
             var popup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
             popup.Populate("Enter the new list name", "Add List", async name => {
-                if (!_db.Lists.ContainsKey(name)) {
+                if (!string.IsNullOrEmpty(name) && !_db.Lists.ContainsKey(name)) {
                     _db.AddEntryToList(name, _entry.Hash);
                     PopupManager.Instance.Back();
                 } else {
                     var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
-                    msgPopup.Populate("List name already exists", "Name Conflict");
+                    msgPopup.Populate("Name is empty or already in use, please try another one", "Try Again");
                 }
                 PopulateAddRemoveList();
             });
@@ -86,6 +88,23 @@ public class ListSelectionPopup : Popup {
             PopulateDeleteList();
 
             _currTab = Tab.Delete;
+        });
+
+        _pasteListButton.gameObject.SetActive(Application.platform == RuntimePlatform.WebGLPlayer);
+        _pasteListButton.onClick.AddListener(async () => {
+            var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
+            inputPopup.Populate(
+                "If you've copied someone else's list paste it here down below:",
+                "Paste List",
+                async input => {
+                    bool validInput = await ApplicationManager.Instance.CheckClipboard();
+                    if (!validInput) {
+                        var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                        msgPopup.Populate("No list detected", "No List");
+                        await UniTask.WaitWhile(() => msgPopup != null && msgPopup.gameObject.activeSelf);
+                    }
+                    PopupManager.Instance.Back();
+                });
         });
 
         _addToggleList.OnPopulate += _ => _addListButton.transform.parent.SetAsLastSibling();

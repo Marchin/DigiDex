@@ -36,24 +36,27 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         // UserDataManager.Instance.Sync().Forget();
 
         Initialized = true;
-        CheckClipboard();
+        _ = CheckClipboard();
     }
 
     private void OnApplicationFocus(bool focus) {
-        if (Initialized && focus) {
-            CheckClipboard();
+        if (Initialized && focus && (Application.platform != RuntimePlatform.WebGLPlayer)) {
+            _ = CheckClipboard();
         }
     }
 
-    private async void CheckClipboard() {
-        if (!_checkingClipboard && (GUIUtility.systemCopyBuffer != _lastCopyText)) {
+    public async UniTask<bool> CheckClipboard() {
+        bool listDetected = false;
+        string copiedText = GUIUtility.systemCopyBuffer;
+        if (!_checkingClipboard && (copiedText != _lastCopyText)) {
             _checkingClipboard = true;
-            _lastCopyText = GUIUtility.systemCopyBuffer;
+            _lastCopyText = copiedText;
             PlayerPrefs.SetString(LastClipboardPref, _lastCopyText);
-            if (UserDataManager.Instance.IsValidData(GUIUtility.systemCopyBuffer, out var db, out var data)) {
+            if (UserDataManager.Instance.IsValidData(copiedText, out var db, out var data)) {
                 var newLists = data.Where(l => !db.Lists.ContainsKey(l.Key));
                 var listsInConflict = data.Except(newLists);
                 if (listsInConflict.Count() > 0) {
+                    listDetected = true;
                     foreach (var list in listsInConflict)  {
                         const string NameConflict = "Name Conflict";
 
@@ -66,11 +69,11 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                         var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                         msgPopup.ShowCloseButton = false;
                         List<ButtonData> buttons = new List<ButtonData>(2);
+                        buttons.Add(new ButtonData { Text = "No", Callback = PopupManager.Instance.Back });
                         buttons.Add(new ButtonData { Text = "Yes", Callback = () => {
                             renameList = true;
                             PopupManager.Instance.Back();
                         }});
-                        buttons.Add(new ButtonData { Text = "No", Callback = PopupManager.Instance.Back });
                         msgPopup.Populate(
                             $"There's already a list called {list.Key}," + 
                                 " do you want to rename the new one and add it?",
@@ -83,12 +86,15 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                             var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
                                 inputPopup.Populate($"{list.Key} is already in use please select a new name",
                                 NameConflict,
-                                name => {
-                                    if (!db.Lists.Keys.Contains(name)) {
+                                async name => {
+                                    if (!string.IsNullOrEmpty(name) && !db.Lists.Keys.Contains(name)) {
                                         foreach (var entry in list.Value) {
                                             db.AddEntryToList(name, entry);
                                         }
                                         PopupManager.Instance.Back();
+                                    } else {
+                                        var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                                        msgPopup.Populate("Name is empty or already in use, please try another one", "Try Again");
                                     }
                                 }
                             );
@@ -98,6 +104,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                 }
                 
                 if (newLists.Count() > 0) {
+                    listDetected = true;
                     Debug.LogWarning("New lists");
                     StringBuilder sb = new StringBuilder();
                     foreach (var list in newLists) {
@@ -122,6 +129,8 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
             }
             _checkingClipboard = false;
         }
+
+        return listDetected;
     }
     
     public void SaveClipboard(string data) {

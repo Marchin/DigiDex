@@ -58,6 +58,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: ab90b0924ca34a048bf9f5a6edcd07de, type: 3}
   - {fileID: 21300000, guid: 9049cdb2a28bb4647a9400bdda607ade, type: 3}
   - {fileID: 21300000, guid: cfd7b823b76c26248817d3ab26498c59, type: 3}
+  - {fileID: 21300000, guid: 2ad3d233864cf354aa7832bf46d69ccb, type: 3}
   - {fileID: 21300000, guid: d8bc289333dd90c44af3710cacfeefa3, type: 3}
   - {fileID: 21300000, guid: 370a4584b57fe904f8c7579cdb96118c, type: 3}
   - {fileID: 21300000, guid: 441331b5dc1571f4e8571ebeaf3ad2cb, type: 3}
@@ -90,6 +91,7 @@ SpriteAtlas:
   - Details Icon
   - Checkmark
   - Rounded Square Big
+  - Paste Icon
   - Circle Gradient
   - Button
   - Cog
