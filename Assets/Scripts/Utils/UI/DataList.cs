@@ -197,6 +197,10 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
     }
 
     public void ScrollTo(int index) {
+        if ((_data == null) || (_scroll == null)) {
+            return;
+        }
+
         index = Mathf.Clamp(index, 0, _data.Count - 1);
         int scrolled = Mathf.Min(index, _data.Count - _elements.Count);
         _baseIndex = index;
