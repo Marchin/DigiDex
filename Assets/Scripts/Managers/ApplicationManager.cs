@@ -106,6 +106,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                 if (newLists.Count() > 0) {
                     listDetected = true;
                     StringBuilder sb = new StringBuilder();
+                    sb.AppendLine($"Add the following {db.DisplayName} lists:");
                     foreach (var list in newLists) {
                         sb.AppendLine($"· {list.Key}");
                     }
