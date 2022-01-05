@@ -57,10 +57,10 @@ public abstract class Database : ScriptableObject {
         if (ListsInternal.ContainsKey(list)) {
             var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
             List<ButtonData> buttons = new List<ButtonData>();
-            buttons.Add(new ButtonData("No", PopupManager.Instance.Back));
+            buttons.Add(new ButtonData("No", () => _ = PopupManager.Instance.Back()));
             buttons.Add(new ButtonData("Yes", () => {
                 ListsInternal.Remove(list);
-                PopupManager.Instance.Back();
+                _ = PopupManager.Instance.Back();
                 SaveLists();
             }));
             msgPopup.Populate($"Delete '{list}' list?", "Delete List", buttonDataList: buttons);
@@ -89,12 +89,15 @@ public abstract class Database : ScriptableObject {
         return hashesList;
     }
 
-    public void CopyToClipboard(IEnumerable<KeyValuePair<string, HashSet<Hash128>>> lists) {
+    public string ConvertListsToText(IEnumerable<KeyValuePair<string, HashSet<Hash128>>> lists) {
+        string result = "";
+
         if (lists != null) {
             var serializable = lists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
             string jsonListData = JsonConvert.SerializeObject(serializable);
-            string copyData = JsonConvert.SerializeObject(new KeyValuePair<string, string>(DataKey, jsonListData));
-            ApplicationManager.Instance.SaveClipboard(copyData);
+            result = JsonConvert.SerializeObject(new KeyValuePair<string, string>(DataKey, jsonListData));
         }
+
+        return result;
     }
 }

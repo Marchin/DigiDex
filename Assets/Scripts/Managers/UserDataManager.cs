@@ -114,7 +114,6 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                         if (_dataDict.Count > 0 && saveFileLocation.ModifiedTime.Value.Ticks != localModifiedTime) {
                             if (localModifiedTime > lastLocalUploadTime) {
                                 var popup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
-                                popup.ShowCloseButton = false;
                                 ToggleData keepCopyToggle = new ToggleData { Name = "Keep a copy", IsOn = true };
                                 Action keepLocal = async () => {
                                     if (keepCopyToggle.IsOn) {
@@ -139,7 +138,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                     _dataOnLoad = jsonData;
                                     _userConfirmedData = true;
                                     RefreshDataDate(file.ModifiedTime.Value);
-                                    PopupManager.Instance.Back();
+                                    _ = PopupManager.Instance.Back();
                                     IsLoggingIn = false;
                                     OnAuthChanged?.Invoke();
                                     loadingScreenHandle.Complete();
@@ -159,7 +158,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                     _dataOnLoad = jsonData;
                                     _userConfirmedData = true;
                                     RefreshDataDate(saveFileLocation.ModifiedTime.Value);
-                                    PopupManager.Instance.Back();
+                                    _ = PopupManager.Instance.Back();
                                     IsLoggingIn = false;
                                     OnAuthChanged?.Invoke();
                                     loadingWheelHandle.Complete();
@@ -172,6 +171,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 toggles.Add(keepCopyToggle);
                                 string msg = "There's a newer version of your data, which one you want to use?";
                                 popup.Populate(msg, "Data Conflict", buttonDataList: buttons, toggleDataList: toggles);
+                                popup.ShowCloseButton = false;
                             } else {
                                 string jsonData = Encoding.ASCII.GetString(fileData.Content);
                                 _dataDict = ParseFileData(jsonData);

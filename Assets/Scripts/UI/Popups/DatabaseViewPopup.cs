@@ -119,7 +119,7 @@ public class DatabaseViewPopup : Popup {
         _searchInput.onValueChanged.AddListener(OnInputChanged);
         _clearSearch.onClick.AddListener(() => _searchInput.text = "");
 
-        _closeButton.onClick.AddListener(PopupManager.Instance.Back);
+        _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
         _profileButton.onClick.AddListener(() => {
             PopupManager.Instance.GetOrLoadPopup<EntryViewPopup>(restore: false).ContinueWith(popup => {
                 Action prev = null;

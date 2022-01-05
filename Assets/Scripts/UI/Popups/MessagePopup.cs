@@ -37,7 +37,7 @@ public class MessagePopup : Popup {
     }
 
     private void Awake() {
-        _closeButton.onClick.AddListener(PopupManager.Instance.Back);
+        _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
     }
 
     public void Populate(
@@ -57,6 +57,7 @@ public class MessagePopup : Popup {
             Addressables.Release(_spriteHandle);
         }
 
+        ShowCloseButton = true;
         _content.text = message;
         _content.gameObject.SetActive(!string.IsNullOrEmpty(_content.text));
         _title.text = string.IsNullOrEmpty(title) ? "Message" : title;

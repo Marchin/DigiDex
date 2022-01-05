@@ -58,7 +58,7 @@ public class EntryViewPopup : Popup {
             var popup = await PopupManager.Instance.GetOrLoadPopup<EvolutionsPopup>();
             popup.Populate(_entry, _currEvolutionData);
         });
-        _closeButton.onClick.AddListener(PopupManager.Instance.Back);
+        _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
         _prevButton.onClick.AddListener(() => _prev?.Invoke());
         _nextButton.onClick.AddListener(() => _next?.Invoke());
         _dbViewButton.onClick.AddListener(() =>

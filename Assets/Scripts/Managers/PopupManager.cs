@@ -27,6 +27,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     public event Action OnRotation;
     private List<PopupRestorationData> _restorationData = new List<PopupRestorationData>();
     private bool _loadingPopup;
+    public bool ClosingPopup { get; private set; }
     public bool IsScreenOnPortrait => (Screen.height > Screen.width);
     private ScreenOrientation _lastDeviceOrientation;
     private Vector2 _lastScreenSize;
@@ -217,8 +218,14 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         }
     }
 
-    public async void Back() {
+    public async UniTask Back() {
+        if (ClosingPopup) {
+            Debug.LogWarning("A popup is already being closed");
+            return;
+        }
+
         if (ActivePopup != null) {
+            ClosingPopup = true;
             int startingIndex = -1;
             if (_restorationData.Count > 0) {
                 startingIndex = 0;
@@ -254,6 +261,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 CloseActivePopup();
             }
 
+            ClosingPopup = false;
             OnStackChange?.Invoke();
         } else {
             UnityUtils.Quit();

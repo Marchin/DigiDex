@@ -1546,6 +1546,7 @@ MonoBehaviour:
   FullScreen: 0
   _title: {fileID: 5680732245824138026}
   _message: {fileID: 5499316501825924408}
+  _confirmButtonText: {fileID: 8777154106164381463}
   _input: {fileID: 4490574008387976264}
   _confirmButton: {fileID: 7603547642427846753}
   _closeButton: {fileID: 4901826957218704990}

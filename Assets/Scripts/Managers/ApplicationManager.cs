@@ -16,13 +16,10 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     private List<Handle> _loadingWheelHandles = new List<Handle>();
     private List<Handle> _inputLockingHandles = new List<Handle>();
     private DataCenter _centralDB;
-    private string _lastCopyText;
     private bool _checkingClipboard;
     public bool Initialized { get; private set; }
     
     private async void Start() {
-        _lastCopyText = PlayerPrefs.GetString(LastClipboardPref, "");
-
         await Addressables.InitializeAsync();
 
         _centralDB = await Addressables.LoadAssetAsync<DataCenter>(
@@ -36,51 +33,47 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         // UserDataManager.Instance.Sync().Forget();
 
         Initialized = true;
-        _ = CheckClipboard();
     }
 
-    private void OnApplicationFocus(bool focus) {
-        if (Initialized && focus && (Application.platform != RuntimePlatform.WebGLPlayer)) {
-            _ = CheckClipboard();
-        }
-    }
-
-    public async UniTask<bool> CheckClipboard() {
+    public async UniTask<bool> ParseLists(string input) {
         bool listDetected = false;
-        string copiedText = GUIUtility.systemCopyBuffer;
-        if (!_checkingClipboard && (copiedText != _lastCopyText)) {
+        if (!_checkingClipboard) {
             _checkingClipboard = true;
-            _lastCopyText = copiedText;
-            PlayerPrefs.SetString(LastClipboardPref, _lastCopyText);
-            if (UserDataManager.Instance.IsValidData(copiedText, out var db, out var data)) {
+            if (UserDataManager.Instance.IsValidData(input, out var db, out var data)) {
                 var newLists = data.Where(l => !db.Lists.ContainsKey(l.Key));
                 var listsInConflict = data.Except(newLists);
                 if (listsInConflict.Count() > 0) {
                     listDetected = true;
+                    
+                    List<string> skippedLists = new List<string>();
+                    MessagePopup msgPopup = null;
                     foreach (var list in listsInConflict)  {
                         const string NameConflict = "Name Conflict";
 
                         bool areEqual = list.Value.Except(db.Lists[list.Key]).Count() == 0;
                         if (areEqual) {
+                            skippedLists.Add(list.Key);
                             continue;
                         }
 
                         bool renameList = false;
-                        var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
-                        msgPopup.ShowCloseButton = false;
+                        msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                         List<ButtonData> buttons = new List<ButtonData>(2);
-                        buttons.Add(new ButtonData { Text = "No", Callback = PopupManager.Instance.Back });
-                        buttons.Add(new ButtonData { Text = "Yes", Callback = () => {
+                        buttons.Add(new ButtonData { Text = "No", Callback = async () => { await PopupManager.Instance.Back(); }});
+                        buttons.Add(new ButtonData { Text = "Yes", Callback = async () => {
                             renameList = true;
-                            PopupManager.Instance.Back();
+                            await PopupManager.Instance.Back();
                         }});
                         msgPopup.Populate(
                             $"There's already a list called {list.Key}," + 
                                 " do you want to rename the new one and add it?",
                             NameConflict,
                             buttonDataList: buttons);
+                        msgPopup.ShowCloseButton = false;
 
-                        await UniTask.WaitWhile(() => PopupManager.Instance.ActivePopup == msgPopup);
+                        await UniTask.WaitWhile(() =>
+                            ((msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup)) ||
+                            PopupManager.Instance.ClosingPopup);
 
                         if (renameList) {
                             var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
@@ -91,16 +84,30 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                                         foreach (var entry in list.Value) {
                                             db.AddEntryToList(name, entry);
                                         }
-                                        PopupManager.Instance.Back();
+                                        await PopupManager.Instance.Back();
                                     } else {
                                         var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                                         msgPopup.Populate("Name is empty or already in use, please try another one", "Try Again");
+                                        await UniTask.WaitWhile(() => (msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup));
                                     }
                                 }
                             );
-                            await UniTask.WaitWhile(() => (inputPopup != null) && inputPopup.gameObject.activeSelf);
+                            await UniTask.WaitWhile(() =>
+                                ((inputPopup != null) && inputPopup.gameObject.activeSelf) ||
+                                PopupManager.Instance.ClosingPopup);
                         }
                     }
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine($"You already have these exact same lists:");
+                    foreach (var list in skippedLists) {
+                        sb.AppendLine($"· {list}");
+                    }
+                    msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                    msgPopup.Populate(sb.ToString(), "Skipped List");
+                    await UniTask.WaitWhile(() =>
+                        ((msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup)) ||
+                        PopupManager.Instance.ClosingPopup);
                 }
                 
                 if (newLists.Count() > 0) {
@@ -111,32 +118,28 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
                         sb.AppendLine($"· {list.Key}");
                     }
                     var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
-                    msgPopup.ShowCloseButton = false;
                     List<ButtonData> buttons = new List<ButtonData>(2);
-                    buttons.Add(new ButtonData { Text = "No", Callback = PopupManager.Instance.Back });
+                    buttons.Add(new ButtonData { Text = "No", Callback = () => { _ = PopupManager.Instance.Back(); }});
                     buttons.Add(new ButtonData { Text = "Yes", Callback = () => {
                         foreach (var list in newLists) {
                             foreach (var entry in list.Value) {
                                 db.AddEntryToList(list.Key, entry);
                             }
                         }
-                        PopupManager.Instance.Back();
+                        _ = PopupManager.Instance.Back();
                     }});
                     msgPopup.Populate(sb.ToString(), "Add List", null, buttonDataList: buttons);
+                    msgPopup.ShowCloseButton = false;
 
-                    await UniTask.WaitWhile(() => (msgPopup != null) && msgPopup.gameObject.activeSelf);
+                    await UniTask.WaitWhile(() =>
+                        ((msgPopup != null) && msgPopup.gameObject.activeSelf) ||
+                        PopupManager.Instance.ClosingPopup);
                 }
             }
             _checkingClipboard = false;
         }
 
         return listDetected;
-    }
-    
-    public void SaveClipboard(string data) {
-        _lastCopyText = data;
-        PlayerPrefs.SetString(LastClipboardPref, _lastCopyText);
-        GUIUtility.systemCopyBuffer = data;
     }
 
     public Database GetDatabase(IDataEntry entry) {
@@ -177,7 +180,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     
     private void Update() {
         if (Input.GetKeyDown(KeyCode.Escape)) {
-            PopupManager.Instance.Back();
+            _ = PopupManager.Instance.Back();
         }
     }
 

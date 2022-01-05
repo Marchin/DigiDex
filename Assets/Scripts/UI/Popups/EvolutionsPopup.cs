@@ -159,7 +159,7 @@ public class EvolutionsPopup : Popup {
         });
         _glossaryButton.onClick.AddListener(() =>
             PopupManager.Instance.GetOrLoadPopup<EvolutionGlossaryPopup>().Forget());
-        _closeButton.onClick.AddListener(PopupManager.Instance.Back);
+        _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
         _dbViewButton.onClick.AddListener(() => PopupManager.Instance.ClearStackUntilPopup<DatabaseViewPopup>());
         _evolutionList.OnRefresh += RefreshSelected;
         _loadingWheel.SetActive(false);

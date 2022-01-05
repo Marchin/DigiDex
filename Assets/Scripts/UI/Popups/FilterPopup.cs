@@ -22,10 +22,10 @@ public class FilterPopup : Popup {
     private FilterCallback ApplyCallback;
 
     private void Awake() {
-        _closeButton.onClick.AddListener(PopupManager.Instance.Back);
+        _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
         _applyButton.onClick.AddListener(() => {
             ApplyCallback?.Invoke(_filters, _toggles);
-            PopupManager.Instance.Back();
+            _ = PopupManager.Instance.Back();
         });
         _clearButton.onClick.AddListener(() => {
             if (_filters != null) {

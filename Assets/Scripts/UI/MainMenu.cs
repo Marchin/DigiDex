@@ -37,7 +37,7 @@ public class MainMenu : MonoBehaviour {
         _loginButton.onClick.AddListener(async () => {
             List<ButtonData> buttonList = new List<ButtonData>() {
                 new ButtonData("Log In", async () => {
-                    PopupManager.Instance.Back();
+                    _ = PopupManager.Instance.Back();
                     await UserDataManager.Instance.Login();
                 })
             };

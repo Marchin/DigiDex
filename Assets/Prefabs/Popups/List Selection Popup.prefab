@@ -2516,7 +2516,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 6020fd3ca47c2324bb255c78f7d1b3e3,
+      objectReference: {fileID: 21300000, guid: b327c8b12ae3e5c479c825d7492c0d66,
         type: 3}
     - target: {fileID: 1444292468562602827, guid: f6274ff293d431b43b989d8cb3d3cf06,
         type: 3}
@@ -2651,7 +2651,7 @@ PrefabInstance:
     - target: {fileID: 1444292469898643355, guid: f6274ff293d431b43b989d8cb3d3cf06,
         type: 3}
       propertyPath: m_Name
-      value: Info Button
+      value: Copy Button
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_AddedGameObjects: []
@@ -3207,7 +3207,7 @@ MonoBehaviour:
   _copyToggleList: {fileID: 4958223440191018787}
   _deleteList: {fileID: 5866424242248430462}
   _closeButton: {fileID: 4243175906922614250}
-  _infoButton: {fileID: 1642130959276848581}
+  _copyListsButton: {fileID: 1642130959276848581}
   _addListButton: {fileID: 7757688221138446578}
   _switchToAdd: {fileID: 203429469479908616}
   _switchToCopy: {fileID: 545534905823984886}
@@ -3215,7 +3215,7 @@ MonoBehaviour:
   _addListContainer: {fileID: 8792586733187831355}
   _copyListContainer: {fileID: 6087798555389632587}
   _deleteListContainer: {fileID: 3367905457600550052}
-  _pasteListButton: {fileID: 8942450880815454928}
+  _pasteListsButton: {fileID: 8942450880815454928}
 --- !u!1001 &2520709609610267775
 PrefabInstance:
   m_ObjectHideFlags: 0

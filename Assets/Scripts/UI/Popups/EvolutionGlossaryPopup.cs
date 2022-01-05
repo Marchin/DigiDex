@@ -25,7 +25,7 @@ public class EvolutionGlossaryPopup : Popup {
 
         _list.Populate(dataList);
 
-        _closeButton.onClick.AddListener(PopupManager.Instance.Back);
+        _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
     }
 
     

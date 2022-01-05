@@ -11,13 +11,14 @@ public class InputPopup : Popup {
     }
     [SerializeField] private TextMeshProUGUI _title = default;
     [SerializeField] private TextMeshProUGUI _message = default;
+    [SerializeField] private TextMeshProUGUI _confirmButtonText = default;
     [SerializeField] private InputField _input = default;
     [SerializeField] private Button _confirmButton = default;
     [SerializeField] private Button _closeButton = default;
     private Action<string> OnConfirm;
 
     private void Awake() {
-        _closeButton.onClick.AddListener(PopupManager.Instance.Back);
+        _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
     }
 
     private void OnEnable() {
@@ -33,13 +34,23 @@ public class InputPopup : Popup {
         _input.enabled = true;
     }
 
-    public void Populate(string message, string title, Action<string> onConfirm) {
+    public void Populate(
+        string message, string title, 
+        Action<string> onConfirm,
+        string buttonText = "Confirm",
+        string inputText = "",
+        bool readOnly = false
+    ) {
         _message.text = message;
         _title.text = title;
         OnConfirm = onConfirm;
+        _confirmButtonText.text = buttonText;
+        _input.text = inputText;
+        _input.readOnly = readOnly;
+        _confirmButton.gameObject.SetActive(onConfirm != null);
         _confirmButton.onClick.RemoveAllListeners();
         _confirmButton.onClick.AddListener(() => {
-            OnConfirm(_input.text);
+            OnConfirm?.Invoke(_input.text);
         });
     }
 

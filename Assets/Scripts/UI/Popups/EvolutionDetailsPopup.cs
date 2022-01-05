@@ -33,7 +33,7 @@ public class EvolutionDetailsPopup : Popup {
     private PopupData _popupData;
 
     private void Awake() {
-        _close.onClick.AddListener(PopupManager.Instance.Back);
+        _close.onClick.AddListener(() => _ = PopupManager.Instance.Back());
     }
 
     public void Populate(IDataEntry source, Evolution evolutionInfo, bool isPreEvolution) {
