@@ -55,7 +55,7 @@ public class EntryViewPopup : Popup {
     
     private void Awake() {
         _evolutionButton.onClick.AddListener(async () => {
-            var popup = await PopupManager.Instance.GetOrLoadPopup<EvolutionsPopup>(restore: true);
+            var popup = await PopupManager.Instance.GetOrLoadPopup<EvolutionsPopup>();
             popup.Populate(_entry, _currEvolutionData);
         });
         _closeButton.onClick.AddListener(PopupManager.Instance.Back);
@@ -79,7 +79,7 @@ public class EntryViewPopup : Popup {
         });
         
         _favoriteButton.onClick.AddListener(async () => {
-            var popup = await PopupManager.Instance.GetOrLoadPopup<ListSelectionPopup>();
+            var popup = await PopupManager.Instance.GetOrLoadPopup<ListSelectionPopup>(restore: false);
             popup.Populate(_entry);
         });
     }
@@ -122,7 +122,6 @@ public class EntryViewPopup : Popup {
         _profileScroll.verticalNormalizedPosition = 1f;
     
         _profile.text = _entry.Profile;
-        // _favoriteButton.isOn = _db.Lists.Contains(entry.Hash);
         List<InformationData> informationData = entry.ExtractInformationData();
         _info.Populate(informationData);
         if (entry.Sprite.RuntimeKeyIsValid()) {
