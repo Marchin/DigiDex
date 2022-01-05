@@ -266,16 +266,6 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         } else {
             UnityUtils.Quit();
         }
-
-        void CloseActivePopup() {
-            foreach (var popup in _stack) {
-                if (popup.gameObject.activeSelf) {
-                    popup.OnClose();
-                    popup.gameObject.SetActive(false);
-                    break;
-                }
-            }
-        }
     }
 
     public async void ClearStackUntilPopup<T>() where T : Popup {
@@ -283,28 +273,30 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             return;
         }
 
-        while (ActivePopup != null && ActivePopup.GetType() != typeof(T)) {
-            PopupRestorationData restorationData = null;
+        while ((_restorationData.Count > 0) && _restorationData[0].PopupType != typeof(T)) {
+            _restorationData.RemoveAt(0);
+        }
 
-            if (_restorationData.Count > 0) {
-                restorationData = _restorationData[0];
-                _restorationData.RemoveAt(0);
+        if (_restorationData.Count > 0) {
+            Debug.Assert(_restorationData[0].PopupType == typeof(T), "Something went wrong while clearing stack");
+            while ((ActivePopup != null) && (ActivePopup.GetType() != typeof(T))) {
+                CloseActivePopup();
             }
 
-            if (restorationData.PopupType == typeof(T) && restorationData.Data != null) {
-                await RestorePopup(restorationData);
-            } else {
-                foreach (var popup in _stack) {
-                    if (popup.gameObject.activeSelf) {
-                        popup.OnClose();
-                        popup.gameObject.SetActive(false);
-                        break;
-                    }
-                }
-            }
+            await RestorePopup(_restorationData[0]);
         }
 
         OnStackChange?.Invoke();
+    }
+    
+    private void CloseActivePopup() {
+        foreach (var popup in _stack) {
+            if (popup.gameObject.activeSelf) {
+                popup.OnClose();
+                popup.gameObject.SetActive(false);
+                break;
+            }
+        }
     }
 
     private async UniTask RestorePopup(PopupRestorationData restorationData) {
