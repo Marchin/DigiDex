@@ -254,40 +254,38 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         OnBeforeSave?.Invoke();
 
         string jsonData = $"DIGIDEX\n{Version}\n{JsonConvert.SerializeObject(_dataDict)}";
-
+        
         if (jsonData != _dataOnLoad) {
             PlayerPrefs.SetString(LocalDataPref, jsonData);
             _dataOnLoad = jsonData;
             long localModifiedTime = long.Parse(PlayerPrefs.GetString(LastLocalSavePref, "0"));
             RefreshDataDate();
 
-            if (!IsUserLoggedIn) {
-                return;
-            }
-
-            var loadingWheelHandle = ApplicationManager.Instance.DisplayLoadingWheel();
-            var saveMetadata = await GetSaveMetadata();
-            bool noRecordConflicts = (saveMetadata == null) ||
-                (saveMetadata.ModifiedTime.Value.Ticks <= localModifiedTime);
-            if (IsUserLoggedIn && noRecordConflicts)  {
-                var file = new UnityGoogleDrive.Data.File {
-                    Name = SaveFileName,
-                    Content = Encoding.ASCII.GetBytes(jsonData)
-                };
-                if (string.IsNullOrEmpty(_fileID)) {
-                    file.Parents = new List<string> { _folderID };
-                    var createRequest = UnityGoogleDrive.GoogleDriveFiles.Create(file);
-                    createRequest.Fields = FileFieldsQuery;
-                    file = await createRequest.Send();
-                } else {
-                    var updateRequest = UnityGoogleDrive.GoogleDriveFiles.Update(_fileID, file);
-                    updateRequest.Fields = FileFieldsQuery;
-                    file = await updateRequest.Send();
+            if (IsUserLoggedIn) {
+                var loadingWheelHandle = ApplicationManager.Instance.DisplayLoadingWheel();
+                var saveMetadata = await GetSaveMetadata();
+                bool noRecordConflicts = (saveMetadata == null) ||
+                    (saveMetadata.ModifiedTime.Value.Ticks <= localModifiedTime);
+                if (IsUserLoggedIn && noRecordConflicts)  {
+                    var file = new UnityGoogleDrive.Data.File {
+                        Name = SaveFileName,
+                        Content = Encoding.ASCII.GetBytes(jsonData)
+                    };
+                    if (string.IsNullOrEmpty(_fileID)) {
+                        file.Parents = new List<string> { _folderID };
+                        var createRequest = UnityGoogleDrive.GoogleDriveFiles.Create(file);
+                        createRequest.Fields = FileFieldsQuery;
+                        file = await createRequest.Send();
+                    } else {
+                        var updateRequest = UnityGoogleDrive.GoogleDriveFiles.Update(_fileID, file);
+                        updateRequest.Fields = FileFieldsQuery;
+                        file = await updateRequest.Send();
+                    }
+                    RefreshDataDate(file.ModifiedTime.Value);
+                    PlayerPrefs.SetString(LastLocalSaveUploadedPref, file.ModifiedTime.Value.Ticks.ToString());
                 }
-                RefreshDataDate(file.ModifiedTime.Value);
-                PlayerPrefs.SetString(LastLocalSaveUploadedPref, file.ModifiedTime.Value.Ticks.ToString());
+                loadingWheelHandle.Complete();
             }
-            loadingWheelHandle.Complete();
         }
 
         _isSaving = false;
