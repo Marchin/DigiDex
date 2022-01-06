@@ -174,7 +174,10 @@ public class ListSelectionPopup : Popup {
     private void PopulateDeleteList() {
         _deleteList.Populate(_db.Lists.Select(kvp => 
             new ButtonData(kvp.Key, async () => {
-                await _db.RemoveList(kvp.Key);
+                bool removed = await _db.RemoveList(kvp.Key);
+                if (removed && _listsToCopy.Contains(kvp.Key)) {
+                    _listsToCopy.Remove(kvp.Key);
+                }
                 PopulateDeleteList();
             }))
         );

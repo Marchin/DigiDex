@@ -59,11 +59,16 @@ public abstract class Database : ScriptableObject {
             List<ButtonData> buttons = new List<ButtonData>();
             buttons.Add(new ButtonData("No", () => _ = PopupManager.Instance.Back()));
             buttons.Add(new ButtonData("Yes", () => {
+                result = true;
                 ListsInternal.Remove(list);
                 _ = PopupManager.Instance.Back();
                 SaveLists();
             }));
             msgPopup.Populate($"Delete '{list}' list?", "Delete List", buttonDataList: buttons);
+            
+            await UniTask.WaitWhile(() =>
+                ((msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup)) ||
+                PopupManager.Instance.ClosingPopup);
         }
         return result;
     }
