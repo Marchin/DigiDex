@@ -14,6 +14,7 @@ public class PopupRestorationData {
     public bool IsFullScreen;
     public bool Vertical;
     public object Data;
+    public bool RestoreOnBack;
 }
 
 public class PopupManager : MonoBehaviourSingleton<PopupManager> {
@@ -89,7 +90,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 PopupType = activePopup.GetType(),
                 IsFullScreen = activePopup.FullScreen,
                 Vertical = activePopup.Vertical,
-                Data = restore ? activePopup.GetRestorationData() : null
+                Data = activePopup.GetRestorationData(),
+                RestoreOnBack = restore
             };
             _restorationData.Insert(0, restorationData);
         }
@@ -243,7 +245,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 while (startingIndex >= 0) {
                     PopupRestorationData restorationData = _restorationData[startingIndex];
 
-                    if (restorationData.Data != null) {
+                    if (restorationData.RestoreOnBack && restorationData.Data != null) {
                         await RestorePopup(restorationData);
                     } else {
                         CloseActivePopup();
