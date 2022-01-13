@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Threading;
 using System.Collections.Generic;
 
 public class ElementScrollList : MonoBehaviour {
@@ -11,7 +12,7 @@ public class ElementScrollList : MonoBehaviour {
     // We already tried forcing a canvas update and/or waiting until end of frame
     // This was the most consistent
     public const int FrameDelayToAnimateList = 2;
-    private const float ElementReuseScrollPoint = 0.3f;
+    private const float ElementReuseScrollPoint = 0.45f;
     private const float MinHandleHeight = 24f;
     [SerializeField] private float _scrollAnimationOffset = 550f;
     [SerializeField] private float _scrollAnimationScale = 0.2f;
@@ -31,10 +32,14 @@ public class ElementScrollList : MonoBehaviour {
     private int _currElementScrollIndex;
     private RectTransform CurrenElement => _elements[_currElementIndex];
     private bool _fixingListPosition = false;
-    private float _handleSizeAdjustment = 0f;
+    private float _handleSizeAdjustment;
+    private bool _wasMouseWheelBeingUsed;
+    private bool _blockCenteringDueScroll;
+    private float _prevScrollPos;
+    private bool _wasScrollingDown;
+    private bool _ignoreNextAdjustment;
+    private CancellationTokenSource _mouseWheelCTS;
     private Action<int> OnConfirmed;
-    public event Action OnBeginDrag;
-    public event Action OnEndDrag;
     public event Action<int> OnSelectedElementChanged;
     public bool IsEmpty => _namesList.Count == 0;
     public bool ScrollEnabled {
@@ -71,11 +76,9 @@ public class ElementScrollList : MonoBehaviour {
 
         _scrollRect.OnBeginDragEvent += () => {
             _fixingListPosition = false;
-            OnBeginDrag?.Invoke();
         };
         _scrollRect.OnEndDragEvent += () => {
             _fixingListPosition = !IsEmpty;
-            OnEndDrag?.Invoke();
         };
 
         _scrollBarHandler.OnPointerUpCall += eventData => {
@@ -130,6 +133,8 @@ public class ElementScrollList : MonoBehaviour {
 
         _scrollRect.normalizedPosition = Vector2.up;
 
+        _prevScrollPos = _scrollRect.normalizedPosition.y;
+
         if (_namesList.Count > 0) {
             ScrollTo(_namesList[0], true);
         }
@@ -169,7 +174,19 @@ public class ElementScrollList : MonoBehaviour {
     }
 
     private void Update() {
-        if (_fixingListPosition) {
+        bool isMouseWheelBeingUsed = Input.mouseScrollDelta.y != 0f;
+        if (isMouseWheelBeingUsed != _wasMouseWheelBeingUsed) {
+            if (isMouseWheelBeingUsed) {
+                _fixingListPosition = false;
+            } else {
+                _fixingListPosition = !IsEmpty;
+            }
+        }
+        if (isMouseWheelBeingUsed) {
+            LockRecentering();
+        }
+        _wasMouseWheelBeingUsed = isMouseWheelBeingUsed;
+        if (_fixingListPosition && !_blockCenteringDueScroll) {
             if (Mathf.Abs(_scrollRect.velocity.y) < 40f) {
                 Vector2 viewportCenter = _scrollRect.viewport.transform.position;
                 Vector2 selectedElementPos = CurrenElement.transform
@@ -189,24 +206,56 @@ public class ElementScrollList : MonoBehaviour {
         }
     }
 
+    private async void LockRecentering() {
+        if (_mouseWheelCTS != null) {
+            _mouseWheelCTS.Cancel();
+            _mouseWheelCTS.Dispose();
+        }
+
+        _mouseWheelCTS = new CancellationTokenSource();
+
+        try {
+            _blockCenteringDueScroll = true;
+            await UniTask.Delay(600, cancellationToken: _mouseWheelCTS.Token);
+            _blockCenteringDueScroll = false;
+        } catch (OperationCanceledException) {
+        }
+    }
+
     private void OnScroll(Vector2 newPos) {
         int newScrollIndex = _currElementScrollIndex;
-        if (_currElementScrollIndex < (_namesList.Count - _elements.Length) &&
-            _scrollRect.velocity.y > 0f &&
-            newPos.y < ((ElementReuseScrollPoint))
-        ) {
-            newScrollIndex++;
-            CurrElementIndex--;
-            _scrollRect.CustomSetVerticalNormalizedPosition(
-                _scrollRect.normalizedPosition.y + _elementNormalizedHeight);
-        } else if (_currElementScrollIndex > 0 && 
-            _scrollRect.velocity.y < 0f && newPos.y > (1f - (ElementReuseScrollPoint))
-        ) {
-            newScrollIndex--;
-            CurrElementIndex++;
-            _scrollRect.CustomSetVerticalNormalizedPosition(
-                _scrollRect.normalizedPosition.y - _elementNormalizedHeight);
+
+        float delta = Mathf.Abs(newPos.y - ElementReuseScrollPoint);
+        int count = Mathf.CeilToInt(delta / _elementNormalizedHeight);
+        
+        bool isScrollingDown = _ignoreNextAdjustment ? 
+            _wasScrollingDown :
+            ((newPos.y - _prevScrollPos) != 0f) ?
+                ((newPos.y - _prevScrollPos) < 0f) :
+                _wasScrollingDown;
+
+        if (count > 0) {
+            if (_currElementScrollIndex < (_namesList.Count - _elements.Length) &&
+                isScrollingDown &&
+                newPos.y < (ElementReuseScrollPoint)
+            ) {
+                count = Mathf.Min(count, (_namesList.Count - _elements.Length) - _currElementIndex);
+                newScrollIndex += count;
+                // CurrElementIndex -= count;
+                _scrollRect.CustomSetVerticalNormalizedPosition(
+                    _scrollRect.normalizedPosition.y + (_elementNormalizedHeight * count));
+            } else if (_currElementScrollIndex > 0 && 
+                !isScrollingDown &&
+                newPos.y > (1f - (ElementReuseScrollPoint))
+            ) {
+                count = Mathf.Min(count, newScrollIndex);
+                newScrollIndex -= count;
+                // CurrElementIndex += count;
+                _scrollRect.CustomSetVerticalNormalizedPosition(
+                    _scrollRect.normalizedPosition.y - (_elementNormalizedHeight * count));
+            }
         }
+
         if (newScrollIndex != _currElementScrollIndex) {
             _currElementScrollIndex = newScrollIndex;
             PopulateElements();
@@ -221,6 +270,7 @@ public class ElementScrollList : MonoBehaviour {
             newY - (0.5f * _fakeScrollBarHandle.rect.height)
         );
 
+        _prevScrollPos = newPos.y;
         AnimateElements();
     }
 
@@ -263,13 +313,17 @@ public class ElementScrollList : MonoBehaviour {
     private void PopulateElements() {
         _currElementScrollIndex = Mathf.Min(_currElementScrollIndex, 
             Mathf.Max(_namesList.Count - _elements.Length, 0));
-        for (int iDigimon = _currElementScrollIndex, iElement = 0; 
-            iElement < _elements.Length; iDigimon++,
+        for (int iEntry = _currElementScrollIndex, iElement = 0; 
+            iElement < _elements.Length; iEntry++,
             iElement++
         ) {
-            if (iDigimon < _namesList.Count) {
-                _elementsTexts[iElement].text = _namesList[iDigimon];
+            if (iEntry < _namesList.Count) {
+                try {
+                _elementsTexts[iElement].text = _namesList[iEntry];
                 _elements[iElement].gameObject.SetActive(true);
+                } catch {
+                    Debug.LogError($"{iElement} - {_elements.Length} - {iEntry} - {_namesList.Count}");
+                }
             } else {
                 _elements[iElement].gameObject.SetActive(false);
             }
@@ -344,6 +398,7 @@ public class ElementScrollList : MonoBehaviour {
             AnimateElements();
         }
         enabled = true;
+        _prevScrollPos = _scrollRect.normalizedPosition.y;
     }
 
     public async void ResetScroll() {

@@ -1494,7 +1494,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 0
+  m_ScrollSensitivity: 120
   m_Viewport: {fileID: 5213751488865497961}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 0}
@@ -1543,7 +1543,7 @@ MonoBehaviour:
   _scrollRect: {fileID: 5213751488851625824}
   _layoutGroup: {fileID: 5213751489634708577}
   _elementTemplate: {fileID: 4565414057251774632}
-  _maxElements: 10
+  _maxElements: 24
   _fakeScrollBar: {fileID: 7165904714424848424}
   _fakeScrollBarHandle: {fileID: 3214528386798758379}
   _scrollBarHandler: {fileID: 6542435395517543060}

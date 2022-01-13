@@ -17,7 +17,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
     }
 
     private const float MinHandleLenght = 24f;
-    private const float ElementReuseScrollPoint = 0.3f;
+    private const float ElementReuseScrollPoint = 0.4f;
     [SerializeField] private T _template = default;
     [SerializeField] private RectTransform _root = default;
     [SerializeField] private int _maxDisplayCount = default;
@@ -37,7 +37,10 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
     private List<D> _data;
     private int _baseIndex;
     private float _elementNormalizedLength;
-    private float _handleSizeAdjustment = 0f;
+    private float _handleSizeAdjustment;
+    private float _prevScrollPos;
+    private bool _wasScrollingDown;
+    private bool _ignoreNextAdjustment;
 
     private void Start() {
         _template.gameObject.SetActive(false);
@@ -49,6 +52,10 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
                 _scrollBarHandler.OnPointerDownCall += OnScrollBarHandle;
                 _scrollBarHandler.OnDragCall += OnScrollBarHandle;
             }
+            _scroll.scrollSensitivity = 80f;
+            _prevScrollPos = (_direction == Direction.Horizontal) ?
+                _scroll.normalizedPosition.x :
+                _scroll.normalizedPosition.y;
         }
     }
 
@@ -111,8 +118,12 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
 
     public async void CalculateSizes() {
         if (_scroll != null) {
-            await UniTask.WaitForEndOfFrame(cancellationToken: this.GetCancellationTokenOnDestroy())
-                .SuppressCancellationThrow();
+            try {
+                await UniTask.WaitForEndOfFrame(cancellationToken: this.GetCancellationTokenOnDestroy());
+            } catch {
+                // If destroyed we return
+                return;
+            }
             float viewportLength = (_direction == Direction.Horizontal) ? 
                 _scroll.viewport.rect.width :
                 _scroll.viewport.rect.height;
@@ -245,26 +256,40 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
     private void OnScroll(Vector2 newPos) {
         int newScrollIndex = _baseIndex;
         float pos = (_direction == Direction.Horizontal) ? newPos.x : newPos.y;
-        float velocity = (_direction == Direction.Horizontal) ? _scroll.velocity.x : _scroll.velocity.y;
-        
-        if (_baseIndex < (_data.Count - _elements.Count) &&
-            velocity > 0f &&
-            pos < ((ElementReuseScrollPoint))
-        ) {
-            newScrollIndex++;
-            if (_direction == Direction.Horizontal) {
-                _scroll.CustomSetHorizontalNormalizedPosition(pos + _elementNormalizedLength);
-            } else {
-                _scroll.CustomSetVerticalNormalizedPosition(pos + _elementNormalizedLength);
-            }
-        } else if (_baseIndex > 0 && velocity < 0f && pos > (1f - (ElementReuseScrollPoint))) {
-            newScrollIndex--;
-            if (_direction == Direction.Horizontal) {
-                _scroll.CustomSetHorizontalNormalizedPosition(pos - _elementNormalizedLength);
-            } else {
-                _scroll.CustomSetVerticalNormalizedPosition(pos - _elementNormalizedLength);
+
+        float delta = Mathf.Abs(newPos.y - ElementReuseScrollPoint);
+        int count = Mathf.CeilToInt(delta / _elementNormalizedLength);
+
+        bool isScrollingDown = _ignoreNextAdjustment ? 
+            _wasScrollingDown :
+            ((pos - _prevScrollPos) != 0f) ?
+                ((pos - _prevScrollPos) < 0f) :
+                _wasScrollingDown;
+
+        _ignoreNextAdjustment = false;
+
+        if (count > 0) {
+            if (_baseIndex < (_data.Count - _elements.Count) && isScrollingDown && pos < ((ElementReuseScrollPoint))) {
+                count = Mathf.Min(count, (_data.Count - _elements.Count) - _baseIndex);
+                newScrollIndex += count;
+                if (_direction == Direction.Horizontal) {
+                    _scroll.CustomSetHorizontalNormalizedPosition(pos + _elementNormalizedLength * count);
+                } else {
+                    _scroll.CustomSetVerticalNormalizedPosition(pos + _elementNormalizedLength * count);
+                }
+                _ignoreNextAdjustment = true;
+            } else if (_baseIndex > 0 && !isScrollingDown && pos > (1f - (ElementReuseScrollPoint))) {
+                count = Mathf.Min(count, _baseIndex);
+                newScrollIndex -= count;
+                if (_direction == Direction.Horizontal) {
+                    _scroll.CustomSetHorizontalNormalizedPosition(pos - _elementNormalizedLength * count);
+                } else {
+                    _scroll.CustomSetVerticalNormalizedPosition(pos - _elementNormalizedLength * count);
+                }
+                _ignoreNextAdjustment = true;
             }
         }
+        
         if (newScrollIndex != _baseIndex) {
             _baseIndex = newScrollIndex;
             Refresh();
@@ -289,5 +314,8 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
                 );
             }
         }
+
+        _prevScrollPos = (_direction == Direction.Horizontal) ? newPos.x : newPos.y;
+        _wasScrollingDown = isScrollingDown;
     }
 }
