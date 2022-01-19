@@ -111,7 +111,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                     if (fileData.Content != null) {
                         long localModifiedTime = long.Parse(PlayerPrefs.GetString(LastLocalSavePref, "0"));
                         long lastLocalUploadTime = long.Parse(PlayerPrefs.GetString(LastLocalSaveUploadedPref, "0"));
-                        if (_dataDict.Count > 0 && saveFileLocation.ModifiedTime.Value.Ticks != localModifiedTime) {
+                        if ((_dataDict.Count == 0) || saveFileLocation.ModifiedTime.Value.Ticks != localModifiedTime) {
                             if (localModifiedTime > lastLocalUploadTime) {
                                 var popup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                                 ToggleData keepCopyToggle = new ToggleData { Name = "Keep a copy", IsOn = true };
@@ -190,16 +190,19 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                         }
                     } else {
                         _userConfirmedData = true;
+                        IsLoggingIn = false;
                         loadingWheelHandle.Complete();
                     }
                 } else {
                     Debug.LogWarning("File Location not found");
                     _userConfirmedData = true;
+                    IsLoggingIn = false;
                     loadingWheelHandle.Complete();
                 }
             } else {
                 var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                 msgPopup.Populate("Failed to authenticate your google account", "Authentication Fail");
+                IsLoggingIn = false;
                 loadingWheelHandle.Complete();
             }
         } catch (Exception ex) {
@@ -215,6 +218,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         _driveSettings?.DeleteCachedAuthTokens();
         UserData = null;
         _userConfirmedData = false;
+        IsLoggingIn = false;
         OnAuthChanged?.Invoke();
     }
 

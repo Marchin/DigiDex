@@ -14,7 +14,7 @@ public class MainMenu : MonoBehaviour {
     [SerializeField] private Button _twitterButton = default;
     [SerializeField] private Button _igButton = default;
     [SerializeField] private Button _discordButton = default;
-    // [SerializeField] private GameObject _loggingInGO = default;
+    [SerializeField] private GameObject _loggingInGO = default;
 
     private async void Start() {
         RefreshButtons();
@@ -43,8 +43,8 @@ public class MainMenu : MonoBehaviour {
             };
             var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
             msgPopup.Populate("You can log in with your drive account to sync your lists across devices\n\n" +
-                "Digidex is a fan-made app as such is not authorized by google and you will get some warnings, Digidex is open soruce and you " +
-                $"can review our code <color={UnityUtils.LinkColor}><link=\"https://github.com/Marchin/DigiDex\">here</link></color>",
+                "Digidex is a fan-made app as such is not authorized by google and you will get some warnings, Digidex is open source however and you " +
+                $"can review our code <color={UnityUtils.LinkColor}><link=\"https://github.com/Marchin/DigiDex\">here</link></color> to verify we aren't doing anything fishy",
                 "Log In",
                 buttonDataList: buttonList);
         });
@@ -64,9 +64,22 @@ public class MainMenu : MonoBehaviour {
 
             if (UserDataManager.Instance.IsUserLoggedIn) {
                 buttonList.Add(new ButtonData { Text = "Logout", Callback = async () => {
-                        UserDataManager.Instance.LogOut();
                         var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>(restore: false);
-                        msgPopup.Populate("Logged out");
+                        List<ButtonData> buttonList = new List<ButtonData>() {
+                            new ButtonData("No", () => {
+                                _ = PopupManager.Instance.Back();
+                            }),
+                            
+                            new ButtonData("Yes", () => {
+                                UserDataManager.Instance.LogOut();
+                                msgPopup.Populate("Logged out");
+                            })
+                        };
+
+                        msgPopup.Populate(
+                            "Are you sure you want to log out?",
+                            "Log Out",
+                            buttonDataList: buttonList);
                     }
                 });
             }
@@ -106,14 +119,15 @@ public class MainMenu : MonoBehaviour {
     }
 
     private void RefreshButtons() {
-        // if (UserDataManager.Instance.IsUserLoggedIn) {
-        //     _loginButton.gameObject.SetActive(false);
-        //     _loggingInGO.gameObject.SetActive(false);
-        // } else if (UserDataManager.Instance.IsLoggingIn) {
-        //     _loginButton.gameObject.SetActive(false);
-        // } else {
-        //     _loginButton.gameObject.SetActive(true);
-        //     _loggingInGO.gameObject.SetActive(false);
-        // }
+        if (UserDataManager.Instance.IsUserLoggedIn) {
+            _loginButton.gameObject.SetActive(false);
+            _loggingInGO.gameObject.SetActive(false);
+        } else if (UserDataManager.Instance.IsLoggingIn) {
+            _loginButton.gameObject.SetActive(false);
+            _loggingInGO.gameObject.SetActive(true);
+        } else {
+            _loginButton.gameObject.SetActive(true);
+            _loggingInGO.gameObject.SetActive(false);
+        }
     }
 }

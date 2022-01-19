@@ -1,6 +1,6 @@
 <dependencies>
   <androidPackages>
-    <androidPackage spec="net.openid:appauth:0.7.+" />
+    <androidPackage spec="net.openid:appauth:0.11.+" />
   </androidPackages>
   <iosPods>
     <iosPod name="AppAuth" version="~> 1.3.0" bitcodeEnabled="true" minTargetSdk="7.0" />
