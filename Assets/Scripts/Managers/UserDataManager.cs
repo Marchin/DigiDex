@@ -91,7 +91,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                 var folderRequest = GoogleDriveFiles.List();
                 folderRequest.Q = $"name='Digidex' and mimeType='{FolderMimeType}'";
                 var folderList = await folderRequest.Send();
-                if (folderList.Files != null && folderList.Files.Count > 0) {
+                if (folderList != null && folderList.Files != null && folderList.Files.Count > 0) {
                     _folderID = folderList.Files[0].Id;
                 } else {
                     var folderFile = new UnityGoogleDrive.Data.File {
@@ -227,7 +227,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         filesRequest.Fields = ListFieldsQuery;
         filesRequest.Q = $"name='{SaveFileName}' and '{_folderID}' in parents";
         await filesRequest.Send();
-        var saveFileLocation = filesRequest.ResponseData.Files.Find(f => f.Name == SaveFileName);
+        var saveFileLocation = filesRequest.ResponseData?.Files?.Find(f => f.Name == SaveFileName);
         return saveFileLocation;
     }
 
