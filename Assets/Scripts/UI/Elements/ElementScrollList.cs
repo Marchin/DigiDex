@@ -285,7 +285,6 @@ public class ElementScrollList : MonoBehaviour {
         float scrolledElements = (1f - scrollPos) * _namesList.Count;
         float scrolled = Mathf.Min(scrolledElements, _namesList.Count);
         ScrollTo(scrolled, withAnimation: false);
-        OnScroll(pos);
     }
 
     private void AnimateElements() {
