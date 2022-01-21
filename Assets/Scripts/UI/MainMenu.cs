@@ -14,7 +14,6 @@ public class MainMenu : MonoBehaviour {
     [SerializeField] private Button _twitterButton = default;
     [SerializeField] private Button _igButton = default;
     [SerializeField] private Button _discordButton = default;
-    [SerializeField] private GameObject _loggingInGO = default;
 
     private async void Start() {
         RefreshButtons();
@@ -51,6 +50,11 @@ public class MainMenu : MonoBehaviour {
 
         _settingsButton.onClick.AddListener(async () => {
             List<ButtonData> buttonList = new List<ButtonData>();
+
+            buttonList.Add(new ButtonData { 
+                Text = "Naming", 
+                Callback = () => _ = ApplicationManager.Instance.PickNaming(showCloseButton: true)
+            });
 
             buttonList.Add(new ButtonData { Text = "Donate", Callback = async () => {
                 var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
@@ -119,15 +123,10 @@ public class MainMenu : MonoBehaviour {
     }
 
     private void RefreshButtons() {
-        if (UserDataManager.Instance.IsUserLoggedIn) {
+        if (UserDataManager.Instance.IsUserLoggedIn || UserDataManager.Instance.IsLoggingIn) {
             _loginButton.gameObject.SetActive(false);
-            _loggingInGO.gameObject.SetActive(false);
-        } else if (UserDataManager.Instance.IsLoggingIn) {
-            _loginButton.gameObject.SetActive(false);
-            _loggingInGO.gameObject.SetActive(true);
         } else {
             _loginButton.gameObject.SetActive(true);
-            _loggingInGO.gameObject.SetActive(false);
         }
     }
 }

@@ -64,7 +64,7 @@ public class EvolutionDetailsPopup : Popup {
         _infoList.Populate(evolutionInfo.FusionEntries.Select(entry => {
             IDataEntry entryData = entry.FetchEntryData();
             InformationData data = new InformationData {
-                Content = entryData.Name,
+                Content = entryData.DisplayName,
                 SpriteReference = entryData.Sprite,
                 OnMoreInfo = () => SelectEntry(entryData)
             };
@@ -79,7 +79,7 @@ public class EvolutionDetailsPopup : Popup {
         var handle = _selectedImage.LoadSprite(dataEntry.Sprite, _cts.Token);
         _handles.Add(handle);
 
-        _selectedName.text = dataEntry.Name;
+        _selectedName.text = dataEntry.DisplayName;
 
         _popupData.SelectedEntry = dataEntry;
 

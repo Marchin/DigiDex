@@ -67,7 +67,7 @@ public class DigimonDatabase : Database {
         );
         levelsFilter.Elements = new List<FilterEntryData>(Levels.Count);
         for (int iLevel = 0; iLevel < Levels.Count; ++iLevel) {
-            levelsFilter.Elements.Add(new FilterEntryData { Name = Levels[iLevel].Name });
+            levelsFilter.Elements.Add(new FilterEntryData { Name = Levels[iLevel].DisplayName });
         }
         filters.Add(levelsFilter);
 

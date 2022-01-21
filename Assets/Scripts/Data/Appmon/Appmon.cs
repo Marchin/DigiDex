@@ -26,6 +26,7 @@ public class Appmon : ScriptableObject, IEvolvable {
         get => _dubNames;
         set => _dubNames = value;
     }
+    public string DisplayName => (UserDataManager.Instance.UsingDub && DubNames.Count > 0) ? DubNames[0] : Name;
     public string Profile {
         get => string.IsNullOrEmpty(_profile) ?
             "No profile available." :

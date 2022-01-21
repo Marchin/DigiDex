@@ -609,7 +609,7 @@ public static class DigimonDataRetriever {
     [MenuItem("DigiDex/Digimon/Generate/Level List")]
     public static async UniTask GenerateLevelList() {
         XmlDocument levelSite = await DataRetriever.GetSite(LevelListSubFix);
-        XmlNodeList table = levelSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable']/tbody/tr/td[1]/a");
+        XmlNodeList table = levelSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable']/tbody/tr/td/a");
         string levelsDataPath = DigimonDataPath + "Levels";
         if (!Directory.Exists(levelsDataPath)) {
             Directory.CreateDirectory(levelsDataPath);
@@ -619,6 +619,7 @@ public static class DigimonDataRetriever {
         for (int i = 0; i < table.Count; i++) {
             XmlNode fieldData = table.Item(i);
             string levelName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
+            string levelDubName = fieldData.ParentNode.ParentNode.LastChild.InnerText;
 
             if (levelName == "Digitama" || levelName == "Super Ultimate") {
                 continue;
@@ -635,6 +636,22 @@ public static class DigimonDataRetriever {
                 }
 
                 level.Name = levelName;
+
+                // HACK: the wiki has stuff like "Baby/Fresh/Training I" which is not ideal so we cherry pick the ones we want
+                switch (levelName) {
+                    case "Baby I": {
+                        level.DubName = "Fresh";
+                    } break;
+
+                    case "Baby II": {
+                        level.DubName = "In-Training";
+                    } break;
+
+                    default: {
+                        level.DubName = levelDubName;
+                    } break;
+                }
+
                 EditorUtility.SetDirty(level);
                 levels.Add(level);
             }

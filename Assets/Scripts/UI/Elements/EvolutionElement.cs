@@ -43,7 +43,7 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
         }
         _cts = new CancellationTokenSource();
 
-        _name.text = entry.Name;
+        _name.text = entry.DisplayName;
 
         var entryImageHandle = UnityUtils.LoadSprite(_entryImage, entry.Sprite, _cts.Token);
         _handles.Add(entryImageHandle);

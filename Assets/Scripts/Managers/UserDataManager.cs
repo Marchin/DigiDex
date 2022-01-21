@@ -9,7 +9,7 @@ using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 
 public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
-    private const int Version = 1;
+    private const int Version = 2;
     private const string FileHeader = "DIGIDEX";
     private const string FolderName = "DigiDex";
     private const string SaveFileName = "DigiDex.json";
@@ -20,7 +20,8 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
     private const string FolderMimeType = "application/vnd.google-apps.folder";
     private readonly List<string> ListFieldsQuery = new List<string> { "files/name, files/id, files/modifiedTime" };
     private readonly List<string> FileFieldsQuery = new List<string> { "name, id, modifiedTime" };
-    private Dictionary<string, string> _dataDict;
+    private const string UsingDubKey = "using_dub";
+    private Dictionary<string, string> _listsDataDict;
     public event Action OnBeforeSave;
     private string _fileID;
     private string _folderID;
@@ -31,15 +32,26 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
     private string _dataOnLoad;
     private bool _userConfirmedData;
     private bool _isSaving;
-    public event Action OnAuthChanged;
+    private bool _usingDub;
+    public bool UsingDub {
+        get => _usingDub;
+        set {
+            _usingDub = value;
+            HasNamingBeenPicked = true;
+            SaveAllData();
+        }
+    }
+    public bool HasNamingBeenPicked { get; private set; }
     public bool IsLoggingIn { get; private set; }
+    public event Action OnAuthChanged;
+    
     
     private void Awake() {
-        _dataDict = new Dictionary<string, string>();
+        _listsDataDict = new Dictionary<string, string>();
         _driveSettings = GoogleDriveSettings.LoadFromResources();
         string localData = PlayerPrefs.GetString(LocalDataPref);
         _dataOnLoad = localData;
-        _dataDict = ParseFileData(localData);
+        _listsDataDict = ParseFileData(localData);
     }
 
     private Dictionary<string, string> ParseFileData(string fileContent) {
@@ -51,10 +63,25 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
             fileContent = fileContent.Substring(endOfHeader + 1, fileContent.Length - (endOfHeader + 1));
             int endOfVersion = fileContent.IndexOf('\n');
             int version = int.Parse(fileContent.Substring(0, Mathf.Max(endOfVersion, 0)));
-            if (endOfVersion >= 0 && version == Version) {
-                fileContent = fileContent.Substring(endOfVersion + 1, fileContent.Length - (endOfVersion + 1));
-                result = JsonConvert.DeserializeObject<Dictionary<string, string>>(fileContent);
-                Debug.Log("Data Loaded");
+            if (endOfVersion >= 0) {
+                if (version == 1) {
+                    fileContent = fileContent.Replace("Digimons", "Digimon").Replace("Appmons", "Appmon");
+                    Debug.Log("Data transformed from V1 to V2");
+                    version = 2;
+                }
+
+                if (version == Version) {
+                    fileContent = fileContent.Substring(endOfVersion + 1, fileContent.Length - (endOfVersion + 1));
+                    if (fileContent.StartsWith(UsingDubKey)) {
+                        HasNamingBeenPicked = true;
+                        fileContent = fileContent.Replace(UsingDubKey + ": ", "");
+                        int endOfUsingDub = fileContent.IndexOf('\n');
+                        bool.TryParse(fileContent.Substring(0, endOfUsingDub), out _usingDub);
+                        fileContent = fileContent.Substring(endOfUsingDub + 1, fileContent.Length - (endOfUsingDub + 1));
+                    }
+                    result = JsonConvert.DeserializeObject<Dictionary<string, string>>(fileContent);
+                    Debug.Log("Data Loaded");
+                }
             } else {
                 Debug.Log("Version Mismatch");
             }
@@ -111,7 +138,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                     if (fileData.Content != null) {
                         long localModifiedTime = long.Parse(PlayerPrefs.GetString(LastLocalSavePref, "0"));
                         long lastLocalUploadTime = long.Parse(PlayerPrefs.GetString(LastLocalSaveUploadedPref, "0"));
-                        if ((_dataDict.Count == 0) || saveFileLocation.ModifiedTime.Value.Ticks != localModifiedTime) {
+                        if ((_listsDataDict.Count == 0) || saveFileLocation.ModifiedTime.Value.Ticks != localModifiedTime) {
                             if (localModifiedTime > lastLocalUploadTime) {
                                 var popup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                                 ToggleData keepCopyToggle = new ToggleData { Name = "Keep a copy", IsOn = true };
@@ -154,7 +181,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                         GoogleDriveFiles.Create(file).Send();
                                     }
                                     string jsonData = Encoding.ASCII.GetString(fileData.Content);
-                                    _dataDict = ParseFileData(jsonData);
+                                    _listsDataDict = ParseFileData(jsonData);
                                     _dataOnLoad = jsonData;
                                     _userConfirmedData = true;
                                     RefreshDataDate(saveFileLocation.ModifiedTime.Value);
@@ -174,7 +201,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 popup.ShowCloseButton = false;
                             } else {
                                 string jsonData = Encoding.ASCII.GetString(fileData.Content);
-                                _dataDict = ParseFileData(jsonData);
+                                _listsDataDict = ParseFileData(jsonData);
                                 _dataOnLoad = jsonData;
                                 _userConfirmedData = true;
                                 RefreshDataDate(saveFileLocation.ModifiedTime.Value);
@@ -232,17 +259,17 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
     }
 
     public void Save(string key, string data) {
-        if (_dataDict.ContainsKey(key)) {
-            _dataDict[key] = data;
+        if (_listsDataDict.ContainsKey(key)) {
+            _listsDataDict[key] = data;
         } else {
-            _dataDict.Add(key, data);
+            _listsDataDict.Add(key, data);
         }
         SaveAllData();
     }
 
     public string Load(string key) {
-        if (_dataDict.ContainsKey(key)) {
-            return _dataDict[key];
+        if (_listsDataDict.ContainsKey(key)) {
+            return _listsDataDict[key];
         } else {
             return "";
         }
@@ -257,7 +284,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
 
         OnBeforeSave?.Invoke();
 
-        string jsonData = $"DIGIDEX\n{Version}\n{JsonConvert.SerializeObject(_dataDict)}";
+        string jsonData = $"DIGIDEX\n{Version}\n{UsingDubKey}: {UsingDub}\n{JsonConvert.SerializeObject(_listsDataDict)}";
         
         if (jsonData != _dataOnLoad) {
             PlayerPrefs.SetString(LocalDataPref, jsonData);

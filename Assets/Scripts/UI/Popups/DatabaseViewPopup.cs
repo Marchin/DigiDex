@@ -40,6 +40,7 @@ public class DatabaseViewPopup : Popup {
     private IEnumerable<ToggleActionData> _toggles;
     private string _lastQuery = "";
     private Dictionary<Hash128, IDataEntry> _entryDict;
+    private IEnumerable<IDataEntry> _entries;
     private Database _db;
     private bool _initialized;
     private IDataEntry _selectedEntry;
@@ -153,9 +154,10 @@ public class DatabaseViewPopup : Popup {
         string lastQuery = ""
     ) {
         _db = database;
-        _currEntries = _filteredEntries = database.Entries;
+        _entries = _db.Entries.OrderBy(e => e.DisplayName);
+        _currEntries = _filteredEntries = _entries;
         _elementScrollList.Initialize(
-            nameList: _currEntries.Select(e => e.Name).ToList(),
+            nameList: _currEntries.Select(e => e.DisplayName).ToList(),
             onConfirmed: (index) => {
                 if (index >= 0 && _currEntries.Count() > 0 && index <= _currEntries.Count()) {
                     SelectedEntry = _currEntries.ElementAt(index);
@@ -167,7 +169,7 @@ public class DatabaseViewPopup : Popup {
             }
         );
 
-        _entryDict = _db.Entries.ToDictionary(e => e.Hash);
+        _entryDict = _entries.ToDictionary(e => e.Hash);
         _filters = filters ?? _db.RetrieveFiltersData();
         _toggles = toggles ?? _db.RetrieveTogglesData();
         _lastQuery = lastQuery;
@@ -197,7 +199,7 @@ public class DatabaseViewPopup : Popup {
 
         if (PopupManager.Instance.ActivePopup == this) {
             _db.RefreshFilters(ref _filters, ref _toggles);
-            _filteredEntries = new List<IDataEntry>(_db.Entries);
+            _filteredEntries = new List<IDataEntry>(_entries);
             foreach (var toggle in _toggles) {
                 _filteredEntries = toggle.Apply(_filteredEntries);
             }
@@ -218,14 +220,14 @@ public class DatabaseViewPopup : Popup {
 
     private void RefreshList() {
         _currEntries = _filteredEntries
-            .Where(entry => entry.Name.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture))
-            .Concat(_filteredEntries.Where(entry => entry.DubNames.Any(dn => dn.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture))))
-            .Concat(_filteredEntries.Where(entry => entry.Name.ToLower().Contains(_lastQuery.ToLower())))
-            .Concat(_filteredEntries.Where(entry => entry.DubNames.Any(dn => dn.ToLower().Contains(_lastQuery.ToLower()))))
+            .Where(entry => entry.DisplayName.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture))
+            .Concat(_filteredEntries.Where(entry => entry.Name.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture) || entry.DubNames.Any(dn => dn.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture))))
+            .Concat(_filteredEntries.Where(entry => entry.DisplayName.ToLower().Contains(_lastQuery.ToLower())))
+            .Concat(_filteredEntries.Where(entry => entry.Name.ToLower().Contains(_lastQuery.ToLower()) || entry.DubNames.Any(dn => dn.ToLower().Contains(_lastQuery.ToLower()))))
             .Distinct()
-            .ToList();
+            .ToList(); 
 
-        _elementScrollList.UpdateList(_currEntries.Select(e => e.Name).ToList());
+        _elementScrollList.UpdateList(_currEntries.Select(e => e.DisplayName).ToList());
 
         bool isEmpty = _currEntries.Count() == 0;
         _noEntriesFoundText.SetActive(isEmpty);
@@ -245,7 +247,7 @@ public class DatabaseViewPopup : Popup {
             Toggles = _toggles,
             LastQuery = _lastQuery,
             DB = _db,
-            SelectedEntry = SelectedEntry?.Name
+            SelectedEntry = SelectedEntry?.DisplayName
         };
 
         return data;

@@ -182,7 +182,7 @@ public class EvolutionsPopup : Popup {
     public void Populate(PopupData popupData) {
         _initialized = false;
         _popupData = popupData;
-        _sourceEntryName.text = popupData.SourceEntry.Name;
+        _sourceEntryName.text = popupData.SourceEntry.DisplayName;
 
         Evolution initEvolution = null;
         switch (popupData.CurrTab) {

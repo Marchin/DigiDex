@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Linq;
+using System.Text;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
@@ -92,7 +93,7 @@ public class ListSelectionPopup : Popup {
                 "If you've copied someone else's lists paste it here down below:",
                 "Paste Lists",
                 async input => {
-                    bool validInput = await ApplicationManager.Instance.ParseLists(input);
+                    bool validInput = await ParseLists(input);
                     if (!validInput) {
                         var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                         msgPopup.Populate("No list detected", "No List");
@@ -197,5 +198,109 @@ public class ListSelectionPopup : Popup {
         if (data is PopupData popupData) {
             Populate(popupData.Entry, popupData.CurrTab, popupData.ListsToCopy);
         }
+    }
+
+    
+    public async UniTask<bool> ParseLists(string input) {
+        bool listDetected = false;
+        if (UserDataManager.Instance.IsValidData(input, out var db, out var data)) {
+            var newLists = data.Where(l => !db.Lists.ContainsKey(l.Key));
+            var listsInConflict = data.Except(newLists);
+            if (listsInConflict.Count() > 0) {
+                listDetected = true;
+                
+                List<string> skippedLists = new List<string>();
+                MessagePopup msgPopup = null;
+                foreach (var list in listsInConflict)  {
+                    const string NameConflict = "Name Conflict";
+
+                    bool areEqual = list.Value.Except(db.Lists[list.Key]).Count() == 0;
+                    if (areEqual) {
+                        skippedLists.Add(list.Key);
+                        continue;
+                    }
+
+                    bool renameList = false;
+                    msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                    List<ButtonData> buttons = new List<ButtonData>(2);
+                    buttons.Add(new ButtonData { Text = "No", Callback = async () => { await PopupManager.Instance.Back(); }});
+                    buttons.Add(new ButtonData { Text = "Yes", Callback = async () => {
+                        renameList = true;
+                        await PopupManager.Instance.Back();
+                    }});
+                    msgPopup.Populate(
+                        $"There's already a list called {list.Key}," + 
+                            " do you want to rename the new one and add it?",
+                        NameConflict,
+                        buttonDataList: buttons);
+                    msgPopup.ShowCloseButton = false;
+
+                    await UniTask.WaitWhile(() =>
+                        ((msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup)) ||
+                        PopupManager.Instance.ClosingPopup);
+
+                    if (renameList) {
+                        var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
+                            inputPopup.Populate($"{list.Key} is already in use please select a new name",
+                            NameConflict,
+                            async name => {
+                                if (!string.IsNullOrEmpty(name) && !db.Lists.Keys.Contains(name)) {
+                                    foreach (var entry in list.Value) {
+                                        db.AddEntryToList(name, entry);
+                                    }
+                                    await PopupManager.Instance.Back();
+                                } else {
+                                    var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                                    msgPopup.Populate("Name is empty or already in use, please try another one", "Try Again");
+                                    await UniTask.WaitWhile(() => (msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup));
+                                }
+                            }
+                        );
+                        await UniTask.WaitWhile(() =>
+                            ((inputPopup != null) && inputPopup.gameObject.activeSelf) ||
+                            PopupManager.Instance.ClosingPopup);
+                    }
+                }
+
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"You already have these exact same lists:");
+                foreach (var list in skippedLists) {
+                    sb.AppendLine($"· {list}");
+                }
+                msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                msgPopup.Populate(sb.ToString(), "Skipped List");
+                await UniTask.WaitWhile(() =>
+                    ((msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup)) ||
+                    PopupManager.Instance.ClosingPopup);
+            }
+            
+            if (newLists.Count() > 0) {
+                listDetected = true;
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"Add the following {db.DisplayName} lists:");
+                foreach (var list in newLists) {
+                    sb.AppendLine($"· {list.Key}");
+                }
+                var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                List<ButtonData> buttons = new List<ButtonData>(2);
+                buttons.Add(new ButtonData { Text = "No", Callback = () => { _ = PopupManager.Instance.Back(); }});
+                buttons.Add(new ButtonData { Text = "Yes", Callback = () => {
+                    foreach (var list in newLists) {
+                        foreach (var entry in list.Value) {
+                            db.AddEntryToList(list.Key, entry);
+                        }
+                    }
+                    _ = PopupManager.Instance.Back();
+                }});
+                msgPopup.Populate(sb.ToString(), "Add List", null, buttonDataList: buttons);
+                msgPopup.ShowCloseButton = false;
+
+                await UniTask.WaitWhile(() =>
+                    ((msgPopup != null) && msgPopup.gameObject.activeSelf) ||
+                    PopupManager.Instance.ClosingPopup);
+            }
+        }
+
+        return listDetected;
     }
 }
