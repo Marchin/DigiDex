@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 public class AppmonDatabase : Database {
     public override string DisplayName => "Appmon";
-    public override string DataKey => "Appmons";
     
     private const string TypesFilter = "Types";
     private const string GradesFilter = "Grades";

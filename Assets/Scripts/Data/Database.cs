@@ -85,7 +85,6 @@ public class EntryIndex : IEquatable<EntryIndex> {
 
 public abstract class Database : ScriptableObject {
     public abstract string DisplayName { get; }
-    public abstract string DataKey { get; }
     public abstract IEnumerable<IDataEntry> Entries { get; }
     public abstract List<FilterData> RetrieveFiltersData();
     public abstract List<ToggleActionData> RetrieveTogglesData();
@@ -155,12 +154,12 @@ public abstract class Database : ScriptableObject {
         if (_lists != null) {
             var lists = _lists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
             string jsonData = JsonConvert.SerializeObject(lists);
-            UserDataManager.Instance.Save(DataKey, jsonData);
+            UserDataManager.Instance.Save(DisplayName, jsonData);
         }
     }
 
     private Dictionary<string, HashSet<Hash128>> LoadLists() {
-        string jsonData = UserDataManager.Instance.Load(DataKey);
+        string jsonData = UserDataManager.Instance.Load(DisplayName);
         return ParseListData(jsonData);
     }
 
@@ -179,7 +178,7 @@ public abstract class Database : ScriptableObject {
         if (lists != null) {
             var serializable = lists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
             string jsonListData = JsonConvert.SerializeObject(serializable);
-            result = JsonConvert.SerializeObject(new KeyValuePair<string, string>(DataKey, jsonListData));
+            result = JsonConvert.SerializeObject(new KeyValuePair<string, string>(DisplayName, jsonListData));
         }
 
         return result;

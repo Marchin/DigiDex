@@ -50,13 +50,13 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         _listsDataDict = new Dictionary<string, string>();
         _driveSettings = GoogleDriveSettings.LoadFromResources();
         string localData = PlayerPrefs.GetString(LocalDataPref);
-        _dataOnLoad = localData;
-        _listsDataDict = ParseFileData(localData);
+        ParseFileData(localData);
     }
 
-    private Dictionary<string, string> ParseFileData(string fileContent) {
+    private void ParseFileData(string fileContent) {
         var result = new Dictionary<string, string>();
 
+        bool saveData = false;
         int endOfHeader = fileContent.IndexOf('\n');
         string digidex = fileContent.Substring(0, Mathf.Max(endOfHeader, 0));
         if (endOfHeader >= 0 && digidex == FileHeader) {
@@ -64,10 +64,12 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
             int endOfVersion = fileContent.IndexOf('\n');
             int version = int.Parse(fileContent.Substring(0, Mathf.Max(endOfVersion, 0)));
             if (endOfVersion >= 0) {
+
                 if (version == 1) {
                     fileContent = fileContent.Replace("Digimons", "Digimon").Replace("Appmons", "Appmon");
                     Debug.Log("Data transformed from V1 to V2");
                     version = 2;
+                    saveData = true;
                 }
 
                 if (version == Version) {
@@ -82,6 +84,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                     result = JsonConvert.DeserializeObject<Dictionary<string, string>>(fileContent);
                     Debug.Log("Data Loaded");
                 }
+
             } else {
                 Debug.Log("Version Mismatch");
             }
@@ -89,7 +92,12 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
             Debug.Log("No Header");
         }
 
-        return result;
+        _dataOnLoad = fileContent;
+        _listsDataDict = result;
+        
+        if (saveData) {
+            SaveAllData(forceSave: true);
+        }
     }
 
     public async UniTask Sync() {
@@ -137,12 +145,13 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
 
                     if (fileData.Content != null) {
                         long localModifiedTime = long.Parse(PlayerPrefs.GetString(LastLocalSavePref, "0"));
-                        long lastLocalUploadTime = long.Parse(PlayerPrefs.GetString(LastLocalSaveUploadedPref, "0"));
                         if ((_listsDataDict.Count == 0) || saveFileLocation.ModifiedTime.Value.Ticks != localModifiedTime) {
+                            long lastLocalUploadTime = long.Parse(PlayerPrefs.GetString(LastLocalSaveUploadedPref, "0"));
                             if (localModifiedTime > lastLocalUploadTime) {
                                 var popup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                                 ToggleData keepCopyToggle = new ToggleData { Name = "Keep a copy", IsOn = true };
                                 Action keepLocal = async () => {
+                                    _userConfirmedData = true;
                                     if (keepCopyToggle.IsOn) {
                                         var copyFile = new UnityGoogleDrive.Data.File {
                                             Name = string.Format(SaveFileCopyName_date, DateTime.Now.ToString()),
@@ -162,8 +171,6 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                     var updateRequest = UnityGoogleDrive.GoogleDriveFiles.Update(_fileID, file);
                                     updateRequest.Fields = FileFieldsQuery;
                                     file = await updateRequest.Send();
-                                    _dataOnLoad = jsonData;
-                                    _userConfirmedData = true;
                                     RefreshDataDate(file.ModifiedTime.Value);
                                     _ = PopupManager.Instance.Back();
                                     IsLoggingIn = false;
@@ -171,6 +178,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                     loadingScreenHandle.Finish();
                                 };
                                 Action keepCloud = () => {
+                                    _userConfirmedData = true;
                                     if (keepCopyToggle.IsOn) {
                                         string localData = PlayerPrefs.GetString(LocalDataPref);
                                         var file = new UnityGoogleDrive.Data.File {
@@ -181,9 +189,8 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                         GoogleDriveFiles.Create(file).Send();
                                     }
                                     string jsonData = Encoding.ASCII.GetString(fileData.Content);
-                                    _listsDataDict = ParseFileData(jsonData);
                                     _dataOnLoad = jsonData;
-                                    _userConfirmedData = true;
+                                    ParseFileData(jsonData);
                                     RefreshDataDate(saveFileLocation.ModifiedTime.Value);
                                     _ = PopupManager.Instance.Back();
                                     IsLoggingIn = false;
@@ -200,10 +207,9 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 popup.Populate(msg, "Data Conflict", buttonDataList: buttons, toggleDataList: toggles);
                                 popup.ShowCloseButton = false;
                             } else {
-                                string jsonData = Encoding.ASCII.GetString(fileData.Content);
-                                _listsDataDict = ParseFileData(jsonData);
-                                _dataOnLoad = jsonData;
                                 _userConfirmedData = true;
+                                string jsonData = Encoding.ASCII.GetString(fileData.Content);
+                                ParseFileData(jsonData);
                                 RefreshDataDate(saveFileLocation.ModifiedTime.Value);
                                 IsLoggingIn = false;
                                 OnAuthChanged?.Invoke();
@@ -275,7 +281,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         }
     }
     
-    public async void SaveAllData() {
+    public async void SaveAllData(bool forceSave = false) {
         if (_isSaving) {
             return;
         }
@@ -286,7 +292,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
 
         string jsonData = $"DIGIDEX\n{Version}\n{UsingDubKey}: {UsingDub}\n{JsonConvert.SerializeObject(_listsDataDict)}";
         
-        if (jsonData != _dataOnLoad) {
+        if ((jsonData != _dataOnLoad) || forceSave) {
             PlayerPrefs.SetString(LocalDataPref, jsonData);
             _dataOnLoad = jsonData;
             long localModifiedTime = long.Parse(PlayerPrefs.GetString(LastLocalSavePref, "0"));
@@ -297,7 +303,8 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                 var saveMetadata = await GetSaveMetadata();
                 bool noRecordConflicts = (saveMetadata == null) ||
                     (saveMetadata.ModifiedTime.Value.Ticks <= localModifiedTime);
-                if (IsUserLoggedIn && noRecordConflicts)  {
+                    
+                if (IsUserLoggedIn && (noRecordConflicts || forceSave))  {
                     var file = new UnityGoogleDrive.Data.File {
                         Name = SaveFileName,
                         Content = Encoding.ASCII.GetBytes(jsonData)
@@ -311,6 +318,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                         var updateRequest = UnityGoogleDrive.GoogleDriveFiles.Update(_fileID, file);
                         updateRequest.Fields = FileFieldsQuery;
                         file = await updateRequest.Send();
+                        Debug.LogError("Updated");
                     }
                     RefreshDataDate(file.ModifiedTime.Value);
                     PlayerPrefs.SetString(LastLocalSaveUploadedPref, file.ModifiedTime.Value.Ticks.ToString());
@@ -337,7 +345,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         try {
             KeyValuePair<string, string> parsedData = JsonConvert.DeserializeObject<KeyValuePair<string, string>>(data);
             var dbs = ApplicationManager.Instance.GetDatabases();
-            db = dbs.FirstOrDefault(d => d.DataKey == parsedData.Key);
+            db = dbs.FirstOrDefault(d => d.DisplayName == parsedData.Key);
             if (db != default) {
                 parsedList = db.ParseListData(parsedData.Value);
             } else {
