@@ -102,12 +102,12 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         if (IsUserLoggedIn) {
             return;
         }
-        Handle loadingWheelHandle = null;
-        Handle loadingScreenHandle = null;
+        OperationBySubscription.Subscription loadingWheelHandle = null;
+        OperationBySubscription.Subscription loadingScreenHandle = null;
         try {
             IsLoggingIn = true;
             OnAuthChanged?.Invoke();
-            loadingWheelHandle = ApplicationManager.Instance.DisplayLoadingWheel();
+            loadingWheelHandle = ApplicationManager.Instance.ShowLoadingWheel.Subscribe();
             var aboutRequest = UnityGoogleDrive.GoogleDriveAbout.Get();
             aboutRequest.Fields = new List<string> { "user" };
             await aboutRequest.Send();
@@ -157,8 +157,8 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                         Name = SaveFileName,
                                         Content = Encoding.ASCII.GetBytes(jsonData)
                                     };
-                                    loadingWheelHandle.Complete();
-                                    loadingScreenHandle = ApplicationManager.Instance.DisplayLoadingScreen();
+                                    loadingWheelHandle.Finish();
+                                    loadingScreenHandle = ApplicationManager.Instance.ShowLoadingScreen.Subscribe();
                                     var updateRequest = UnityGoogleDrive.GoogleDriveFiles.Update(_fileID, file);
                                     updateRequest.Fields = FileFieldsQuery;
                                     file = await updateRequest.Send();
@@ -168,7 +168,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                     _ = PopupManager.Instance.Back();
                                     IsLoggingIn = false;
                                     OnAuthChanged?.Invoke();
-                                    loadingScreenHandle.Complete();
+                                    loadingScreenHandle.Finish();
                                 };
                                 Action keepCloud = () => {
                                     if (keepCopyToggle.IsOn) {
@@ -188,7 +188,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                     _ = PopupManager.Instance.Back();
                                     IsLoggingIn = false;
                                     OnAuthChanged?.Invoke();
-                                    loadingWheelHandle.Complete();
+                                    loadingWheelHandle.Finish();
                                 };
 
                                 List<ButtonData> buttons = new List<ButtonData>(2);
@@ -207,36 +207,36 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 RefreshDataDate(saveFileLocation.ModifiedTime.Value);
                                 IsLoggingIn = false;
                                 OnAuthChanged?.Invoke();
-                                loadingWheelHandle.Complete();
+                                loadingWheelHandle.Finish();
                             }
                         } else {
                             _userConfirmedData = true;
                             IsLoggingIn = false;
                             OnAuthChanged?.Invoke();
-                            loadingWheelHandle.Complete();
+                            loadingWheelHandle.Finish();
                         }
                     } else {
                         _userConfirmedData = true;
                         IsLoggingIn = false;
-                        loadingWheelHandle.Complete();
+                        loadingWheelHandle.Finish();
                     }
                 } else {
                     Debug.LogWarning("File Location not found");
                     _userConfirmedData = true;
                     IsLoggingIn = false;
-                    loadingWheelHandle.Complete();
+                    loadingWheelHandle.Finish();
                 }
             } else {
                 var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                 msgPopup.Populate("Failed to authenticate your google account", "Authentication Fail");
                 IsLoggingIn = false;
-                loadingWheelHandle.Complete();
+                loadingWheelHandle.Finish();
             }
         } catch (Exception ex) {
             Debug.LogError($"{ex.Message} \n {ex.StackTrace}");
             IsLoggingIn = false;
-            loadingWheelHandle?.Complete();
-            loadingScreenHandle?.Complete();
+            loadingWheelHandle?.Finish();
+            loadingScreenHandle?.Finish();
             OnAuthChanged?.Invoke();
         }
     }
@@ -293,7 +293,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
             RefreshDataDate();
 
             if (IsUserLoggedIn) {
-                var loadingWheelHandle = ApplicationManager.Instance.DisplayLoadingWheel();
+                var loadingWheelHandle = ApplicationManager.Instance.ShowLoadingWheel.Subscribe();
                 var saveMetadata = await GetSaveMetadata();
                 bool noRecordConflicts = (saveMetadata == null) ||
                     (saveMetadata.ModifiedTime.Value.Ticks <= localModifiedTime);
@@ -315,7 +315,7 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                     RefreshDataDate(file.ModifiedTime.Value);
                     PlayerPrefs.SetString(LastLocalSaveUploadedPref, file.ModifiedTime.Value.Ticks.ToString());
                 }
-                loadingWheelHandle.Complete();
+                loadingWheelHandle.Finish();
             }
         }
 

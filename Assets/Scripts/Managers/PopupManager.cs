@@ -81,7 +81,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     }
 
     public async UniTask<T> GetOrLoadPopup<T>(bool restore = true, bool track = true) where T : Popup {
-        var lockHandle = ApplicationManager.Instance.LockScreen();
+        var lockHandle = ApplicationManager.Instance.LockScreen.Subscribe();
         T popup = null;
         _loadingPopup = true;
         if (track && ActivePopup != null) {
@@ -148,7 +148,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         OnStackChange?.Invoke();
         _loadingPopup = false;
 
-        lockHandle.Complete();
+        lockHandle.Finish();
 
         return popup;
     }
@@ -158,7 +158,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         if (_loadingPopup || ActivePopup == null || _stack.Count <= 0) return;
 
         if (ActivePopup.Vertical != IsScreenOnPortrait) {
-            var handle = ApplicationManager.Instance.DisplayLoadingScreen();
+            var handle = ApplicationManager.Instance.ShowLoadingScreen.Subscribe();
             
             // Cleaning up inactive popup facilitates the algorithm and at this point their orientation probably don't match
             while (!_stack[0].gameObject.activeSelf) {
@@ -190,7 +190,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 --counter;
             }
 
-            handle.Complete();
+            handle.Finish();
         }
     }
 
@@ -241,7 +241,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             }
 
             if (startingIndex >= 0) {
-                var handle = ApplicationManager.Instance.DisplayLoadingScreen();
+                var handle = ApplicationManager.Instance.ShowLoadingScreen.Subscribe();
                 while (startingIndex >= 0) {
                     PopupRestorationData restorationData = _restorationData[startingIndex];
 
@@ -258,7 +258,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                     }
                     --startingIndex;
                 }
-                handle.Complete();
+                handle.Finish();
             } else {
                 CloseActivePopup();
             }

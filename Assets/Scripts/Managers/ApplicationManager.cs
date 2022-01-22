@@ -9,13 +9,28 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     [SerializeField] private GameObject _inputLock = default;
     [SerializeField] private AssetReferenceAtlasedSprite _missingSprite = default;
     public AssetReferenceAtlasedSprite MissingSpirte => _missingSprite;
-    private List<Handle> _loadingScreenHandles = new List<Handle>();
-    private List<Handle> _loadingWheelHandles = new List<Handle>();
-    private List<Handle> _inputLockingHandles = new List<Handle>();
+    public OperationBySubscription ShowLoadingScreen { get; private set; }
+    public OperationBySubscription ShowLoadingWheel { get; private set; }
+    public OperationBySubscription LockScreen { get; private set; }
     private DataCenter _centralDB;
     public bool Initialized { get; private set; }
     
     private async void Start() {
+        ShowLoadingScreen = new OperationBySubscription(
+            onStart: () => _loadingScreen.SetActive(true),
+            onAllFinished: () => _loadingScreen.SetActive(false)
+        );
+
+        ShowLoadingWheel = new OperationBySubscription(
+            onStart: () => _loadingWheel.SetActive(true),
+            onAllFinished: () => _loadingWheel.SetActive(false)
+        );
+
+        LockScreen = new OperationBySubscription(
+            onStart: () => _inputLock.SetActive(true),
+            onAllFinished: () => _inputLock.SetActive(false)
+        );
+
         await Addressables.InitializeAsync();
 
         _centralDB = await Addressables.LoadAssetAsync<DataCenter>(
@@ -48,7 +63,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
 
         string message = "What naming convention do you want to use?";
         string currentNaming = UserDataManager.Instance.UsingDub ? "Dub" : "Original";
-        
+
         if (UserDataManager.Instance.HasNamingBeenPicked) {
             message += $"\n(Current: {currentNaming})";
         }
@@ -103,59 +118,5 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         if (Input.GetKeyDown(KeyCode.Escape)) {
             _ = PopupManager.Instance.Back();
         }
-    }
-
-    public Handle DisplayLoadingScreen() {
-        Handle handle = new Handle();
-        _loadingScreenHandles.Add(handle);
-
-        if (_loadingScreenHandles.Count == 1) {
-            HideLoadingScreenOnceFinished();
-        }
-
-        return handle;
-    }
-
-    private async void HideLoadingScreenOnceFinished() {
-        _loadingScreen.SetActive(true);
-        await UniTask.WaitUntil(() => _loadingScreenHandles.TrueForAll(h => h.IsComplete));
-        _loadingScreen.SetActive(false);
-        _loadingScreenHandles.Clear();
-    }
-
-    public Handle DisplayLoadingWheel() {
-        Handle handle = new Handle();
-        _loadingWheelHandles.Add(handle);
-
-        if (_loadingWheelHandles.Count == 1) {
-            HideLoadingWheelOnceFinished();
-        }
-
-        return handle;
-    }
-
-    private async void HideLoadingWheelOnceFinished() {
-        _loadingWheel.SetActive(true);
-        await UniTask.WaitUntil(() => _loadingWheelHandles.TrueForAll(h => h.IsComplete));
-        _loadingWheel.SetActive(false);
-        _loadingWheelHandles.Clear();
-    }
-
-    public Handle LockScreen() {
-        Handle handle = new Handle();
-        _inputLockingHandles.Add(handle);
-
-        if (_inputLockingHandles.Count == 1) {
-            UnlockScreenOnceFinished();
-        }
-
-        return handle;
-    }
-
-    private async void UnlockScreenOnceFinished() {
-        _inputLock.SetActive(true);
-        await UniTask.WaitUntil(() => _inputLockingHandles.TrueForAll(h => h.IsComplete));
-        _inputLock.SetActive(false);
-        _inputLockingHandles.Clear();
     }
 }
