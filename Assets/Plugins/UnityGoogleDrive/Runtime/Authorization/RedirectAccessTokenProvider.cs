@@ -71,5 +71,15 @@ namespace UnityGoogleDrive
             if (!arguments.ContainsKey(tokenArgName)) return null;
             else return arguments[tokenArgName];
         }
+
+        public void CheckAccessToken() {
+            
+            var accessToken = ExtractAccessTokenFromApplicationUrl();
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                settings.CachedAccessToken = accessToken;
+                HandleProvideAccessTokenComplete();
+            }
+        }
     }
 }

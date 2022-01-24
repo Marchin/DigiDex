@@ -45,6 +45,12 @@ namespace UnityGoogleDrive
             accessTokenProvider.ProvideAccessToken();
         }
 
+        public static void CheckURLAccessToken() {
+            if (accessTokenProvider is RedirectAccessTokenProvider redirectATP) {
+                redirectATP.CheckAccessToken();
+            }
+        }
+
         public static void CancelAuth ()
         {
             if (IsRefreshingAccessToken)
