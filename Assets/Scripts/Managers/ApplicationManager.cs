@@ -31,6 +31,12 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
             onAllFinished: () => _inputLock.SetActive(false)
         );
 
+        UserDataManager.Instance.OnLocalDataOverriden += () => {
+            foreach (var db in _centralDB.GetDatabases()) {
+                db.ClearListsCache();
+            }
+        };
+
         await Addressables.InitializeAsync();
 
         _centralDB = await Addressables.LoadAssetAsync<DataCenter>(
@@ -42,10 +48,16 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         }
 
         if (!UserDataManager.Instance.HasNamingBeenPicked) {
-            await PickNaming(showCloseButton: false);
+            await UserDataManager.Instance.Sync();
+
+            // Chech if naming setting has been loaded from sync
+            if (!UserDataManager.Instance.HasNamingBeenPicked) {
+                await PickNaming(showCloseButton: false);
+            }
+        } else {
+            UserDataManager.Instance.Sync().Forget();
         }
 
-        UserDataManager.Instance.Sync().Forget();
 
         Initialized = true;
     }

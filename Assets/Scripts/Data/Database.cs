@@ -150,6 +150,7 @@ public abstract class Database : ScriptableObject {
         }
         return result;
     }
+
     private void SaveLists() {
         if (_lists != null) {
             var lists = _lists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
@@ -161,6 +162,10 @@ public abstract class Database : ScriptableObject {
     private Dictionary<string, HashSet<Hash128>> LoadLists() {
         string jsonData = UserDataManager.Instance.Load(DisplayName);
         return ParseListData(jsonData);
+    }
+
+    public void ClearListsCache() {
+        _lists = null;
     }
 
     public Dictionary<string, HashSet<Hash128>> ParseListData(string data) {
