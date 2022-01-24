@@ -90,7 +90,11 @@ public class MainMenu : MonoBehaviour {
             
             buttonList.Add(new ButtonData { Text = "About", Callback = async () => {
                 var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
-                msgPopup.Populate("DigiDex is a database for all things digimon.\n\nDigiDex doesn't claim ownership of the images nor the data", "About");
+                msgPopup.Populate(
+                    "DigiDex is a database for all things digimon.\n\n" + 
+                        "DigiDex doesn't claim ownership of the images nor the data.\n\n" + 
+                        $"v{Application.version}",
+                    "About");
             }});
 
 
