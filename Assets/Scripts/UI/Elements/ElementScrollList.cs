@@ -317,12 +317,8 @@ public class ElementScrollList : MonoBehaviour {
             iElement++
         ) {
             if (iEntry < _namesList.Count) {
-                try {
                 _elementsTexts[iElement].text = _namesList[iEntry];
                 _elements[iElement].gameObject.SetActive(true);
-                } catch {
-                    Debug.LogError($"{iElement} - {_elements.Length} - {iEntry} - {_namesList.Count}");
-                }
             } else {
                 _elements[iElement].gameObject.SetActive(false);
             }

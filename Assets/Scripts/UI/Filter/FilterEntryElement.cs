@@ -51,7 +51,6 @@ public class FilterEntryElement : MonoBehaviour, IDataUIElement<FilterEntryData>
     private void Awake() {
         _requiredToggle.onValueChanged.AddListener(isOn => {
             if (_entryData == null) {
-                Debug.LogError("OPPPS");
                 return;
             }
 
@@ -67,7 +66,6 @@ public class FilterEntryElement : MonoBehaviour, IDataUIElement<FilterEntryData>
         });
         _excludeToggle.onValueChanged.AddListener(isOn => {
             if (_entryData == null) {
-                Debug.LogError("OPPPS");
                 return;
             }
 
