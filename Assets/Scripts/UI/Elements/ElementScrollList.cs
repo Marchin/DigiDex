@@ -103,6 +103,10 @@ public class ElementScrollList : MonoBehaviour {
         PopupManager.Instance.OnWindowResize -= AdjustMargins;
     }
 
+    private void OnEnable() {
+        Recentering();
+    }
+
     public async void Initialize(List<string> nameList, Action<int> onConfirmed) {
         if (nameList == null) {
             Debug.LogError("List of names is null");
@@ -162,36 +166,40 @@ public class ElementScrollList : MonoBehaviour {
         _layoutGroup.enabled = true;
     }
 
-    private void Update() {
-        bool isMouseWheelBeingUsed = Input.mouseScrollDelta.y != 0f;
-        if (isMouseWheelBeingUsed != _wasMouseWheelBeingUsed) {
-            if (isMouseWheelBeingUsed) {
-                _fixingListPosition = false;
-            } else {
-                _fixingListPosition = !IsEmpty;
-            }
-        }
-        if (isMouseWheelBeingUsed) {
-            LockRecentering();
-        }
-        _wasMouseWheelBeingUsed = isMouseWheelBeingUsed;
-        if (_fixingListPosition && !_blockCenteringDueScroll) {
-            if (Mathf.Abs(_scrollRect.velocity.y) < 40f) {
-                Vector2 viewportCenter = _scrollRect.viewport.transform.position;
-                Vector2 selectedElementPos = CurrenElement.transform
-                    .TransformPoint(CurrenElement.rect.center);
-                if (!_scrollRect.BeingDragged) {
-                    _scrollRect.velocity = _scrollCenteringSpeedMul * Vector2.up * 
-                        (viewportCenter.y - selectedElementPos.y);
+    private async void Recentering() {
+        while (enabled) {
+            bool isMouseWheelBeingUsed = Input.mouseScrollDelta.y != 0f;
+            if (isMouseWheelBeingUsed != _wasMouseWheelBeingUsed) {
+                if (isMouseWheelBeingUsed) {
+                    _fixingListPosition = false;
+                } else {
+                    _fixingListPosition = !IsEmpty;
                 }
+            }
+            if (isMouseWheelBeingUsed) {
+                LockRecentering();
+            }
+            _wasMouseWheelBeingUsed = isMouseWheelBeingUsed;
+            if (_fixingListPosition && !_blockCenteringDueScroll) {
+                if (Mathf.Abs(_scrollRect.velocity.y) < 40f) {
+                    Vector2 viewportCenter = _scrollRect.viewport.transform.position;
+                    Vector2 selectedElementPos = CurrenElement.transform
+                        .TransformPoint(CurrenElement.rect.center);
+                    if (!_scrollRect.BeingDragged) {
+                        _scrollRect.velocity = _scrollCenteringSpeedMul * Vector2.up * 
+                            (viewportCenter.y - selectedElementPos.y);
+                    }
 
-                if (Mathf.Abs(viewportCenter.y - selectedElementPos.y) < 80f) {
-                    OnConfirmed?.Invoke(CurrElementIndex + _currElementScrollIndex);
-                    if (Mathf.Abs(viewportCenter.y - selectedElementPos.y) < 2f) {
-                        _fixingListPosition = false;
+                    if (Mathf.Abs(viewportCenter.y - selectedElementPos.y) < 80f) {
+                        OnConfirmed?.Invoke(CurrElementIndex + _currElementScrollIndex);
+                        if (Mathf.Abs(viewportCenter.y - selectedElementPos.y) < 2f) {
+                            _fixingListPosition = false;
+                        }
                     }
                 }
             }
+
+            await UniTask.DelayFrame(16);
         }
     }
 
@@ -228,9 +236,8 @@ public class ElementScrollList : MonoBehaviour {
                 isScrollingDown &&
                 newPos.y < (ElementReuseScrollPoint)
             ) {
-                count = Mathf.Min(count, (_namesList.Count - _elements.Length) - _currElementIndex);
+                count = Mathf.Min(count, (_namesList.Count - _elements.Length) - CurrElementIndex);
                 newScrollIndex += count;
-                // CurrElementIndex -= count;
                 _scrollRect.CustomSetVerticalNormalizedPosition(
                     _scrollRect.normalizedPosition.y + (_elementNormalizedHeight * count));
             } else if (_currElementScrollIndex > 0 && 
@@ -239,7 +246,6 @@ public class ElementScrollList : MonoBehaviour {
             ) {
                 count = Mathf.Min(count, newScrollIndex);
                 newScrollIndex -= count;
-                // CurrElementIndex += count;
                 _scrollRect.CustomSetVerticalNormalizedPosition(
                     _scrollRect.normalizedPosition.y - (_elementNormalizedHeight * count));
             }
@@ -313,10 +319,6 @@ public class ElementScrollList : MonoBehaviour {
             }
         }
 
-        foreach (var content in _scrollContents) {
-            content.Refresh();
-        }
-
         float scrollableHeight = _scrollRect.content.rect.height - _scrollRect.viewport.rect.height;
         bool showScrollbar = scrollableHeight > _layoutGroup.spacing;
         if (showScrollbar) {
@@ -341,6 +343,11 @@ public class ElementScrollList : MonoBehaviour {
             Vector2 offset = _scrollRect.viewport.offsetMax;
             offset.x = 0f;
             _scrollRect.viewport.offsetMax = offset;
+        }
+
+        Canvas.ForceUpdateCanvases();
+        foreach (var content in _scrollContents) {
+            content.Refresh();
         }
     }
 

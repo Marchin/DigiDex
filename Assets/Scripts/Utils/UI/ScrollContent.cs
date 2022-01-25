@@ -26,7 +26,7 @@ public class ScrollContent : MonoBehaviour {
         Refresh();
     }
 
-    private void OnDisable() {
+    public void OnDisable() {
         Refresh();
     }
 
@@ -48,7 +48,7 @@ public class ScrollContent : MonoBehaviour {
             } else {
                 newPos.x = 0f;
             }
-            _content.anchoredPosition = _initPos;
+            _content.anchoredPosition = newPos;
         }
     }
 

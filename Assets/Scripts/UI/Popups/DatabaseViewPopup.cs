@@ -176,13 +176,17 @@ public class DatabaseViewPopup : Popup {
     }
 
     private void OnEnable() {
-        PopupManager.Instance.OnStackChange += ReApplyFilterAndRefresh;
-        PopupManager.Instance.OnStackChange += HideKeyboard;
+        PopupManager.Instance.OnStackChange += OnStackChange;
     }
 
     private void OnDisable() {
-        PopupManager.Instance.OnStackChange -= ReApplyFilterAndRefresh;
-        PopupManager.Instance.OnStackChange -= HideKeyboard;
+        PopupManager.Instance.OnStackChange -= OnStackChange;
+    }
+
+    private void OnStackChange() {
+        ReApplyFilterAndRefresh();
+        HideKeyboard();
+        _elementScrollList.enabled = PopupManager.Instance.ActivePopup == this;        
     }
 
     private void HideKeyboard() {

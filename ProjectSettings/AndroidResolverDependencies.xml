@@ -2,7 +2,9 @@
   <packages>
     <package>net.openid:appauth:0.11.+</package>
   </packages>
-  <files />
+  <files>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-viewmodel-savedstate-2.3.1.aar</file>
+  </files>
   <settings>
     <setting name="androidAbis" value="arm64-v8a,armeabi-v7a" />
     <setting name="bundleId" value="com.digidex.digidex" />
