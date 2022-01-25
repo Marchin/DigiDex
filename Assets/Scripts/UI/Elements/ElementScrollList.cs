@@ -19,8 +19,6 @@ public class ElementScrollList : MonoBehaviour {
     [SerializeField] private float _scrollCenteringSpeedMul = 2f;
     [SerializeField] private CustomScrollRect _scrollRect = default;
     [SerializeField] private VerticalLayoutGroup _layoutGroup = default;
-    [SerializeField] private RectTransform _elementTemplate = default;
-    [SerializeField] private int _maxElements = default;
     [SerializeField] private RectTransform _fakeScrollBar = default;
     [SerializeField] private RectTransform _fakeScrollBarHandle = default;
     [SerializeField] private DragHandler _scrollBarHandler = default;
@@ -70,10 +68,6 @@ public class ElementScrollList : MonoBehaviour {
     }
 
     private void Awake() {
-        for (int i = 0; i < _maxElements; i++) {
-            Instantiate(_elementTemplate, _scrollRect.content);
-        }
-
         _scrollRect.OnBeginDragEvent += () => {
             _fixingListPosition = false;
         };
@@ -93,15 +87,12 @@ public class ElementScrollList : MonoBehaviour {
             _fixingListPosition = false;
         };
 
-        Canvas.ForceUpdateCanvases();
-        _elementTemplate.gameObject.SetActive(false);
-
-        _elements = new RectTransform[_scrollRect.content.childCount - 1];
-        for (int iChild = 1; iChild < _scrollRect.content.childCount; ++iChild) {
-            _elements[iChild - 1] = _scrollRect.content.GetChild(iChild) as RectTransform;
-        }
         _elementsTexts = _scrollRect.content.GetComponentsInChildren<TextMeshProUGUI>();
         _scrollContents = _scrollRect.content.GetComponentsInChildren<ScrollContent>();
+        _elements = new RectTransform[_scrollContents.Length];
+        for (int iChild = 0; iChild < _scrollContents.Length; ++iChild) {
+            _elements[iChild] = _scrollContents[iChild].transform as RectTransform;
+        }
         _scrollRect.onValueChanged.AddListener(OnScroll);
         PopupManager.Instance.OnWindowResize += PopulateElements;
         PopupManager.Instance.OnWindowResize += AdjustMargins;
@@ -161,8 +152,6 @@ public class ElementScrollList : MonoBehaviour {
         } else {
             ResetScroll();
         }
-        PopulateElements();
-        OnScroll(_scrollRect.normalizedPosition);
     }
 
     private void AdjustMargins() {
@@ -323,8 +312,6 @@ public class ElementScrollList : MonoBehaviour {
                 _elements[iElement].gameObject.SetActive(false);
             }
         }
-
-        Canvas.ForceUpdateCanvases();
 
         foreach (var content in _scrollContents) {
             content.Refresh();

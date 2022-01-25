@@ -39,7 +39,6 @@ public class DatabaseViewPopup : Popup {
     private IEnumerable<FilterData> _filters;
     private IEnumerable<ToggleActionData> _toggles;
     private string _lastQuery = "";
-    private Dictionary<Hash128, IDataEntry> _entryDict;
     private IEnumerable<IDataEntry> _entries;
     private Database _db;
     private bool _initialized;
@@ -159,7 +158,8 @@ public class DatabaseViewPopup : Popup {
         _elementScrollList.Initialize(
             nameList: _currEntries.Select(e => e.DisplayName).ToList(),
             onConfirmed: (index) => {
-                if (index >= 0 && _currEntries.Count() > 0 && index <= _currEntries.Count()) {
+                int count = _currEntries.Count();
+                if (index >= 0 && count > 0 && index <= count) {
                     SelectedEntry = _currEntries.ElementAt(index);
                     _profileButton.gameObject.SetActive(true);
                 } else {
@@ -168,8 +168,6 @@ public class DatabaseViewPopup : Popup {
                 }
             }
         );
-
-        _entryDict = _entries.ToDictionary(e => e.Hash);
         _filters = filters ?? _db.RetrieveFiltersData();
         _toggles = toggles ?? _db.RetrieveTogglesData();
         _lastQuery = lastQuery;
@@ -224,12 +222,12 @@ public class DatabaseViewPopup : Popup {
             .Concat(_filteredEntries.Where(entry => entry.Name.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture) || entry.DubNames.Any(dn => dn.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture))))
             .Concat(_filteredEntries.Where(entry => entry.DisplayName.ToLower().Contains(_lastQuery.ToLower())))
             .Concat(_filteredEntries.Where(entry => entry.Name.ToLower().Contains(_lastQuery.ToLower()) || entry.DubNames.Any(dn => dn.ToLower().Contains(_lastQuery.ToLower()))))
-            .Distinct()
-            .ToList(); 
+            .Distinct(); 
 
-        _elementScrollList.UpdateList(_currEntries.Select(e => e.DisplayName).ToList());
+        var entryList = _currEntries.Select(e => e.DisplayName).ToList();
+        _elementScrollList.UpdateList(entryList);
 
-        bool isEmpty = _currEntries.Count() == 0;
+        bool isEmpty = entryList.Count == 0;
         _noEntriesFoundText.SetActive(isEmpty);
         _highlighter.SetActive(!isEmpty);
     }
