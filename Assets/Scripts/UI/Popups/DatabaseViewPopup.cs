@@ -35,7 +35,7 @@ public class DatabaseViewPopup : Popup {
     private CancellationTokenSource _entryDataCTS;
     private List<AsyncOperationHandle> _entryDataHandles = new List<AsyncOperationHandle>();
     private IEnumerable<IDataEntry> _filteredEntries;
-    private IEnumerable<IDataEntry> _currEntries;
+    private List<IDataEntry> _currEntries;
     private IEnumerable<FilterData> _filters;
     private IEnumerable<ToggleActionData> _toggles;
     private string _lastQuery = "";
@@ -153,14 +153,14 @@ public class DatabaseViewPopup : Popup {
         string lastQuery = ""
     ) {
         _db = database;
-        _entries = _db.Entries.OrderBy(e => e.DisplayName);
-        _currEntries = _filteredEntries = _entries;
+        _filteredEntries = _entries = _db.Entries.OrderBy(e => e.DisplayName);
+        _currEntries = _entries.ToList();
         _elementScrollList.Initialize(
             nameList: _currEntries.Select(e => e.DisplayName).ToList(),
             onConfirmed: (index) => {
                 int count = _currEntries.Count();
                 if (index >= 0 && count > 0 && index <= count) {
-                    SelectedEntry = _currEntries.ElementAt(index);
+                    SelectedEntry = _currEntries[index];
                     _profileButton.gameObject.SetActive(true);
                 } else {
                     SelectedEntry = null;
@@ -226,7 +226,8 @@ public class DatabaseViewPopup : Popup {
             .Concat(_filteredEntries.Where(entry => entry.Name.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture) || entry.DubNames.Any(dn => dn.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture))))
             .Concat(_filteredEntries.Where(entry => entry.DisplayName.ToLower().Contains(_lastQuery.ToLower())))
             .Concat(_filteredEntries.Where(entry => entry.Name.ToLower().Contains(_lastQuery.ToLower()) || entry.DubNames.Any(dn => dn.ToLower().Contains(_lastQuery.ToLower()))))
-            .Distinct(); 
+            .Distinct()
+            .ToList(); 
 
         var entryList = _currEntries.Select(e => e.DisplayName).ToList();
         _elementScrollList.UpdateList(entryList);

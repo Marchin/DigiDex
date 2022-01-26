@@ -49,8 +49,8 @@ public class AppmonDatabase : Database {
                 }
             );
             listsFilter.Elements = new List<FilterEntryData>(Lists.Count);
-            for (int iList = 0; iList < Lists.Count; ++iList) {
-                listsFilter.Elements.Add(new FilterEntryData { Name = Lists.ElementAt(iList).Key });
+            foreach (var list in Lists) {
+                listsFilter.Elements.Add(new FilterEntryData { Name = list.Key });
             }
             filters.Add(listsFilter);
         }
@@ -121,8 +121,8 @@ public class AppmonDatabase : Database {
                     }
                 );
                 listsFilter.Elements = new List<FilterEntryData>(Lists.Count);
-                for (int iList = 0; iList < Lists.Count; ++iList) {
-                    listsFilter.Elements.Add(new FilterEntryData { Name = Lists.ElementAt(iList).Key });
+                foreach (var list in Lists) {
+                    listsFilter.Elements.Add(new FilterEntryData { Name = list.Key });
                 }
                 filters = filters.Append(listsFilter);
             }

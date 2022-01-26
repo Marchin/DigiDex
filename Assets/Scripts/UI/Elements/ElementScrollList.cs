@@ -96,15 +96,12 @@ public class ElementScrollList : MonoBehaviour {
         _scrollRect.onValueChanged.AddListener(OnScroll);
         PopupManager.Instance.OnWindowResize += PopulateElements;
         PopupManager.Instance.OnWindowResize += AdjustMargins;
+        Recentering();
     }
 
     private void OnDestroy() {
         PopupManager.Instance.OnWindowResize -= PopulateElements;
         PopupManager.Instance.OnWindowResize -= AdjustMargins;
-    }
-
-    private void OnEnable() {
-        Recentering();
     }
 
     public async void Initialize(List<string> nameList, Action<int> onConfirmed) {
@@ -167,7 +164,13 @@ public class ElementScrollList : MonoBehaviour {
     }
 
     private async void Recentering() {
-        while (enabled) {
+        while (this != null && true) {
+            if (!enabled) {
+                await UniTask.DelayFrame(1, cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this))
+                    .SuppressCancellationThrow();
+                continue;
+            }
+
             bool isMouseWheelBeingUsed = Input.mouseScrollDelta.y != 0f;
             if (isMouseWheelBeingUsed != _wasMouseWheelBeingUsed) {
                 if (isMouseWheelBeingUsed) {
@@ -199,7 +202,8 @@ public class ElementScrollList : MonoBehaviour {
                 }
             }
 
-            await UniTask.DelayFrame(16);
+            await UniTask.Delay(16, cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this))
+                .SuppressCancellationThrow();
         }
     }
 
@@ -211,12 +215,9 @@ public class ElementScrollList : MonoBehaviour {
 
         _mouseWheelCTS = new CancellationTokenSource();
 
-        try {
-            _blockCenteringDueScroll = true;
-            await UniTask.Delay(600, cancellationToken: _mouseWheelCTS.Token);
-            _blockCenteringDueScroll = false;
-        } catch (OperationCanceledException) {
-        }
+        _blockCenteringDueScroll = true;
+        await UniTask.Delay(600, cancellationToken: _mouseWheelCTS.Token).SuppressCancellationThrow();
+        _blockCenteringDueScroll = false;
     }
 
     private void OnScroll(Vector2 newPos) {
