@@ -239,8 +239,8 @@ public class ElementScrollList : MonoBehaviour {
                 isScrollingDown &&
                 newPos.y < (ElementReuseScrollPoint)
             ) {
-                count = Mathf.Min(count, (_namesList.Count - _elements.Length) - CurrElementIndex);
                 newScrollIndex += count;
+                newScrollIndex = Math.Min(newScrollIndex, _namesList.Count - _elements.Length);
                 _scrollRect.CustomSetVerticalNormalizedPosition(
                     _scrollRect.normalizedPosition.y + (_elementNormalizedHeight * count));
             } else if (_currElementScrollIndex > 0 && 
