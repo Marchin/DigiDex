@@ -94,8 +94,10 @@ public class ElementScrollList : MonoBehaviour {
             _elements[iChild] = _scrollContents[iChild].transform as RectTransform;
         }
         _scrollRect.onValueChanged.AddListener(OnScroll);
+
         PopupManager.Instance.OnWindowResize += PopulateElements;
         PopupManager.Instance.OnWindowResize += AdjustMargins;
+
         Recentering();
     }
 
@@ -149,7 +151,7 @@ public class ElementScrollList : MonoBehaviour {
         _namesList = nameList;
 
         if (!string.IsNullOrEmpty(lastName) && _namesList.Contains(lastName)) {
-            ScrollTo(lastName, withAnimation: true);
+            ScrollTo(lastName, withAnimation: false);
         } else {
             ResetScroll();
         }
@@ -256,7 +258,13 @@ public class ElementScrollList : MonoBehaviour {
             _currElementScrollIndex = newScrollIndex;
             PopulateElements();
         }
+        UpdateScrollHandlePosition();
 
+        _prevScrollPos = newPos.y;
+        AnimateElements();
+    }
+
+    private void UpdateScrollHandlePosition() {
         float elementsScrolled = _currElementScrollIndex  + 
             ((1f - _scrollRect.verticalNormalizedPosition) / _elementNormalizedHeight);
         float newY = -(elementsScrolled / _namesList.Count) *
@@ -265,9 +273,6 @@ public class ElementScrollList : MonoBehaviour {
             _fakeScrollBarHandle.anchoredPosition.x,
             newY - (0.5f * _fakeScrollBarHandle.rect.height)
         );
-
-        _prevScrollPos = newPos.y;
-        AnimateElements();
     }
 
     private void OnScrollBarHandle(PointerEventData eventData) {
@@ -319,13 +324,18 @@ public class ElementScrollList : MonoBehaviour {
                 _elements[iElement].gameObject.SetActive(false);
             }
         }
+        Canvas.ForceUpdateCanvases();
 
         float scrollableHeight = _scrollRect.content.rect.height - _scrollRect.viewport.rect.height;
-        bool showScrollbar = scrollableHeight > _layoutGroup.spacing;
-        if (showScrollbar) {
-            _fakeScrollBar.gameObject.SetActive(true);
+        bool showScrollbar = (_namesList.Count > 0) && (scrollableHeight > _layoutGroup.spacing);
+
+        if (scrollableHeight > 0f) {
             _elementNormalizedHeight = (_elements[0].rect.height + _layoutGroup.spacing) /
                 scrollableHeight;
+        }
+
+        if (showScrollbar) {
+            _fakeScrollBar.gameObject.SetActive(true);
             float handleLength = (1f / ( _namesList.Count)) * _fakeScrollBar.rect.height;
             if (handleLength < MinHandleHeight) {
                 _handleSizeAdjustment = MinHandleHeight - handleLength;
@@ -346,7 +356,6 @@ public class ElementScrollList : MonoBehaviour {
             _scrollRect.viewport.offsetMax = offset;
         }
 
-        Canvas.ForceUpdateCanvases();
         foreach (var content in _scrollContents) {
             content.Refresh();
         }
@@ -358,7 +367,6 @@ public class ElementScrollList : MonoBehaviour {
     }
 
     public async void ScrollTo(float scrolled, bool withAnimation = false) {
-        enabled = false;
         scrolled = Mathf.Clamp(scrolled, 0, _namesList.Count - 1);
         int halfElementsIndex = Mathf.FloorToInt(
             (float)Mathf.Min(_elements.Length, _namesList.Count) * 0.5f);
@@ -381,13 +389,13 @@ public class ElementScrollList : MonoBehaviour {
         _scrollRect.verticalNormalizedPosition = 
             1f - (CurrElementIndex + (scrolled - scrolledIndex)) * _elementNormalizedHeight;
         OnConfirmed?.Invoke(newIndex);
+        UpdateScrollHandlePosition();
 
         if (withAnimation) {
             await UniTask.DelayFrame(FrameDelayToAnimateList,
                 cancellationToken: UniTaskCancellationExtensions.GetCancellationTokenOnDestroy(this));
             AnimateElements();
         }
-        enabled = true;
         _prevScrollPos = _scrollRect.normalizedPosition.y;
     }
 
@@ -408,5 +416,6 @@ public class ElementScrollList : MonoBehaviour {
         } else {
             OnConfirmed?.Invoke(-1);
         }
+        UpdateScrollHandlePosition();
     }
 }
