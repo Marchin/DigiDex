@@ -270,7 +270,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         }
     }
 
-    public async void ClearStackUntilPopup<T>() where T : Popup {
+    public void ClearStackUntilPopup<T>() where T : Popup {
         if (ActivePopup == null || ActivePopup.GetType() == typeof(T)) {
             return;
         }
@@ -284,8 +284,6 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             while ((ActivePopup != null) && (ActivePopup.GetType() != typeof(T))) {
                 CloseActivePopup();
             }
-
-            await RestorePopup(_restorationData[0]);
         }
 
         OnStackChange?.Invoke();
