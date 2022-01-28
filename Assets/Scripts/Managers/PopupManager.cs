@@ -347,7 +347,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             AndroidJavaClass systemGlobal = new AndroidJavaClass("android.provider.Settings$System");
             var rotationOn = systemGlobal.CallStatic<int>("getInt", context.Call<AndroidJavaObject>("getContentResolver"), "accelerometer_rotation");
     
-            return rotationOn = 1;
+            return rotationOn == 1;
         }
 #endif
         return true;
