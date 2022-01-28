@@ -27,6 +27,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     public event Action OnWindowResize;
     public event Action OnRotation;
     private List<PopupRestorationData> _restorationData = new List<PopupRestorationData>();
+    private bool _autoRotationOn;
     private bool _loadingPopup;
     public bool ClosingPopup { get; private set; }
     public bool IsScreenOnPortrait => (Screen.height > Screen.width);
@@ -322,5 +323,33 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         if (canvasScaler != null && _registeredCanvasScalers.Contains(canvasScaler)) {
             _registeredCanvasScalers.Remove(canvasScaler);
         }
+    }
+
+    private void OnApplicationFocus(bool haveFocus) {
+        if (haveFocus) {
+            ToggleAutoRotation();
+        }
+    }
+     
+    private void ToggleAutoRotation() {
+        _autoRotationOn = DeviceAutoRotationIsOn();
+        Screen.autorotateToPortrait = _autoRotationOn;
+        Screen.autorotateToPortraitUpsideDown = _autoRotationOn;
+        Screen.autorotateToLandscapeLeft = _autoRotationOn;
+        Screen.autorotateToLandscapeRight = _autoRotationOn;
+        Screen.orientation = ScreenOrientation.AutoRotation;
+    }
+     
+    private bool DeviceAutoRotationIsOn() {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        using (var actClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
+            var context = actClass.GetStatic<AndroidJavaObject>("currentActivity");
+            AndroidJavaClass systemGlobal = new AndroidJavaClass("android.provider.Settings$System");
+            var rotationOn = systemGlobal.CallStatic<int>("getInt", context.Call<AndroidJavaObject>("getContentResolver"), "accelerometer_rotation");
+    
+            return rotationOn = 1;
+        }
+#endif
+        return true;
     }
 }
