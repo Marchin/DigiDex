@@ -131,12 +131,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             } else {
                 string popupName = typeof(T).Name;
                 if (inPortait) {
-                    string verticalPopupName = popupName + Popup.VerticalSufix;
-                    bool verticalExists = Addressables.ResourceLocators
-                        .Where(r => r.Keys.Any(k => verticalPopupName.Equals(k as string))).Any();
-                    if (verticalExists) {
-                        popupName = verticalPopupName;
-                    }
+                    popupName += Popup.VerticalSufix;
                 }
                 var handle = Addressables.InstantiateAsync(popupName, _parentCanvas.transform);
                 _handles.Insert(0, handle);
