@@ -1,13 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
 using System.Collections.Generic;
-using FilterCallback = System.Action<System.Collections.Generic.IEnumerable<FilterData>, System.Collections.Generic.IEnumerable<ToggleActionData>>;
+using FilterCallback = System.Action<System.Collections.Generic.List<FilterData>, System.Collections.Generic.List<ToggleActionData>>;
 
 public class FilterPopup : Popup {
     class PopupData {
-        public IEnumerable<FilterData> Filters;
-        public IEnumerable<ToggleActionData> Toggles;
+        public List<FilterData> Filters;
+        public List<ToggleActionData> Toggles;
         public FilterCallback ApplyCallback;
     }
 
@@ -17,8 +16,8 @@ public class FilterPopup : Popup {
     [SerializeField] private FilterDataList _filterList = default;
     [SerializeField] private FilterEntryList _filterEntriesList = default;
     [SerializeField] private ToggleList _toggleList = default;
-    private IEnumerable<FilterData> _filters;
-    private IEnumerable<ToggleActionData> _toggles;
+    private List<FilterData> _filters;
+    private List<ToggleActionData> _toggles;
     private FilterCallback ApplyCallback;
 
     private void Awake() {
@@ -47,25 +46,25 @@ public class FilterPopup : Popup {
     }
 
     public void Populate(
-        IEnumerable<FilterData> filters,
-        IEnumerable<ToggleActionData> toggles,
+        List<FilterData> filters,
+        List<ToggleActionData> toggles,
         FilterCallback applyCallback
     ) {
         ApplyCallback = applyCallback;
 
         if (filters != null) {
-            _filters = new List<FilterData>(filters.Count());
+            _filters = new List<FilterData>(filters.Count);
             foreach (var filter in filters) {
                 filter.List = _filterEntriesList;
-                _filters = _filters.Append(filter.Clone());
+                _filters.Add(filter.Clone());
             }
             _filterList.Populate(_filters);
         }
 
         if (toggles != null) {
-            _toggles = new List<ToggleActionData>(toggles.Count());
+            _toggles = new List<ToggleActionData>(toggles.Count);
             foreach (var toggle in toggles) {
-                _toggles = _toggles.Append(toggle.Clone() as ToggleActionData);
+                _toggles.Add(toggle.Clone() as ToggleActionData);
             }
             _toggleList.Populate(_toggles);
         }

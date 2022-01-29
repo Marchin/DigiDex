@@ -84,11 +84,12 @@ public class EntryIndex : IEquatable<EntryIndex> {
 }
 
 public abstract class Database : ScriptableObject {
+    protected const string ListsFilter = "Lists";
+    protected const string InListToggle = "In List";
     public abstract string DisplayName { get; }
-    public abstract IEnumerable<IDataEntry> Entries { get; }
+    public abstract List<IDataEntry> Entries { get; }
     public abstract List<FilterData> RetrieveFiltersData();
     public abstract List<ToggleActionData> RetrieveTogglesData();
-    public abstract void RefreshFilters(ref IEnumerable<FilterData> filters, ref IEnumerable<ToggleActionData> toggles);
     private Dictionary<Hash128, IDataEntry> _entryDict;
     public Dictionary<Hash128, IDataEntry> EntryDict {
         get {
@@ -187,5 +188,135 @@ public abstract class Database : ScriptableObject {
         }
 
         return result;
+    }
+    
+    public void RefreshFilters(
+        ref List<FilterData> filters, 
+        ref List<ToggleActionData> toggles
+    ) {
+        var listFilter = filters.Find(f => f.Name == ListsFilter);
+        if (listFilter != null) {
+            var temp = new List<FilterEntryData>(listFilter.Elements.Count);
+            foreach (var kvp in Lists) {
+                bool found = false;
+                for (int iElement = 0; iElement < listFilter.Elements.Count; ++iElement) {
+                    if (kvp.Key == listFilter.Elements[iElement].Name) {
+                        temp.Add(listFilter.Elements[iElement]);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    temp.Add(new FilterEntryData { Name = kvp.Key });
+                }
+            }
+            listFilter.Elements = temp;
+            if (listFilter.Elements.Count <= 0) {
+                filters.RemoveAll(f => f.Name == ListsFilter);
+            }
+        } else {
+            if (Lists.Count > 0) {
+                FilterData listsFilter = new FilterData(
+                    name: ListsFilter,
+                    getFilteringComponent: element => {
+                        List<int> result = new List<int>();
+                        int index = 0;
+                        foreach (var kvp in Lists) {
+                            if (kvp.Value.Contains(element.Hash)) {
+                                result.Add(index);
+                            }
+                            ++index;
+                        }
+                        return result;
+                    }
+                );
+                listsFilter.Elements = new List<FilterEntryData>(Lists.Count);
+                foreach (var list in Lists) {
+                    listsFilter.Elements.Add(new FilterEntryData { Name = list.Key });
+                }
+                filters.Add(listsFilter);
+            }
+        }
+
+        var inListToggle = toggles.Find(t => t.Name == InListToggle);
+        if (inListToggle != null) {
+            if (Lists.Count <= 0) {
+                toggles.RemoveAll(t => t.Name == InListToggle);
+            }
+        } else {
+            if (Lists.Count > 0) {
+                toggles.Add(
+                    new ToggleActionData(
+                        name: InListToggle, 
+                        action: (list, isOn) => {
+                            if (isOn) {
+                                List<IDataEntry> result = new List<IDataEntry>(list.Count);
+                                for (int iEntry = 0; iEntry < list.Count; ++iEntry) {
+                                    foreach (var kvp in Lists) {
+                                        if (kvp.Value.Contains(list[iEntry].Hash)) {
+                                            result.Add(list[iEntry]);
+                                            break;
+                                        }
+                                    }
+                                }
+                                return result;
+                            } else {
+                                return list;
+                            }
+                        }
+                    )
+                );
+            }
+        }
+    }
+
+    protected void RetrieveListFilter(ref List<FilterData> filters) {
+        if (Lists.Count > 0) {
+            FilterData listsFilter = new FilterData(
+                name: ListsFilter,
+                getFilteringComponent: element => {
+                    List<int> result = new List<int>();
+                    int index = 0;
+                    foreach (var kvp in Lists) {
+                        if (kvp.Value.Contains(element.Hash)) {
+                            result.Add(index);
+                        }
+                        ++index;
+                    }
+                    return result;
+                }
+            );
+            listsFilter.Elements = new List<FilterEntryData>(Lists.Count);
+            foreach (var list in Lists) {
+                listsFilter.Elements.Add(new FilterEntryData { Name = list.Key });
+            }
+            filters.Add(listsFilter);
+        }
+    }
+
+    protected void RetrieveListToggle(ref List<ToggleActionData> toggles) {
+        if (Lists.Count > 0) {
+            toggles.Add(
+                new ToggleActionData(
+                    name: InListToggle, 
+                    action: (list, isOn) => {
+                        if (isOn) {
+                            List<IDataEntry> result = new List<IDataEntry>(list.Count);
+                            for (int iEntry = 0; iEntry < list.Count; ++iEntry) {
+                                foreach (var kvp in Lists) {
+                                    if (kvp.Value.Contains(list[iEntry].Hash)) {
+                                        result.Add(list[iEntry]);
+                                        break;
+                                    }
+                                }
+                            }
+                            return result;
+                        } else {
+                            return list;
+                        }
+                    }
+                )
+            );
+        }
     }
 }

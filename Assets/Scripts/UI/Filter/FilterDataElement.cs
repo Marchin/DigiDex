@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
@@ -30,32 +29,54 @@ public class FilterData {
         return newFilter;
     }
 
-    public IEnumerable<T> Apply<T>(IEnumerable<T> list) where T : IDataEntry {
-        List<int> required = this.Elements
-            .Where(e => e.State == FilterState.Required)
-            .Select(e => this.Elements.IndexOf(e))
-            .ToList();
-        List<int> excluded = this.Elements
-            .Where(e => e.State == FilterState.Excluded)
-            .Select(e => this.Elements.IndexOf(e))
-            .ToList();
+    public List<T> Apply<T>(List<T> list) where T : IDataEntry {
+        List<int> required = new List<int>(Elements.Count);
+        List<int> excluded = new List<int>(Elements.Count);
+        for (int iEntry = 0; iEntry < Elements.Count; ++iEntry) {
+            int index = Elements.IndexOf(Elements[iEntry]);
+            if (Elements[iEntry].State == FilterState.Required) {
+                required.Add(index);
+            } else if (Elements[iEntry].State == FilterState.Excluded) {
+                excluded.Add(index);
+            }
+        }
 
-        var filteredList = list
-            .Where(element => {
-                List<int> filteringComponent = _getFilteringComponent?.Invoke(element);
+        var filteredList = new List<T>(list.Count);
+        for (int iElement = 0; iElement < list.Count; ++iElement) {
+            List<int> filteringComponent = _getFilteringComponent?.Invoke(list[iElement]);
 
-                return (required.Except(filteringComponent).Count() == 0) &&
-                    !excluded.Any(index => filteringComponent.Contains(index));
-            });
+            bool add = true;
+            for (int iRequired = 0; iRequired < required.Count; ++iRequired) {
+                if (!filteringComponent.Contains(required[iRequired])) {
+                    add = false;
+                    break;
+                }
+            }
+
+            if (!add) {
+                continue;
+            }
+            
+            for (int iExcluded = 0; iExcluded < excluded.Count; ++iExcluded) {
+                if (filteringComponent.Contains(excluded[iExcluded])) {
+                    add = false;
+                    break;
+                }
+            }
+
+            if (add) {
+                filteredList.Add(list[iElement]);
+            }
+        }
 
         return filteredList;
     }
 }
 
 public class ToggleActionData : ToggleData {
-    public Func<IEnumerable<IDataEntry>, bool, IEnumerable<IDataEntry>> _action;
+    public Func<List<IDataEntry>, bool, List<IDataEntry>> _action;
 
-    public ToggleActionData(string name, Func<IEnumerable<IDataEntry>, bool, IEnumerable<IDataEntry>> action) : base(name) {
+    public ToggleActionData(string name, Func<List<IDataEntry>, bool, List<IDataEntry>> action) : base(name) {
         _action = action;
     }
 
@@ -63,11 +84,18 @@ public class ToggleActionData : ToggleData {
         return this.MemberwiseClone();
     }
 
-    public IEnumerable<T> Apply<T>(IEnumerable<T> list) where T : IDataEntry {
-        // TODO: See if we can do something better with the casting
-        var processedList = _action?.Invoke(list.Cast<IDataEntry>(), IsOn).Cast<T>();
+    public List<T> Apply<T>(List<T> list) where T : IDataEntry {
+        List<IDataEntry> entries = new List<IDataEntry>(list.Count);
+        for (int iElement = 0; iElement < list.Count; ++iElement) {
+            entries.Add(list[iElement]);
+        }
+        var processedList = _action?.Invoke(entries, IsOn);
+        List<T> processedEntries = new List<T>(processedList.Count);
+        for (int iElement = 0; iElement < processedList.Count; ++iElement) {
+            processedEntries.Add((T)processedList[iElement]);
+        }
 
-        return processedList;
+        return processedEntries;
     }
 }
 
@@ -130,7 +158,14 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
         _label.text = _filterData.Name;
         
         if (_filterData != null && _filterData.Elements != null) {
-            int activeFilters = _filterData.Elements.Where(e => e.State != FilterState.None).Count();
+            int activeFilters = 0;
+
+            for (int iElement = 0; iElement < _filterData.Elements.Count; ++iElement) {
+                if (_filterData.Elements[iElement].State != FilterState.None) {
+                    activeFilters++;
+                }
+            }
+
             if (activeFilters > 0) {
                 _label.text += $" ({activeFilters})";
             }

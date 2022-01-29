@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
@@ -133,11 +132,13 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 if (inPortait) {
                     popupName += Popup.VerticalSufix;
                 }
+                var loadingHandle = ApplicationManager.Instance.ShowLoadingScreen.Subscribe();
                 var handle = Addressables.InstantiateAsync(popupName, _parentCanvas.transform);
                 _handles.Insert(0, handle);
                 popup = (await handle).GetComponent<T>();
-                (popup.transform as RectTransform)?.AdjustToSafeZone();
+                (popup.transform as RectTransform).AdjustToSafeZone();
                 _stack.Insert(0, popup);
+                loadingHandle.Finish();
             }
         }
 

@@ -4,17 +4,16 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Globalization;
+using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.Linq;
 
 public class DatabaseViewPopup : Popup {
     public class PopupData {
-        public IEnumerable<FilterData> Filters;
-        public IEnumerable<ToggleActionData> Toggles;
+        public List<FilterData> Filters;
+        public List<ToggleActionData> Toggles;
         public string LastQuery;
         public Database DB;
         public string SelectedEntry;
@@ -34,12 +33,11 @@ public class DatabaseViewPopup : Popup {
     [SerializeField] private GameObject _highlighter = default;
     private CancellationTokenSource _entryDataCTS;
     private List<AsyncOperationHandle> _entryDataHandles = new List<AsyncOperationHandle>();
-    private IEnumerable<IDataEntry> _filteredEntries;
+    private List<IDataEntry> _filteredEntries;
     private List<IDataEntry> _currEntries;
-    private IEnumerable<FilterData> _filters;
-    private IEnumerable<ToggleActionData> _toggles;
+    private List<FilterData> _filters;
+    private List<ToggleActionData> _toggles;
     private string _lastQuery = "";
-    private IEnumerable<IDataEntry> _entries;
     private Database _db;
     private bool _initialized;
     private IDataEntry _selectedEntry;
@@ -125,7 +123,7 @@ public class DatabaseViewPopup : Popup {
                 Action prev = null;
                 Action next = null;
 
-                if (_currEntries.Count() > 1) {
+                if (_currEntries.Count > 1) {
                     prev = () => {
                         --_elementScrollList.CurrentIndex;
                         EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
@@ -148,17 +146,22 @@ public class DatabaseViewPopup : Popup {
 
     public void Populate(
         Database database,
-        IEnumerable<FilterData> filters = null,
-        IEnumerable<ToggleActionData> toggles = null,
+        List<FilterData> filters = null,
+        List<ToggleActionData> toggles = null,
         string lastQuery = ""
     ) {
         _db = database;
-        _filteredEntries = _entries = _db.Entries.OrderBy(e => e.DisplayName);
-        _currEntries = _entries.ToList();
+         _db.Entries.Sort((x, y) => x.DisplayName.CompareTo(y.DisplayName));
+        _currEntries = new List<IDataEntry>(_db.Entries);
+        _filteredEntries = new List<IDataEntry>(_currEntries);
+        List<string> nameList = new List<string>(_currEntries.Count);
+        for (int iEntry = 0; iEntry < _currEntries.Count; ++iEntry) {
+            nameList.Add(_currEntries[iEntry].DisplayName);
+        }
         _elementScrollList.Initialize(
-            nameList: _currEntries.Select(e => e.DisplayName).ToList(),
+            nameList: nameList,
             onConfirmed: (index) => {
-                int count = _currEntries.Count();
+                int count = _currEntries.Count;
                 if (index >= 0 && count > 0 && index <= count) {
                     SelectedEntry = _currEntries[index];
                     _profileButton.gameObject.SetActive(true);
@@ -201,7 +204,7 @@ public class DatabaseViewPopup : Popup {
 
         if (PopupManager.Instance.ActivePopup == this) {
             _db.RefreshFilters(ref _filters, ref _toggles);
-            _filteredEntries = new List<IDataEntry>(_entries);
+            _filteredEntries = new List<IDataEntry>(_db.Entries);
             foreach (var toggle in _toggles) {
                 _filteredEntries = toggle.Apply(_filteredEntries);
             }
@@ -210,8 +213,8 @@ public class DatabaseViewPopup : Popup {
                 _filteredEntries = filter.Apply(_filteredEntries);
             }
 
-            _activeFilterIndicator.SetActive(_toggles.Any(t => t.IsOn) || 
-                _filters.Any(f => f.Elements.Any(e => e.State != FilterState.None)));
+            _activeFilterIndicator.SetActive((_toggles.Find(t => t.IsOn) != null) || 
+                (_filters.Find(f => f.Elements.Find(e => e.State != FilterState.None) != null) != null));
             
             _elementScrollList.ScrollEnabled = true;
             RefreshList();
@@ -221,18 +224,40 @@ public class DatabaseViewPopup : Popup {
     }
 
     private void RefreshList() {
-        _currEntries = _filteredEntries
-            .Where(entry => entry.DisplayName.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture))
-            .Concat(_filteredEntries.Where(entry => entry.Name.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture) || entry.DubNames.Any(dn => dn.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture))))
-            .Concat(_filteredEntries.Where(entry => entry.DisplayName.ToLower().Contains(_lastQuery.ToLower())))
-            .Concat(_filteredEntries.Where(entry => entry.Name.ToLower().Contains(_lastQuery.ToLower()) || entry.DubNames.Any(dn => dn.ToLower().Contains(_lastQuery.ToLower()))))
-            .Distinct()
-            .ToList(); 
+        _currEntries.Clear();
+        var displayNameStartsWith = new List<IDataEntry>(_filteredEntries.Count);
+        var anyNameStartsWith = new List<IDataEntry>(_filteredEntries.Count);
+        var displayNameContains = new List<IDataEntry>(_filteredEntries.Count);
+        var anyNameContains = new List<IDataEntry>(_filteredEntries.Count);
 
-        var entryList = _currEntries.Select(e => e.DisplayName).ToList();
-        _elementScrollList.UpdateList(entryList);
+        for (int iEntry = 0; iEntry < _filteredEntries.Count; ++iEntry) {
+            if (_filteredEntries[iEntry].DisplayName.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture)) {
+                displayNameStartsWith.Add(_filteredEntries[iEntry]);
+            } else if (_filteredEntries[iEntry].Name.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture) || 
+                (_filteredEntries[iEntry].DubNames.Find(dn => dn.StartsWith(_lastQuery, true, CultureInfo.InvariantCulture)) != null)
+            ) {
+                anyNameStartsWith.Add(_filteredEntries[iEntry]);
+            } else if (_filteredEntries[iEntry].DisplayName.ToLower().Contains(_lastQuery.ToLower())) {
+                displayNameContains.Add(_filteredEntries[iEntry]);
+            } else if (_filteredEntries[iEntry].Name.ToLower().Contains(_lastQuery.ToLower()) || 
+                (_filteredEntries[iEntry].DubNames.Find(dn => dn.StartsWith(_lastQuery.ToLower())) != null)
+            ) {
+                anyNameContains.Add(_filteredEntries[iEntry]);
+            }
+        }
 
-        bool isEmpty = entryList.Count == 0;
+        _currEntries.AddRange(displayNameStartsWith);
+        _currEntries.AddRange(anyNameStartsWith);
+        _currEntries.AddRange(displayNameContains);
+        _currEntries.AddRange(anyNameContains);
+
+        List<string> nameList = new List<string>(_currEntries.Count);
+        for (int iEntry = 0; iEntry < _currEntries.Count; ++iEntry) {
+            nameList.Add(_currEntries[iEntry].DisplayName);
+        }
+        _elementScrollList.UpdateList(nameList);
+
+        bool isEmpty = nameList.Count == 0;
         _noEntriesFoundText.SetActive(isEmpty);
         _highlighter.SetActive(!isEmpty);
     }

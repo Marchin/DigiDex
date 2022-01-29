@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Collections.Generic;
 
 public class DigimonDatabase : Database {
@@ -9,11 +8,21 @@ public class DigimonDatabase : Database {
     private const string TypesFilter = "Types";
     private const string LevelsFilter = "Levels";
     private const string GroupsFilter = "Groups";
-    private const string ListsFilter = "Lists";
-    private const string InListToggle = "In List";
     private const string ReverseToggle = "Reverse";
-    public override IEnumerable<IDataEntry> Entries => Digimons;
     public List<Digimon> Digimons;
+    private List<IDataEntry> _entries;
+    public override List<IDataEntry> Entries {
+        get {
+            if (_entries == null) {
+                _entries = new List<IDataEntry>(Digimons.Count);
+                foreach (var digimon in Digimons) {
+                    _entries.Add(digimon);
+                }
+            }
+
+            return _entries;
+        }
+    }
     public List<Field> Fields;
     public List<Attribute> Attributes;
     public List<DigimonType> Types;
@@ -80,23 +89,7 @@ public class DigimonDatabase : Database {
         }
         filters.Add(groupsFilter);
 
-        if (Lists.Count > 0) {
-            FilterData listsFilter = new FilterData(
-                name: ListsFilter,
-                getFilteringComponent: element => {
-                    List<string> listsNames = Lists.Keys.ToList();
-                    return Lists
-                        .Where(kvp => kvp.Value.Contains(element.Hash))
-                        .Select(kvp => listsNames.IndexOf(kvp.Key))
-                        .ToList();
-                }
-            );
-            listsFilter.Elements = new List<FilterEntryData>(Lists.Count);
-            foreach (var list in Lists) {
-                listsFilter.Elements.Add(new FilterEntryData { Name = list.Key });
-            }
-            filters.Add(listsFilter);
-        }
+        RetrieveListFilter(ref filters);
 
         return filters;
     }
@@ -109,10 +102,9 @@ public class DigimonDatabase : Database {
                 name: ReverseToggle, 
                 action: (list, isOn) => {
                     if (isOn) {
-                        return list.Reverse();
-                    } else {
-                        return list;
+                        list.Reverse();
                     }
+                    return list;
                 }
             )
         );
@@ -123,7 +115,16 @@ public class DigimonDatabase : Database {
                     name: InListToggle, 
                     action: (list, isOn) => {
                         if (isOn) {
-                            return list.Where(e => Lists.Any(kvp => kvp.Value.Contains(e.Hash)));
+                            List<IDataEntry> result = new List<IDataEntry>(list.Count);
+                            for (int iEntry = 0; iEntry < list.Count; ++iEntry) {
+                                foreach (var kvp in Lists) {
+                                    if (kvp.Value.Contains(list[iEntry].Hash)) {
+                                        result.Add(list[iEntry]);
+                                        break;
+                                    }
+                                }
+                            }
+                            return result;
                         } else {
                             return list;
                         }
@@ -134,64 +135,4 @@ public class DigimonDatabase : Database {
 
         return toggles;
     }
-
-    public override void RefreshFilters(
-        ref IEnumerable<FilterData> filters, 
-        ref IEnumerable<ToggleActionData> toggles
-    ) {
-        var listFilter = filters.FirstOrDefault(f => f.Name == ListsFilter);
-        if (listFilter != null) {
-            var elements = listFilter.Elements.Where(f => Lists.Any(kvp => kvp.Key == f.Name));
-            listFilter.Elements = elements
-                .Concat(
-                    Lists.Where(kvp => !elements.Any(e => e.Name == kvp.Key))
-                        .Select(kvp => new FilterEntryData { Name = kvp.Key }))
-                .ToList();
-            if (listFilter.Elements.Count() <= 0) {
-                filters = filters.Where(f => f.Name != ListsFilter);
-            }
-        } else {
-            if (Lists.Count > 0) {
-                FilterData listsFilter = new FilterData(
-                    name: ListsFilter,
-                    getFilteringComponent: element => {
-                        List<string> listsNames = Lists.Keys.ToList();
-                        return Lists
-                            .Where(kvp => kvp.Value.Contains(element.Hash))
-                            .Select(kvp => listsNames.IndexOf(kvp.Key))
-                            .ToList();
-                    }
-                );
-                listsFilter.Elements = new List<FilterEntryData>(Lists.Count);
-                foreach (var list in Lists) {
-                    listsFilter.Elements.Add(new FilterEntryData { Name = list.Key });
-                }
-                filters = filters.Append(listsFilter);
-            }
-        }
-
-        var inListToggle = toggles.FirstOrDefault(t => t.Name == InListToggle);
-        if (inListToggle != null) {
-            if (Lists.Count <= 0) {
-                toggles = toggles.Where(t => t.Name != InListToggle);
-            }
-        } else {
-            if (Lists.Count > 0) {
-                toggles = toggles.Append(
-                    new ToggleActionData(
-                        name: InListToggle, 
-                        action: (list, isOn) => {
-                            if (isOn) {
-                                return list.Where(e => Lists.Any(kvp => kvp.Value.Contains(e.Hash)));
-                            } else {
-                                return list;
-                            }
-                        }
-                    )
-                );
-            }
-        }
-    }
-
-
 }
