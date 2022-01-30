@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.AddressableAssets;
@@ -45,9 +44,27 @@ public class Evolution : IEquatable<Evolution> {
             this.Types == other.Types &&
             ((this.FusionEntries == null && other.FusionEntries == null) ||
                 (this.FusionEntries != null && other.FusionEntries != null &&
-                    this.FusionEntries.Length == other.FusionEntries.Length &&
-                    this.FusionEntries.Except(other.FusionEntries).Count() == 0 &&
-                    other.FusionEntries.Except(this.FusionEntries).Count() == 0));
+                    this.FusionEntries.Length == other.FusionEntries.Length));
+
+        if (areEqual && this.FusionEntries != null) {
+            for (int iEntry = 0; iEntry < this.FusionEntries.Length; ++iEntry) {
+                var entry = this.FusionEntries[iEntry];
+                bool found = false;
+                for (int iOther = 0; iOther < other.FusionEntries.Length; ++iOther) {
+                    found = entry.Equals(other.FusionEntries[iOther]);
+                    
+                    if (found) {
+                        break;
+                    }
+                }
+
+                areEqual = found;
+
+                if (!areEqual) {
+                    break;
+                }
+            }
+        }
 
         return areEqual;
     }

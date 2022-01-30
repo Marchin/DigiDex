@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
-using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
@@ -104,7 +103,12 @@ public class ListSelectionPopup : Popup {
         });
 
         _copyListsButton.onClick.AddListener(async () => {
-            var listsToCopy = _db.Lists.Where(l => _listsToCopy.Contains(l.Key));
+            var listsToCopy = new Dictionary<string, HashSet<Hash128>>();
+            foreach (var kvp in _db.Lists) {
+                if (_listsToCopy.Contains(kvp.Key)) {
+                    listsToCopy.Add(kvp.Key, kvp.Value);
+                }
+            }
             var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
             Action<string> onConfirm = (Application.platform == RuntimePlatform.WebGLPlayer) ?
                 null :
@@ -145,21 +149,24 @@ public class ListSelectionPopup : Popup {
     }
     
     private void PopulateAddRemoveList() {
-        _addToggleList.Populate(_db.Lists.Select(kvp => 
-            new ToggleData(kvp.Key, _db.Lists[kvp.Key].Contains(_entry.Hash), isOn => {
+        List<ToggleData> toggles = new List<ToggleData>();
+        foreach (var kvp in _db.Lists) {
+            toggles.Add(new ToggleData(kvp.Key, _db.Lists[kvp.Key].Contains(_entry.Hash), isOn => {
                 if (isOn) {
                     _db.AddEntryToList(kvp.Key, _entry.Hash);
                 } else {
                     _db.RemoveEntryFromList(kvp.Key, _entry.Hash);
                 }
                 PopulateAddRemoveList();
-            }))
-        );
+            }));
+        }
+        _addToggleList.Populate(toggles);
     }
 
     private void PopulateCopyList() {
-        _copyToggleList.Populate(_db.Lists.Select(kvp => 
-            new ToggleData(kvp.Key, _listsToCopy.Contains(kvp.Key), isOn => {
+        List<ToggleData> toggles = new List<ToggleData>();
+        foreach (var kvp in _db.Lists) {
+            toggles.Add(new ToggleData(kvp.Key, _listsToCopy.Contains(kvp.Key), isOn => {
                 if (isOn) {
                     _listsToCopy.Add(kvp.Key);
                 } else {
@@ -168,20 +175,23 @@ public class ListSelectionPopup : Popup {
                     }
                 }
                 _copyListsButton.interactable = (_listsToCopy.Count > 0);
-            }))
-        );
+            }));
+        }
+        _copyToggleList.Populate(toggles);
     }
 
     private void PopulateDeleteList() {
-        _deleteList.Populate(_db.Lists.Select(kvp => 
-            new ButtonData(kvp.Key, async () => {
+        List<ButtonData> buttons = new List<ButtonData>();
+        foreach (var kvp in _db.Lists) {
+            buttons.Add(new ButtonData(kvp.Key, async () => {
                 bool removed = await _db.RemoveList(kvp.Key);
                 if (removed && _listsToCopy.Contains(kvp.Key)) {
                     _listsToCopy.Remove(kvp.Key);
                 }
                 PopulateDeleteList();
-            }))
-        );
+            }));
+        }
+        _deleteList.Populate(buttons);
     }
 
     public override object GetRestorationData() {
@@ -204,9 +214,17 @@ public class ListSelectionPopup : Popup {
     public async UniTask<bool> ParseLists(string input) {
         bool listDetected = false;
         if (UserDataManager.Instance.IsValidData(input, out var db, out var data)) {
-            var newLists = data.Where(l => !db.Lists.ContainsKey(l.Key));
-            var listsInConflict = data.Except(newLists);
-            if (listsInConflict.Count() > 0) {
+            var listsInConflict = new Dictionary<string, HashSet<Hash128>>(data.Count);
+            var newLists = new Dictionary<string, HashSet<Hash128>>(data.Count);
+            foreach (var kvp in data) {
+                if (db.Lists.ContainsKey(kvp.Key)) {
+                    listsInConflict.Add(kvp.Key, kvp.Value);
+                } else {
+                    newLists.Add(kvp.Key, kvp.Value);
+                }
+            }
+
+            if (listsInConflict.Count > 0) {
                 listDetected = true;
                 
                 List<string> skippedLists = new List<string>();
@@ -214,7 +232,14 @@ public class ListSelectionPopup : Popup {
                 foreach (var list in listsInConflict)  {
                     const string NameConflict = "Name Conflict";
 
-                    bool areEqual = list.Value.Except(db.Lists[list.Key]).Count() == 0;
+                    bool areEqual = true;
+                    foreach (var kvp in list.Value) {
+                        if (!db.Lists.ContainsKey(list.Key)) {
+                            areEqual = false;
+                            break;
+                        }
+                    }
+                    
                     if (areEqual) {
                         skippedLists.Add(list.Key);
                         continue;
@@ -244,7 +269,7 @@ public class ListSelectionPopup : Popup {
                             inputPopup.Populate($"{list.Key} is already in use please select a new name",
                             NameConflict,
                             async name => {
-                                if (!string.IsNullOrEmpty(name) && !db.Lists.Keys.Contains(name)) {
+                                if (!string.IsNullOrEmpty(name) && !db.Lists.ContainsKey(name)) {
                                     foreach (var entry in list.Value) {
                                         db.AddEntryToList(name, entry);
                                     }
@@ -274,7 +299,7 @@ public class ListSelectionPopup : Popup {
                     PopupManager.Instance.ClosingPopup);
             }
             
-            if (newLists.Count() > 0) {
+            if (newLists.Count > 0) {
                 listDetected = true;
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine($"Add the following {db.DisplayName} lists:");

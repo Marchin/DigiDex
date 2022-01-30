@@ -1,8 +1,6 @@
 ﻿// Taken from: https://gitlab.com/jonnohopkins/tmp-hyperlinks/-/blob/master/Assets/OpenHyperlinks.cs
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
@@ -83,7 +81,7 @@ public class OpenHyperlinks : MonoBehaviour, IPointerClickHandler {
             int vertexIndex = charInfo.vertexIndex; // Get the index of the first vertex of this character.
 
             Color32[] vertexColors = pTextMeshPro.textInfo.meshInfo[meshIndex].colors32; // the colors for this character
-            oldVertColors.Add(vertexColors.ToArray());
+            oldVertColors.Add(vertexColors);
 
             if( charInfo.isVisible ) {
                 vertexColors[vertexIndex + 0] = colorForLinkAndVert(i, vertexIndex + 0);

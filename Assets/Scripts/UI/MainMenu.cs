@@ -1,8 +1,7 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
 using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
 
 public class MainMenu : MonoBehaviour {
     [SerializeField] private CanvasScaler _canvasScaler = default;
@@ -23,14 +22,20 @@ public class MainMenu : MonoBehaviour {
         _loadingWheel.SetActive(true);
         await UniTask.WaitUntil(() => ApplicationManager.Instance.Initialized);
         
-        var buttonDataList = ApplicationManager.Instance.GetDatabases()
-            .Select(db => new ButtonData {
-                Text = db.DisplayName,
+        
+        var databases = ApplicationManager.Instance.GetDatabases();
+        var buttonDataList = new List<ButtonData>(databases.Count);
+        for (int iDatabase = 0; iDatabase < databases.Count; ++iDatabase) {
+            Database database = databases[iDatabase];
+            buttonDataList.Add(new ButtonData {
+                Text = database.DisplayName,
                 Callback = () => {
                     PopupManager.Instance.GetOrLoadPopup<DatabaseViewPopup>().
-                        ContinueWith(popup => popup.Populate(db));
+                        ContinueWith(popup => popup.Populate(database));
                 }
             });
+        }
+        
         _databaseList.Populate(buttonDataList);
         
         _loginButton.onClick.AddListener(async () => {

@@ -1,5 +1,4 @@
 using TMPro;
-using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
@@ -61,16 +60,19 @@ public class EvolutionDetailsPopup : Popup {
         _handles.Add(handle);
 
         _typesList.Populate(Evolution.GetEvolutionColorsPlusText(evolutionInfo.Types));
-        _infoList.Populate(evolutionInfo.FusionEntries.Select(entry => {
-            IDataEntry entryData = entry.FetchEntryData();
+
+        List<InformationData> information = new List<InformationData>(evolutionInfo.FusionEntries.Length);
+        for (int iEntry = 0; iEntry < evolutionInfo.FusionEntries.Length; ++iEntry) {
+            IDataEntry entryData = evolutionInfo.FusionEntries[iEntry].FetchEntryData();
             InformationData data = new InformationData {
                 Content = entryData.DisplayName,
                 SpriteReference = entryData.Sprite,
                 OnMoreInfo = () => SelectEntry(entryData)
             };
 
-            return data;
-        }));
+            information.Add(data);
+        }
+        _infoList.Populate(information);
 
         SelectEntry(evoData);
     }

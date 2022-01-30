@@ -1,6 +1,5 @@
 using TMPro;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
@@ -120,7 +119,13 @@ public class EvolutionsPopup : Popup {
                 .ContinueWith(popup => {
                     Action prev = null;
                     Action next = null;
-                    int uniqueEvolution = _popupData.CurrEvolutionList.Select(e => e.Entry).Distinct().Count();
+                    List<Evolution> uniqueEntries = new List<Evolution>(_popupData.CurrEvolutionList);
+                    for (int iEntry = 0; iEntry < _popupData.CurrEvolutionList.Count; ++iEntry) {
+                        if (!uniqueEntries.Contains(_popupData.CurrEvolutionList[iEntry])) {
+                            uniqueEntries.Add(_popupData.CurrEvolutionList[iEntry]);
+                        }
+                    }
+                    int uniqueEvolution = uniqueEntries.Count;
                     if (uniqueEvolution > 1) {
                         prev = () => {
                             int index = _popupData.CurrEvolutionList.IndexOf(_popupData.CurrTabEvolution);

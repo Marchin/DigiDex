@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Xml;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -312,7 +311,8 @@ public static class AppmonDataRetriever {
         AssetDatabase.Refresh();
         AppmonDatabase appmonDB = GetAppmonDatabase();
         appmonDB.Appmons = new List<Appmon>();
-        var paths = Directory.GetFiles(AppmonsDataPath, "*.asset").OrderBy(path => path.Replace(".asset", string.Empty)).ToArray();
+        string[] paths = Directory.GetFiles(AppmonsDataPath, "*.asset");
+        Array.Sort<string>(paths, (x, y) => x.CompareTo(y));
         for (int i = 0; i < paths.Length; i++) {
             Appmon appmonData = AssetDatabase.LoadAssetAtPath<Appmon>(paths[i]);
             appmonDB.Appmons.Add(appmonData);

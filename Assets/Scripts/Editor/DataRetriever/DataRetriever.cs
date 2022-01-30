@@ -1,16 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Xml;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEditor.U2D;
-using UnityEngine.AddressableAssets;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
-using UnityEngine.U2D;
-using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
 
 public static class DataRetriever {
@@ -118,7 +113,8 @@ public static class DataRetriever {
             Directory.CreateDirectory(evolutionsDataPath);
         }
 
-        var paths = Directory.GetFiles(entriesDataPath, "*.asset").OrderBy(path => path).ToArray();
+        var paths = Directory.GetFiles(entriesDataPath, "*.asset");
+        Array.Sort<string>(paths, (x, y) => y.CompareTo(y));
         List<(IDataEntry entry, EvolutionData evolutionData)> pairtList = new List<(IDataEntry d, EvolutionData ed)>();
         for (int iEntry = 0; iEntry < paths.Length; iEntry++) {
             IDataEntry entryData = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(paths[iEntry]) as IDataEntry;
@@ -131,14 +127,27 @@ public static class DataRetriever {
             XmlDocument entrySite = await GetSite(entryData.LinkSubFix);
 
             try {
-                var preEvo = await ParseEvolutionList("Evolves_From");
-                evolutionData.PreEvolutions = preEvo?
-                    .OrderByDescending(e => e.Types.HasFlag(EvolutionType.Main))
-                    .ToList();
-                var evo = await ParseEvolutionList("Evolves_To");
-                evolutionData.Evolutions = evo?
-                    .OrderByDescending(e => e.Types.HasFlag(EvolutionType.Main))
-                    .ToList();
+                evolutionData.PreEvolutions = await ParseEvolutionList("Evolves_From");
+                evolutionData.PreEvolutions.Sort((x, y) => {
+                    if (x.Types.HasFlag(EvolutionType.Main)) {
+                        return y.Types.HasFlag(EvolutionType.Main) ? 0 : 1;
+                    } else if (y.Types.HasFlag(EvolutionType.Main)) {
+                        return -1;
+                    } else {
+                        return 0;
+                    }
+                });
+
+                evolutionData.Evolutions = await ParseEvolutionList("Evolves_To");
+                evolutionData.Evolutions.Sort((x, y) => {
+                    if (x.Types.HasFlag(EvolutionType.Main)) {
+                        return y.Types.HasFlag(EvolutionType.Main) ? 0 : 1;
+                    } else if (y.Types.HasFlag(EvolutionType.Main)) {
+                        return -1;
+                    } else {
+                        return 0;
+                    }
+                });
             } catch (Exception ex) {
                 Debug.Log($"{entryData.Name} - {ex.Message} \n {ex.StackTrace}");
             }
@@ -164,7 +173,7 @@ public static class DataRetriever {
 
                         var auxNode = entryNode.Name == "b"? entryNode.FirstChild : entryNode;
                         
-                        IDataEntry entry = db.Entries.FirstOrDefault(d => d.Name == name);
+                        IDataEntry entry = db.Entries.Find(d => d.Name == name);
                         string fuseEntryLinkSubFix = auxNode?.Attributes?.GetNamedItem("href")?.InnerText;
 
                         if (entry == null && !string.IsNullOrEmpty(fuseEntryLinkSubFix)) {
@@ -176,7 +185,7 @@ public static class DataRetriever {
                                 Debug.Log($"{name} - {fuseEntryLinkSubFix} - {ex.Message} \n {ex.StackTrace}");
                             }
 
-                            entry = db.Entries.FirstOrDefault(d => d.Name == name);
+                            entry = db.Entries.Find(d => d.Name == name);
                         }
 
                         if (entry != null) {
@@ -205,7 +214,7 @@ public static class DataRetriever {
                                         // The first optional means that the entry can evolve with the base element alone and we always record it
                                         // Otherwise we only record the method if it has any changes from the base element
                                         if (!oneOrMoreOptionals || (method.Types != baseEvolutionType)) {
-                                            evolutionMethods.Add(method);
+                                            AddEvolution(method);
                                             oneOrMoreOptionals = true;
                                         }
                                         method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType };
@@ -229,32 +238,32 @@ public static class DataRetriever {
                                             RecordConcatenatedFusions();
                                             method.Types |= EvolutionType.Armor;
                                             CheckMain(ref method, siblingNode);
-                                            evolutionMethods.Add(method);
+                                            AddEvolution(method);
                                             method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType };
                                         } else if (siblingNode.InnerText.Contains("Spirit")) {
                                             // Record fusion in the case of EntryA(with EntryB or NotEntry)
                                             RecordConcatenatedFusions();
                                             method.Types |= EvolutionType.Spirit;
                                             CheckMain(ref method, siblingNode);
-                                            evolutionMethods.Add(method);
+                                            AddEvolution(method);
                                             method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType };
                                         } else if (siblingNode.InnerText.Trim() == "Slide Evolution") {
                                             // Record fusion in the case of EntryA(with EntryB or NotEntry)
                                             RecordConcatenatedFusions();
                                             method.Types |= EvolutionType.Side;
                                             CheckMain(ref method, siblingNode);
-                                            evolutionMethods.Add(method);
+                                            AddEvolution(method);
                                             method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType };
                                         } else if (siblingNode.Name == "b" || siblingNode.Name == "a") {
                                             XmlNode aux = (siblingNode.Name == "b") ? siblingNode.FirstChild : siblingNode;
                                             string materialLink = aux?.Attributes?.GetNamedItem("href")?.Value;
                                             
                                             if (!string.IsNullOrEmpty(materialLink)) {
-                                                IDataEntry fusion = db.Entries.FirstOrDefault(d => d.LinkSubFix == materialLink);
+                                                IDataEntry fusion = db.Entries.Find(d => d.LinkSubFix == materialLink);
                                                 if (fusion == null) {
                                                     try {
                                                         XmlDocument materialSite = await GetSite(materialLink);
-                                                        fusion = db.Entries.FirstOrDefault(d => d.LinkSubFix == materialLink);
+                                                        fusion = db.Entries.Find(d => d.LinkSubFix == materialLink);
                                                     } catch (Exception ex) {
                                                         Debug.Log($"{name}: Failed to get material {materialLink} - {ex.Message} \n {ex.StackTrace}");
                                                     }
@@ -299,12 +308,16 @@ public static class DataRetriever {
                                         void RecordConcatenatedFusions() {
                                             if (recordFusionsTogether) {
                                                 if (fusionIDs.Count > 0) {
-                                                    method.FusionEntries = fusionIDs.Select(tuple => tuple.index).ToArray();
+                                                    EntryIndex[] fusionIndices = new EntryIndex[fusionIDs.Count];
+                                                    for (int iFusion = 0; iFusion < fusionIDs.Count; ++iFusion) {
+                                                        fusionIndices[iFusion] = fusionIDs[iFusion].index;
+                                                    }
+                                                    method.FusionEntries = fusionIndices;
                                                     if (!fusionIDs[0].isMain) {
                                                         method.Types &= ~EvolutionType.Main;
                                                     }
                                                     fusionIDs.Clear();
-                                                    evolutionMethods.Add(method);
+                                                    AddEvolution(method);
                                                     method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType };
                                                 }
                                                 recordFusionsTogether = false;
@@ -319,7 +332,7 @@ public static class DataRetriever {
                                                         method.Types &= ~EvolutionType.Main;
                                                     }
                                                     method.Types |= EvolutionType.Fusion;
-                                                    evolutionMethods.Add(method);
+                                                    AddEvolution(method);
                                                     method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType | EvolutionType.Fusion };
                                                 }
                                                 fusionIDs.Clear();
@@ -332,12 +345,16 @@ public static class DataRetriever {
 
                                     void RecordFuseRemanents() {
                                         if (fusionIDs.Count > 0) {
-                                            method.FusionEntries = fusionIDs.Select(tuple => tuple.index).ToArray();
+                                            EntryIndex[] fusionIndices = new EntryIndex[fusionIDs.Count];
+                                            for (int iFusion = 0; iFusion < fusionIDs.Count; ++iFusion) {
+                                                fusionIndices[iFusion] = fusionIDs[iFusion].index;
+                                            }
+                                            method.FusionEntries = fusionIndices;
                                             if (!fusionIDs[0].isMain) {
                                                 method.Types &= ~EvolutionType.Main;
                                             }
                                             fusionIDs.Clear();
-                                            evolutionMethods.Add(method);
+                                            AddEvolution(method);
                                             method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType | EvolutionType.Fusion };
                                         }
                                     }
@@ -348,9 +365,9 @@ public static class DataRetriever {
 
                             if ((evolutionMethods.Count == 0) ||
                                 ((method.Types > EvolutionType.Main) &&
-                                    !(method.Types.HasFlag(EvolutionType.Fusion) && (method.FusionEntries?.Count() ?? 0) == 0))
+                                    !(method.Types.HasFlag(EvolutionType.Fusion) && (method.FusionEntries?.Length ?? 0) == 0))
                             ) {
-                                evolutionMethods.Add(method);
+                                AddEvolution(method);
                             }
 
                             for (int iMethod = 0; iMethod < evolutionMethods.Count; ++iMethod) {
@@ -358,18 +375,26 @@ public static class DataRetriever {
                                 if (isWarp) {
                                     evolutionMethods[iMethod].Types |= EvolutionType.Warp;
                                 }
-                                evolutions.Add(evolutionMethods[iMethod]);
+                                AddEvolution(evolutionMethods[iMethod]);
                             }
                         }
                     }
                 }
 
-                return evolutions.Distinct().ToList();
+                void AddEvolution(Evolution evolution) {
+                    if (!evolutions.Contains(evolution)) {
+                        evolutions.Add(evolution);
+                    }
+                }
+
+
+                return evolutions;
             }
         }
 
         AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
-        var evolutionPaths = Directory.GetFiles(evolutionsDataPath, "*.asset").OrderBy(path => path).ToArray();
+        var evolutionPaths = Directory.GetFiles(evolutionsDataPath, "*.asset");
+        Array.Sort<string>(evolutionPaths, (x, y) => y.CompareTo(y));
         AddressableAssetGroup group = GetOrAddAddressableGroup(evolutionGroupName);
         for (int iEvolutionPath = 0; iEvolutionPath < evolutionPaths.Length; ++iEvolutionPath) {
             settings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(evolutionPaths[iEvolutionPath]).ToString(), group);

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
@@ -94,7 +93,10 @@ public abstract class Database : ScriptableObject {
     public Dictionary<Hash128, IDataEntry> EntryDict {
         get {
             if (_entryDict == null) {
-                _entryDict = Entries.ToDictionary(d => d.Hash);
+                _entryDict = new Dictionary<Hash128, IDataEntry>(Entries.Count);
+                for (int iEntry = 0; iEntry < Entries.Count; ++iEntry) {
+                    _entryDict.Add(Entries[iEntry].Hash, Entries[iEntry]);
+                }
             }
             return _entryDict;
         }
@@ -154,7 +156,14 @@ public abstract class Database : ScriptableObject {
 
     private void SaveLists() {
         if (_lists != null) {
-            var lists = _lists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
+            Dictionary<string, List<string>> lists = new Dictionary<string, List<string>>();
+            foreach (var kvp in _lists) {
+                List<string> hashes = new List<string>(kvp.Value.Count);
+                foreach (var hash in kvp.Value) {
+                    hashes.Add(hash.ToString());
+                }
+                lists.Add(kvp.Key, hashes);
+            }
             string jsonData = JsonConvert.SerializeObject(lists);
             UserDataManager.Instance.Save(DisplayName, jsonData);
         }
@@ -172,18 +181,33 @@ public abstract class Database : ScriptableObject {
     public Dictionary<string, HashSet<Hash128>> ParseListData(string data) {
         var strings = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(data) ??
             new Dictionary<string, List<string>>();
-        var hashesList = strings.ToDictionary(kvp => kvp.Key, 
-            kvp => new HashSet<Hash128>(kvp.Value.Select(s => Hash128.Parse(s))));
+        
+        var hashesList = new Dictionary<string, HashSet<Hash128>>();
 
+        foreach (var kvp in strings) {
+            HashSet<Hash128> hashes = new HashSet<Hash128>(kvp.Value.Count);
+            foreach (var hash in kvp.Value) {
+                hashes.Add(Hash128.Parse(hash));
+            }
+            hashesList.Add(kvp.Key, hashes);
+        }
+        
         return hashesList;
     }
 
-    public string ConvertListsToText(IEnumerable<KeyValuePair<string, HashSet<Hash128>>> lists) {
+    public string ConvertListsToText(Dictionary<string, HashSet<Hash128>> lists) {
         string result = "";
 
         if (lists != null) {
-            var serializable = lists.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(h => h.ToString()));
-            string jsonListData = JsonConvert.SerializeObject(serializable);
+            Dictionary<string, List<string>> data = new Dictionary<string, List<string>>();
+            foreach (var kvp in lists) {
+                List<string> hashes = new List<string>(kvp.Value.Count);
+                foreach (var hash in kvp.Value) {
+                    hashes.Add(hash.ToString());
+                }
+                data.Add(kvp.Key, hashes);
+            }
+            string jsonListData = JsonConvert.SerializeObject(data);
             result = JsonConvert.SerializeObject(new KeyValuePair<string, string>(DisplayName, jsonListData));
         }
 

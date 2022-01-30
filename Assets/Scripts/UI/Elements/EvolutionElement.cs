@@ -1,6 +1,5 @@
 using TMPro;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
@@ -60,9 +59,13 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
 
         _evolutionTypeIndicators.Populate(data.GetEvolutionColors());
 
-        var sprites = await UniTask.WhenAll(spritesTasks).SuppressCancellationThrow();
-        if (!sprites.IsCanceled) {
-            _fusionSprites.Populate(sprites.Result);
+        var spriteResults = await UniTask.WhenAll(spritesTasks).SuppressCancellationThrow();
+        if (!spriteResults.IsCanceled) {
+            List<Sprite> spriteList = new List<Sprite>(spriteResults.Result.Length);
+            for (int iSprite = 0; iSprite < spriteResults.Result.Length; ++iSprite) {
+                spriteList.Add(spriteResults.Result[iSprite]);
+            }
+            _fusionSprites.Populate(spriteList);
         }
     }
 

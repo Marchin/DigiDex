@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Xml;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -284,7 +283,8 @@ public static class DigimonDataRetriever {
         AssetDatabase.Refresh();
         DigimonDatabase digimonDB = GetDigimonDatabase();
         digimonDB.Digimons = new List<Digimon>();
-        var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path.Replace(".asset", string.Empty)).ToArray();
+        var paths = Directory.GetFiles(DigimonsDataPath, "*.asset");
+        Array.Sort<string>(paths, (x, y) => x.CompareTo(y));
         for (int i = 0; i < paths.Length; i++) {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath<Digimon>(paths[i]);
             digimonDB.Digimons.Add(digimonData);
@@ -372,7 +372,7 @@ public static class DigimonDataRetriever {
                 localArtGroup);
 
             for (int iField = 0; iField < fields.Count; ++iField) {
-                string spritePath = spritePaths.FirstOrDefault(s => Path.GetFileNameWithoutExtension(s) == fields[iField].Name);
+                string spritePath = Array.Find(spritePaths, s => Path.GetFileNameWithoutExtension(s) == fields[iField].Name);
                 if (!string.IsNullOrEmpty(spritePath)) {
                     fieldAtlas.Add(new UnityEngine.Object[] { AssetDatabase.LoadAssetAtPath<Sprite>(spritePath) });
                     fields[iField].Sprite = new AssetReferenceAtlasedSprite(spriteAtlasGUID);
@@ -443,7 +443,8 @@ public static class DigimonDataRetriever {
     public static async void CoupleDigimonData() {
         DigimonDatabase digimonDB = GetDigimonDatabase();
         
-        var paths = Directory.GetFiles(DigimonsDataPath, "*.asset").OrderBy(path => path).ToArray();
+        var paths = Directory.GetFiles(DigimonsDataPath, "*.asset");
+        Array.Sort<string>(paths, (x, y) => x.CompareTo(y));
         for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath<Digimon>(paths[iDigimon]);
             XmlDocument digimonSite = await DataRetriever.GetSite(digimonData.LinkSubFix);

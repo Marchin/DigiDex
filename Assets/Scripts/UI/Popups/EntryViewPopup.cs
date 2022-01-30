@@ -4,7 +4,6 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
@@ -94,7 +93,14 @@ public class EntryViewPopup : Popup {
 
     private void RefreshFavoriteButton() {
         if (_entry != null) {
-            _favoriteIndicator.SetActive(_db.Lists?.Any(l => l.Value.Contains(_entry.Hash)) ?? false);
+            bool isFavorite = false;
+            foreach (var kvp in _db.Lists) {
+                if (kvp.Value.Contains(_entry.Hash)) {
+                    isFavorite = true;
+                    break;
+                }
+            }
+            _favoriteIndicator.SetActive(isFavorite);
         }
     }
 

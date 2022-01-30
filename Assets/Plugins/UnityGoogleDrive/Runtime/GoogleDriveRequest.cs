@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -269,14 +268,22 @@ namespace UnityGoogleDrive
         private string GenerateQueryString ()
         {
             // Get all query properties on the object.
-            var properties = GetType().GetProperties()
-                .Where(p => p.IsDefined(typeof(QueryParameterAttribute), false) && p.CanRead && p.GetValue(this, null) != null)
-                .ToDictionary(p => ToFirstLower(p.Name), property => property.GetValue(this, null));
+            var typeProperties = GetType().GetProperties();
+            Dictionary<string, object> properties = new Dictionary<string, object>(typeProperties.Length);
+            for (int iProperty = 0; iProperty < typeProperties.Length; ++iProperty) {
+                var property = typeProperties[iProperty];
+                if (property.IsDefined(typeof(QueryParameterAttribute), false) && property.CanRead && property.GetValue(this, null) != null) {
+                    properties.Add(ToFirstLower(property.Name), property.GetValue(this, null));
+                }
+            }
 
             // Get names for all IEnumerable properties (excl. string).
-            var propertyNames = properties
-                .Where(p => !(p.Value is string) && p.Value is IEnumerable)
-                .Select(p => p.Key).ToList();
+            List<string> propertyNames = new List<string>(properties.Count);
+            foreach (var p in properties) {
+                if (!(p.Value is string) && p.Value is IEnumerable) {
+                    propertyNames.Add(p.Key);
+                }
+            }
 
             // Concat all IEnumerable properties into a comma separated string.
             foreach (var propertyName in propertyNames)
@@ -288,14 +295,35 @@ namespace UnityGoogleDrive
                 if (valueElemType.IsPrimitive || valueElemType == typeof(string))
                 {
                     var enumerable = properties[propertyName] as IEnumerable;
-                    properties[propertyName] = string.Join(",", enumerable.Cast<string>().ToArray());
+                    var enumerator = enumerable.GetEnumerator();
+                    int enumerableCount = 0;
+                    while (enumerator.MoveNext()) {
+                        ++enumerableCount;
+                    }
+                    string[] stringEnumerables = new string[enumerableCount];
+                    enumerator = enumerable.GetEnumerator();
+                    int iEnumerable = 0;
+                    while (enumerator.MoveNext()) {
+                        stringEnumerables[iEnumerable] = enumerator.Current.ToString();
+                        ++iEnumerable;
+                    }
+
+                    properties[propertyName] = string.Join(",", stringEnumerables);
                 }
             }
 
+
+            string[] propertiesKVP = new string[properties.Count];
+            int index = 0;
+            foreach (var p in properties) {
+                propertiesKVP[index] = string.Concat(
+                    System.Uri.EscapeDataString(p.Key), "=",
+                    System.Uri.EscapeDataString(p.Value.ToString()));
+                ++index;
+            }
+
             // Concat all key/value pairs into a string separated by ampersand.
-            return string.Join("&", properties.Select(x => string.Concat(
-                System.Uri.EscapeDataString(x.Key), "=",
-                System.Uri.EscapeDataString(x.Value.ToString()))).ToArray());
+            return string.Join("&", propertiesKVP);
         }
 
         /// <summary>

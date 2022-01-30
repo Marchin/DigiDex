@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityGoogleDrive;
@@ -377,8 +376,8 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         try {
             KeyValuePair<string, string> parsedData = JsonConvert.DeserializeObject<KeyValuePair<string, string>>(data);
             var dbs = ApplicationManager.Instance.GetDatabases();
-            db = dbs.FirstOrDefault(d => d.DisplayName == parsedData.Key);
-            if (db != default) {
+            db = dbs.Find(d => d.DisplayName == parsedData.Key);
+            if (db != null) {
                 parsedList = db.ParseListData(parsedData.Value);
             } else {
                 isValid = false;

@@ -36,10 +36,12 @@ public class FilterPopup : Popup {
                 _filterList.Populate(_filters);
             }
             if (_toggles != null) {
+                List<ToggleData> togglesData = new List<ToggleData>(_toggles.Count);
                 foreach (var toggle in _toggles) {
                     toggle.IsOn = false;
+                    togglesData.Add(toggle);
                 }
-                _toggleList.Populate(_toggles);
+                _toggleList.Populate(togglesData);
             }
             _filterEntriesList.gameObject.SetActive(false);
         });
@@ -63,10 +65,13 @@ public class FilterPopup : Popup {
 
         if (toggles != null) {
             _toggles = new List<ToggleActionData>(toggles.Count);
+            List<ToggleData> togglesData = new List<ToggleData>(_toggles.Count);
             foreach (var toggle in toggles) {
-                _toggles.Add(toggle.Clone() as ToggleActionData);
+                var toggleData = toggle.Clone() as ToggleActionData;
+                _toggles.Add(toggleData);
+                togglesData.Add(toggleData);
             }
-            _toggleList.Populate(_toggles);
+            _toggleList.Populate(togglesData);
         }
 
         _filterEntriesList.gameObject.SetActive(false);

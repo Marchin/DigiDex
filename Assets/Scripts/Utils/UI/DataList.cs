@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
@@ -61,10 +60,6 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
 
     private void OnDestroy() {
         PopupManager.Instance.OnWindowResize -= CalculateSizes;
-    }
-
-    public void Populate(IEnumerable<D> data) {
-        Populate(data?.ToList());
     }
 
     public void Populate(List<D> data) {

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using System;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
@@ -45,7 +45,7 @@ public static class UnityUtils {
 
     public static GameObject GetOrGenerateRootGO(string goName) {
         GameObject[] rootObjects = SceneManager.GetActiveScene().GetRootGameObjects();
-        GameObject queriedGO = rootObjects.FirstOrDefault(x => string.Compare(x.name, goName) == 0);
+        GameObject queriedGO = Array.Find(rootObjects, x => string.Compare(x.name, goName) == 0);
         if (queriedGO == null) {
             queriedGO = new GameObject(goName);
         }
