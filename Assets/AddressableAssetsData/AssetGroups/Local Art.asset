@@ -25,6 +25,38 @@ MonoBehaviour:
     m_Address: Fields
     m_ReadOnly: 0
     m_SerializedLabels: []
+  - m_GUID: bdc6f52bd41ed7a4b9b077f385ab8f7f
+    m_Address: Circle
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 201eb52d8354f2345bb25b680fee30dc
+    m_Address: Evolution Icon
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e3265ab4bf004d28a9537516768c1c75
+    m_Address: LiberationSans
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: edde0fe0a3e264c47a425bac84bad429
+    m_Address: entsani
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 68b7471d07f84bf4193633c752b6a6b5
+    m_Address: RobotoMono-VariableFont_wght SDF
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 0e8dc442aa5ec7e4989d1a5df5e4ee8f
+    m_Address: Loading Wheel
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 9535650fb21e951498de858b7e0eeaa0
+    m_Address: Loading Wheel
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 838ff3e80bfe04843a56f709ba8b24e4
+    m_Address: Loading Wheel
+    m_ReadOnly: 0
+    m_SerializedLabels: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 540ef4b002fba424d86242275961d112, type: 2}
   m_SchemaSet:

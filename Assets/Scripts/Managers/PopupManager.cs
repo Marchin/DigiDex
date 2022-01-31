@@ -32,6 +32,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     public bool IsScreenOnPortrait => (Screen.height > Screen.width);
     private ScreenOrientation _lastDeviceOrientation;
     private Vector2 _lastScreenSize;
+    private AsyncOperationHandle<IList<GameObject>> _handle;
     public Popup ActivePopup {
         get {
             foreach (var popup in _stack) {
@@ -156,7 +157,12 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
 
         if (ActivePopup.Vertical != IsScreenOnPortrait) {
             var handle = ApplicationManager.Instance.ShowLoadingScreen.Subscribe();
-            
+
+            if (_handle.IsValid()) {
+                Addressables.Release(_handle);
+                _handle = default;
+            }
+
             // Cleaning up inactive popup facilitates the algorithm and at this point their orientation probably don't match
             while (!_stack[0].gameObject.activeSelf) {
                 RemovePopup();
@@ -188,6 +194,12 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             }
 
             handle.Finish();
+        }
+        
+        if (!_handle.IsValid() && ApplicationManager.Instance.Initialized) {
+            _handle = Addressables.LoadAssetsAsync<GameObject>(
+                IsScreenOnPortrait ? "popup_vertical" : "popup",
+                null);
         }
     }
 

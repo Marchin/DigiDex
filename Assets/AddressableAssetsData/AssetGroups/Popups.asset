@@ -20,75 +20,48 @@ MonoBehaviour:
   - m_GUID: bbf99f5701ef2cb4e84e0dfa6fb0701d
     m_Address: EvolutionsPopup
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - popup
   - m_GUID: 8314521e19cd407488ad37b001e52804
     m_Address: FilterPopup
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - popup
   - m_GUID: a0d07fdaaf16c864e98e571c5090199f
     m_Address: EntryViewPopup
     m_ReadOnly: 0
-    m_SerializedLabels: []
-  - m_GUID: 9d0354011b60ee2468fa42eb0fff5623
-    m_Address: DatabaseViewPopup (Vertical)
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-  - m_GUID: 2124f1944f4f4df4f83d6e58d4852b64
-    m_Address: EntryViewPopup (Vertical)
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-  - m_GUID: 1a9f9fa68b7907344a9576af926b4c81
-    m_Address: EvolutionsPopup (Vertical)
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-  - m_GUID: 5ac01f7c963a9a849b8662cfe810c4fc
-    m_Address: FilterPopup (Vertical)
-    m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - popup
   - m_GUID: 0e164c96934cdd448ae70476af5b9922
     m_Address: DatabaseViewPopup
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - popup
   - m_GUID: a0903692d48489e48a277f892546f47b
     m_Address: EvolutionGlossaryPopup
     m_ReadOnly: 0
-    m_SerializedLabels: []
-  - m_GUID: 4fe042eaf1b09ea4ca446f4c37413621
-    m_Address: EvolutionGlossaryPopup (Vertical)
-    m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - popup
   - m_GUID: 9cedf5e57bcc42d4caae3e2dffe8e4fe
     m_Address: MessagePopup
     m_ReadOnly: 0
-    m_SerializedLabels: []
-  - m_GUID: fb2a936704599ab4b9a000e5475b5e73
-    m_Address: MessagePopup (Vertical)
-    m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - popup
   - m_GUID: dfdac0f39cc48f04683d184f73b19156
     m_Address: EvolutionDetailsPopup
     m_ReadOnly: 0
-    m_SerializedLabels: []
-  - m_GUID: e2358e70c96306944bfad0db48cbe699
-    m_Address: EvolutionDetailsPopup (Vertical)
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-  - m_GUID: a203ef01fcf4e0043b900aa9e5187768
-    m_Address: InputPopup (Vertical)
-    m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - popup
   - m_GUID: 95d900ddd5d9c3041bd83a34b71bdf2b
     m_Address: InputPopup
     m_ReadOnly: 0
-    m_SerializedLabels: []
-  - m_GUID: 08c577e9231f80542b4a2ae447b35d71
-    m_Address: ListSelectionPopup (Vertical)
-    m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - popup
   - m_GUID: 69ee2d8e97a6c0b4ea635c8f9a10936d
     m_Address: ListSelectionPopup
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - popup
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 540ef4b002fba424d86242275961d112, type: 2}
   m_SchemaSet:
