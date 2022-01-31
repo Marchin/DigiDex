@@ -68,7 +68,7 @@ public static class DigimonDataRetriever {
         DigimonDatabase digimonDB = GetDigimonDatabase();
 
         List<(Digimon digimon, string path)> digimonsWithArt = new List<(Digimon digimon, string path)>();
-
+        List<Digimon> digimons = new List<Digimon>();
 
         XmlDocument digimonListSite = await DataRetriever.GetSite(DigimonListSubFix);
         XmlNodeList table = digimonListSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable']/tbody/tr/td[1]/a");
@@ -78,6 +78,13 @@ public static class DigimonDataRetriever {
             if (!string.IsNullOrEmpty(digimonLinkSubFix)) {
                 try {
                     XmlDocument digimonSite = await DataRetriever.GetSite(digimonLinkSubFix);
+
+                    digimonLinkSubFix = digimonSite.BaseURI.Replace(DataRetriever.WikimonBaseURL, "");
+
+                    if (digimons.Find(d => d.LinkSubFix == digimonLinkSubFix)) {
+                        continue;
+                    }
+
                     string digimonName = digimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
                     string digimonNameSafe = digimonName.AddresableSafe();
                     string digimonArtPath = ArtDigimonsPath + digimonNameSafe + ".png";
@@ -225,6 +232,8 @@ public static class DigimonDataRetriever {
 
                     EditorUtility.SetDirty(digimonData);
                     AssetDatabase.SaveAssets();
+
+                    digimons.Add(digimonData);
 
                     addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(digimonDataPath).ToString(), dataGroup);
                 } catch (Exception ex) {
