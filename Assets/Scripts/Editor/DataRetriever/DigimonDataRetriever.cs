@@ -49,11 +49,11 @@ public static class DigimonDataRetriever {
             Directory.CreateDirectory(DigimonDataPath);
         }
 
-        await GenerateFieldList();
-        await GenerateAttributeList();
-        await GenerateTypeList();
-        await GenerateLevelList();
-        await GenerateDigimonGroupList();
+        // await GenerateFieldList();
+        // await GenerateAttributeList();
+        // await GenerateTypeList();
+        // await GenerateLevelList();
+        // await GenerateDigimonGroupList();
 
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
 
@@ -155,6 +155,7 @@ public static class DigimonDataRetriever {
                     digimonData.TypeIDs = new List<int>();
                     digimonData.LevelIDs = new List<int>();
                     digimonData.GroupIDs = new List<int>();
+                    digimonData.Attacks = new List<Attack>();
                     XmlNodeList properties = digimonSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr");
                     string lastCategory = "";
                     for (int iProperties = 0; iProperties < properties.Count; ++iProperties) {
@@ -229,6 +230,37 @@ public static class DigimonDataRetriever {
                     
                     XmlNode debutYearNode = digimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/table/tbody/tr/td/div/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td[contains(text(),'Year Active')]")?.NextSibling;
                     int.TryParse(debutYearNode?.InnerText, out digimonData.DebutYear);
+
+                    XmlNode attackHeader = digimonSite.SelectSingleNode("//*[@id='Attack_Techniques']");
+                    if (attackHeader?.ParentNode.NextSibling.Name == "table") {
+                        XmlNodeList attacks = attackHeader?.ParentNode.NextSibling.FirstChild.ChildNodes;
+                        for (int iAttack = 1; iAttack < attacks.Count; ++iAttack) {
+                            XmlNode attackData = attacks.Item(iAttack);
+
+                            Attack attack = new Attack();
+                            attack.Name = attackData.FirstChild.InnerText;
+                            attack.Description = "";
+                            XmlNodeList descriptionNodes = attackData.LastChild.ChildNodes;
+                            for (int iNode = 0; iNode < descriptionNodes.Count; ++iNode) {
+                                XmlNode descNode = descriptionNodes.Item(iNode);
+                                if (descNode.Name != "sup") {
+                                    attack.Description += descNode.InnerText;
+                                }
+                            }
+                            
+                            string[] dubNames = attackData.ChildNodes[attackData.ChildNodes.Count - 2].FirstChild.FirstChild.InnerText
+                                .Split(',', StringSplitOptions.RemoveEmptyEntries);
+                            attack.DubNames = new List<string>(dubNames.Length);
+                            for (int iName = 0; iName < dubNames.Length; ++iName) {
+                                string name = dubNames[iName].Trim();
+                                if (attack.Name != name) {
+                                    attack.DubNames.Add(name);
+                                }
+                            }
+
+                            digimonData.Attacks.Add(attack);
+                        }
+                    }
 
                     EditorUtility.SetDirty(digimonData);
                     AssetDatabase.SaveAssets();

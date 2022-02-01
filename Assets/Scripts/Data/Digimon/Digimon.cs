@@ -17,14 +17,14 @@ public class AssetReferenceDigimon : AssetReferenceT<Digimon> {
 }
 
 public class Digimon : ScriptableObject, IEvolvable {
-    [SerializeField] private string _name;
-    [SerializeField] private List<string> _dubNames;
+    [SerializeField] private string _name = default;
+    [SerializeField] private List<string> _dubNames = default;
     [FormerlySerializedAs("ProfileData")]
-    [SerializeField] private string _profile;
+    [SerializeField] private string _profile = default;
     [FormerlySerializedAs("EvolutionData")]
-    [SerializeField] private AssetReferenceEvolutionData _evolutionDataRef;
-    [SerializeField] private AssetReferenceAtlasedSprite _sprite;
-    [SerializeField] private Hash128 _hash;
+    [SerializeField] private AssetReferenceEvolutionData _evolutionDataRef = default;
+    [SerializeField] private AssetReferenceAtlasedSprite _sprite = default;
+    [SerializeField] private Hash128 _hash = default;
     public string Name {
         get => _name;
         set => _name = value;
@@ -64,8 +64,13 @@ public class Digimon : ScriptableObject, IEvolvable {
     public List<int> TypeIDs;
     public List<int> LevelIDs;
     public List<int> GroupIDs;
+    public List<Attack> Attacks;
 #if UNITY_EDITOR
-    public string LinkSubFix { get; set; }
+    [SerializeField] private string _linkSubfix = default;
+    public string LinkSubFix {
+        get => _linkSubfix;
+        set => _linkSubfix = value;
+    }
 #endif
 
     public List<InformationData> ExtractInformationData() {
@@ -140,6 +145,35 @@ public class Digimon : ScriptableObject, IEvolvable {
             }
         }
 
+        if (Attacks.Count > 0) {
+            information.Add(new InformationData { Prefix = "Attacks" });
+            for (int iAttack = 0; iAttack < Attacks.Count; ++iAttack) {
+                Attack attack = Attacks[iAttack];
+                string message = attack.Description;
+                string displayName = attack.DisplayName;
+                if (attack.DubNames.Count > 0) {
+                    message += "\n\nOther Names:";
+                    if (UserDataManager.Instance.UsingDub) {
+                        message += $"\n·{attack.Name}";
+                        displayName += $" ({attack.Name})";
+                    }
+
+                    for (int iName = (UserDataManager.Instance.UsingDub ? 1 : 0); iName < attack.DubNames.Count; ++iName) {
+                        message += $"\n·{attack.DubNames[iName]}";
+                    }
+                }
+                Action onMoreInfo = () => PopupManager.Instance.GetOrLoadPopup<MessagePopup>(restore: false)
+                    .ContinueWith(popup => popup.Populate(message, attack.DisplayName))
+                    .Forget();
+                information.Add(
+                    new InformationData {
+                        Content = displayName,
+                        OnMoreInfo = onMoreInfo,
+                        IndentLevel = 1
+                    }
+                );
+            }
+        }
         return information;
     }
 }
