@@ -39,12 +39,16 @@ public class Evolution : IEquatable<Evolution> {
     public string DebugName;
 #endif
 
+    public Evolution() {
+        FusionEntries = new EntryIndex[0];
+    }
+
     public bool Equals(Evolution other) {
         bool areEqual = this.Entry == other.Entry &&
             this.Types == other.Types &&
             ((this.FusionEntries == null && other.FusionEntries == null) ||
-                (this.FusionEntries != null && other.FusionEntries != null &&
-                    this.FusionEntries.Length == other.FusionEntries.Length));
+                ((this.FusionEntries != null && other.FusionEntries != null) &&
+                    (this.FusionEntries.Length == other.FusionEntries.Length)));
 
         if (areEqual && this.FusionEntries != null) {
             for (int iEntry = 0; iEntry < this.FusionEntries.Length; ++iEntry) {

@@ -33,10 +33,6 @@ public static class DataRetriever {
             return null;
         }
 
-        if (linkSubFix == "/List_of_Appmon" && SitesData.ContainsKey(linkSubFix)) {
-            SitesData.Remove(linkSubFix);
-        }
-
         if (!SitesData.ContainsKey(linkSubFix)) {
             SitesData.Add(linkSubFix, null);
             string link = WikimonBaseURL + linkSubFix;
@@ -124,28 +120,30 @@ public static class DataRetriever {
             EditorUtility.SetDirty(evolutionData);
             EditorUtility.SetDirty(entryData as UnityEngine.Object);
 
-            XmlDocument entrySite = await GetSite(entryData.LinkSubFix);
+            XmlDocument entrySite = null;
 
             try {
+                entrySite = await GetSite(entryData.LinkSubFix);
+
                 evolutionData.PreEvolutions = await ParseEvolutionList("Evolves_From");
                 evolutionData.PreEvolutions.Sort((x, y) => {
                     if (x.Types.HasFlag(EvolutionType.Main)) {
-                        return y.Types.HasFlag(EvolutionType.Main) ? 0 : 1;
+                        return y.Types.HasFlag(EvolutionType.Main) ? x.DebugName.CompareTo(y.DebugName) : -1;
                     } else if (y.Types.HasFlag(EvolutionType.Main)) {
-                        return -1;
+                        return 1;
                     } else {
-                        return 0;
+                        return x.DebugName.CompareTo(y.DebugName);
                     }
                 });
 
                 evolutionData.Evolutions = await ParseEvolutionList("Evolves_To");
                 evolutionData.Evolutions.Sort((x, y) => {
                     if (x.Types.HasFlag(EvolutionType.Main)) {
-                        return y.Types.HasFlag(EvolutionType.Main) ? 0 : 1;
+                        return y.Types.HasFlag(EvolutionType.Main) ? x.DebugName.CompareTo(y.DebugName) : -1;
                     } else if (y.Types.HasFlag(EvolutionType.Main)) {
-                        return -1;
+                        return 1;
                     } else {
-                        return 0;
+                        return x.DebugName.CompareTo(y.DebugName);
                     }
                 });
             } catch (Exception ex) {
@@ -214,7 +212,7 @@ public static class DataRetriever {
                                         // The first optional means that the entry can evolve with the base element alone and we always record it
                                         // Otherwise we only record the method if it has any changes from the base element
                                         if (!oneOrMoreOptionals || (method.Types != baseEvolutionType)) {
-                                            AddEvolution(method);
+                                            evolutions.Add(method);
                                             oneOrMoreOptionals = true;
                                         }
                                         method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType };
@@ -238,21 +236,21 @@ public static class DataRetriever {
                                             RecordConcatenatedFusions();
                                             method.Types |= EvolutionType.Armor;
                                             CheckMain(ref method, siblingNode);
-                                            AddEvolution(method);
+                                            evolutions.Add(method);
                                             method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType };
                                         } else if (siblingNode.InnerText.Contains("Spirit")) {
                                             // Record fusion in the case of EntryA(with EntryB or NotEntry)
                                             RecordConcatenatedFusions();
                                             method.Types |= EvolutionType.Spirit;
                                             CheckMain(ref method, siblingNode);
-                                            AddEvolution(method);
+                                            evolutions.Add(method);
                                             method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType };
                                         } else if (siblingNode.InnerText.Trim() == "Slide Evolution") {
                                             // Record fusion in the case of EntryA(with EntryB or NotEntry)
                                             RecordConcatenatedFusions();
                                             method.Types |= EvolutionType.Side;
                                             CheckMain(ref method, siblingNode);
-                                            AddEvolution(method);
+                                            evolutions.Add(method);
                                             method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType };
                                         } else if (siblingNode.Name == "b" || siblingNode.Name == "a") {
                                             XmlNode aux = (siblingNode.Name == "b") ? siblingNode.FirstChild : siblingNode;
@@ -317,7 +315,7 @@ public static class DataRetriever {
                                                         method.Types &= ~EvolutionType.Main;
                                                     }
                                                     fusionIDs.Clear();
-                                                    AddEvolution(method);
+                                                    evolutions.Add(method);
                                                     method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType };
                                                 }
                                                 recordFusionsTogether = false;
@@ -332,7 +330,7 @@ public static class DataRetriever {
                                                         method.Types &= ~EvolutionType.Main;
                                                     }
                                                     method.Types |= EvolutionType.Fusion;
-                                                    AddEvolution(method);
+                                                    evolutions.Add(method);
                                                     method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType | EvolutionType.Fusion };
                                                 }
                                                 fusionIDs.Clear();
@@ -354,7 +352,7 @@ public static class DataRetriever {
                                                 method.Types &= ~EvolutionType.Main;
                                             }
                                             fusionIDs.Clear();
-                                            AddEvolution(method);
+                                            evolutions.Add(method);
                                             method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType | EvolutionType.Fusion };
                                         }
                                     }
@@ -367,7 +365,7 @@ public static class DataRetriever {
                                 ((method.Types > EvolutionType.Main) &&
                                     !(method.Types.HasFlag(EvolutionType.Fusion) && (method.FusionEntries?.Length ?? 0) == 0))
                             ) {
-                                AddEvolution(method);
+                                evolutions.Add(method);
                             }
 
                             for (int iMethod = 0; iMethod < evolutionMethods.Count; ++iMethod) {
@@ -375,20 +373,22 @@ public static class DataRetriever {
                                 if (isWarp) {
                                     evolutionMethods[iMethod].Types |= EvolutionType.Warp;
                                 }
-                                AddEvolution(evolutionMethods[iMethod]);
+                                evolutions.Add(evolutionMethods[iMethod]);
                             }
                         }
                     }
                 }
 
-                void AddEvolution(Evolution evolution) {
-                    if (!evolutions.Contains(evolution)) {
-                        evolutions.Add(evolution);
+                evolutions.RemoveAll(e => e.Types.HasFlag(EvolutionType.Fusion) && (e.FusionEntries?.Length ?? 0) == 0);
+
+                List<Evolution> disinctEvolutions = new List<Evolution>(evolutions.Count);
+                for (int iEvolution = 0; iEvolution < evolutions.Count; ++iEvolution) {
+                    if (!disinctEvolutions.Contains(evolutions[iEvolution])) {
+                        disinctEvolutions.Add(evolutions[iEvolution]);
                     }
                 }
 
-
-                return evolutions;
+                return disinctEvolutions;
             }
         }
 
