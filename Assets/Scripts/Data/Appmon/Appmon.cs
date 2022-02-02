@@ -55,6 +55,7 @@ public class Appmon : ScriptableObject, IEvolvable {
     public List<int> GradeIDs;
     public List<int> TypeIDs;
     public List<int> Powers;
+    public List<Attack> Attacks;
     public int DebutYear;
 #if UNITY_EDITOR
     public string LinkSubFix { get => _linkSubFix; set => _linkSubFix = value; }
@@ -113,6 +114,36 @@ public class Appmon : ScriptableObject, IEvolvable {
             }
         }
 
+        if (Attacks.Count > 0) {
+            information.Add(new InformationData { Prefix = "Attacks" });
+            for (int iAttack = 0; iAttack < Attacks.Count; ++iAttack) {
+                Attack attack = Attacks[iAttack];
+                string message = attack.Description;
+                string displayName = attack.DisplayName;
+                if (attack.DubNames.Count > 0) {
+                    message += "\n\nOther Names:";
+                    if (UserDataManager.Instance.UsingDub) {
+                        message += $"\n·{attack.Name}";
+                        displayName += $" ({attack.Name})";
+                    }
+
+                    for (int iName = (UserDataManager.Instance.UsingDub ? 1 : 0); iName < attack.DubNames.Count; ++iName) {
+                        message += $"\n·{attack.DubNames[iName]}";
+                    }
+                }
+                Action onMoreInfo = () => PopupManager.Instance.GetOrLoadPopup<MessagePopup>(restore: false)
+                    .ContinueWith(popup => popup.Populate(message, attack.DisplayName))
+                    .Forget();
+                information.Add(
+                    new InformationData {
+                        Content = displayName,
+                        OnMoreInfo = onMoreInfo,
+                        IndentLevel = 1
+                    }
+                );
+            }
+        }
+        
         return information;
     }
 }

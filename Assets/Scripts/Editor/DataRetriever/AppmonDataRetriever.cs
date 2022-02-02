@@ -245,6 +245,28 @@ public static class AppmonDataRetriever {
                     XmlNode debutYearNode = appmonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/table/tbody/tr/td/div/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td[contains(text(),'Year Active')]")?.NextSibling;
                     int.TryParse(debutYearNode?.InnerText, out appmonData.DebutYear);
 
+                    XmlNode attackHeader = appmonSite.SelectSingleNode("//*[@id='Attack_Techniques']");
+                    if (attackHeader?.ParentNode.NextSibling.Name == "table") {
+                        XmlNodeList attacks = attackHeader?.ParentNode.NextSibling.FirstChild.ChildNodes;
+                        for (int iAttack = 1; iAttack < attacks.Count; ++iAttack) {
+                            XmlNode attackData = attacks.Item(iAttack);
+
+                            Attack attack = new Attack();
+                            attack.Name = attackData.FirstChild.InnerText;
+                            attack.Description = "";
+                            XmlNodeList descriptionNodes = attackData.LastChild.ChildNodes;
+                            for (int iNode = 0; iNode < descriptionNodes.Count; ++iNode) {
+                                XmlNode descNode = descriptionNodes.Item(iNode);
+                                if (descNode.Name != "sup") {
+                                    attack.Description += descNode.InnerText;
+                                }
+                            }
+                            
+                            attack.DubNames = new List<string>();
+                            appmonData.Attacks.Add(attack);
+                        }
+                    }
+
                     EditorUtility.SetDirty(appmonData);
                     AssetDatabase.SaveAssets();
 
