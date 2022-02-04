@@ -3,7 +3,7 @@
     <package>net.openid:appauth:0.11.+</package>
   </packages>
   <files>
-    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-viewmodel-savedstate-2.3.1.aar</file>
+    <file>Assets/Plugins/Android/androidx.loader.loader-1.0.0.aar</file>
   </files>
   <settings>
     <setting name="androidAbis" value="arm64-v8a,armeabi-v7a" />
