@@ -1,12 +1,14 @@
 using System;
 using System.IO;
 using System.Xml;
+using System.Globalization;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.U2D;
 using UnityEngine.AddressableAssets;
 using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings.GroupSchemas;
 using UnityEngine.U2D;
 using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
@@ -49,11 +51,11 @@ public static class DigimonDataRetriever {
             Directory.CreateDirectory(DigimonDataPath);
         }
 
-        // await GenerateFieldList();
-        // await GenerateAttributeList();
-        // await GenerateTypeList();
-        // await GenerateLevelList();
-        // await GenerateDigimonGroupList();
+        await GenerateFieldList();
+        await GenerateAttributeList();
+        await GenerateTypeList();
+        await GenerateLevelList();
+        await GenerateDigimonGroupList();
 
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
 
@@ -64,11 +66,57 @@ public static class DigimonDataRetriever {
         var dataGroup = DataRetriever.GetOrAddAddressableGroup(DigimonListGroupName);
 
         var spriteAtlasGroup = DataRetriever.GetOrAddAddressableGroup(DigimonSpriteAtlasesGroupName);
+        var schema = spriteAtlasGroup.GetSchema<BundledAssetGroupSchema>();
+        schema.BundleMode = BundledAssetGroupSchema.BundlePackingMode.PackSeparately;
 
         DigimonDatabase digimonDB = GetDigimonDatabase();
 
         List<(Digimon digimon, string path)> digimonsWithArt = new List<(Digimon digimon, string path)>();
         List<Digimon> digimons = new List<Digimon>();
+        Dictionary<string, int> imagesToSkip = new Dictionary<string, int> {
+            {"Aegiochusmon Green", 1},
+            {"Balli Bastemon", 1},
+            {"Beelzebumon (2010 Anime Version)", 2},
+            {"Bio Lotusmon", 2},
+            {"Black Growmon", 2},
+            {"Blucomon", 1},
+            {"Bomber Nanimon", 1},
+            {"Boutmon", 1},
+            {"Cannonbeemon (Aircraft Carrier)", 1},
+            {"Ceresmon Medium", 1},
+            {"Crys Paledramon", 1},
+            {"Deadly Tuwarmon Hell Mode", 1},
+            {"Duramon", 1},
+            {"Durandamon", 1},
+            {"Fros Velgrmon", 1},
+            {"Frozomon", 1},
+            {"Hi-Vision Monitamon", 1},
+            {"Hiyarimon", 1},
+            {"JESmon (X-Antibody)", 1},
+            {"Jet Mervamon", 1},
+            {"Kazuchimon", 1},
+            {"Kodokugumon Baby", 1},
+            {"Ludomon", 1},
+            {"Mad Leomon (Final Mode)", 1},
+            {"Mad Leomon (Orochi Mode)", 1},
+            {"Mervamon", 1},
+            {"Metal Greymon (2010 Anime Version)", 1},
+            {"Mitamamon", 1},
+            {"Monimon", 1},
+            {"Nise Drimogemon", 1},
+            {"Ofanimon Falldown Mode", 2},
+            {"Omega Shoutmon", 2},
+            {"Paledramon", 1},
+            {"Petermon", 1},
+            {"Phascomon", 2},
+            {"Splashmon Darkness Mode", 2},
+            {"Tia Ludomon", 1},
+            {"Titamon", 1},
+            {"Trailmon Ball", 1},
+            {"Tyutyumon", 1},
+            {"Xros Up Ballistamon (Revolmon)", 1},
+            {"Xros Up Tuwarmon (Superstarmon)", 1},
+        };
 
         XmlDocument digimonListSite = await DataRetriever.GetSite(DigimonListSubFix);
         XmlNodeList table = digimonListSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable']/tbody/tr/td[1]/a");
@@ -100,18 +148,52 @@ public static class DigimonDataRetriever {
 
                     bool hasArt = false;
                     if (!File.Exists(digimonArtPath)) {
-                        XmlNode image = digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[1]/td/div/div/a/img");
+                        XmlNode image = digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[1]/td/div/div/a");
                         if (image != null) {
-                            string linkToImage = DataRetriever.WikimonBaseURL + image.Attributes.GetNamedItem("src").InnerText;
-                            using (UnityWebRequest request = UnityWebRequest.Get(linkToImage)) {
-                                await request.SendWebRequest();
-                                if (request.result != UnityWebRequest.Result.ConnectionError) {
-                                    var data = request.downloadHandler.data;
-                                    var file = File.Create(digimonArtPath);
-                                    file.Write(data, 0, data.Length);
-                                    file.Close();
-                                    AssetDatabase.Refresh();
-                                    hasArt = true;
+                            string linkToImagePage = image.Attributes.GetNamedItem("href").InnerText;
+                            var hdImageSide = await DataRetriever.GetSite(linkToImagePage);
+                            XmlNode hdImage = null;
+                            XmlNodeList images = hdImageSide.SelectNodes("//table[@class='wikitable filehistory']/tr/td[4]");
+                            List<(XmlNode node, int result)> imagesList = new List<(XmlNode node, int result)>(images?.Count ?? 0);
+                            for (int iNode = 0; iNode < images.Count; ++iNode) {
+                                XmlNode imageItem = images.Item(iNode);
+                                // We extract the image resolution and fetch the best one
+                                string[] values = imageItem.InnerText.Split(' ');
+                                int width; 
+                                int height;
+                                if (int.TryParse(values[0], NumberStyles.AllowThousands, NumberFormatInfo.InvariantInfo, out width) &&
+                                    int.TryParse(values[2], NumberStyles.AllowThousands, NumberFormatInfo.InvariantInfo, out height)
+                                ) {
+                                    int value = width * height;
+                                    imagesList.Add((images.Item(iNode), value));
+                                }
+                            }
+
+                            if (imagesList.Count > 0) {
+                                imagesList.Sort((x, y) => y.result.CompareTo(x.result));
+                                if (imagesToSkip.ContainsKey(digimonNameSafe)) {
+                                    int toRemove = Mathf.Min(imagesToSkip[digimonNameSafe], imagesList.Count - 1);
+                                    
+                                    for (int iRemove = 0; iRemove < toRemove; ++iRemove) {
+                                        imagesList.RemoveAt(0);
+                                    }
+                                }
+
+                                hdImage = imagesList[0].node.PreviousSibling.FirstChild;
+                                if (hdImage != null) {
+                                    string linkToImage = DataRetriever.WikimonBaseURL + hdImage.Attributes.GetNamedItem("href").InnerText;
+
+                                    using (UnityWebRequest request = UnityWebRequest.Get(linkToImage)) {
+                                        await request.SendWebRequest();
+                                        if (request.result != UnityWebRequest.Result.ConnectionError) {
+                                            var data = request.downloadHandler.data;
+                                            var file = File.Create(digimonArtPath);
+                                            file.Write(data, 0, data.Length);
+                                            file.Close();
+                                            AssetDatabase.Refresh();
+                                            hasArt = true;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -249,7 +331,7 @@ public static class DigimonDataRetriever {
                             }
                             
                             string[] dubNames = attackData.ChildNodes[attackData.ChildNodes.Count - 2].FirstChild.FirstChild.InnerText
-                                .Split(',', StringSplitOptions.RemoveEmptyEntries);
+                                .Split(new char[] { ',', '/' }, StringSplitOptions.RemoveEmptyEntries);
                             attack.DubNames = new List<string>(dubNames.Length);
                             for (int iName = 0; iName < dubNames.Length; ++iName) {
                                 string name = dubNames[iName].Trim();
@@ -284,6 +366,8 @@ public static class DigimonDataRetriever {
             for (int j = 0; j < sprites.Length; ++iDigimonArt, ++j) {
                 sprites[j] = AssetDatabase.LoadAssetAtPath<Sprite>(digimonsWithArt[iDigimonArt].path);
             }
+            TextureImporterPlatformSettings textureSettings = spriteAtlas.GetPlatformSettings("DefaultTexturePlatform");
+            textureSettings.crunchedCompression = true;
             spriteAtlas.Add(sprites);
             AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
         }

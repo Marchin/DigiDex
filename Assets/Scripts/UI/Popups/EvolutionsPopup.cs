@@ -293,11 +293,11 @@ public class EvolutionsPopup : Popup {
     }
     
     public override void OnClose() {
+        _inspectedEntryImage.sprite = null;
+        _sourceEntryImage.sprite = null;
         for (int iHandle = 0; iHandle < _handles.Count; ++iHandle) {
             Addressables.Release(_handles[iHandle]);
         }
         _handles.Clear();
     }
 }
-
-// Disable text scrolling while scrolling

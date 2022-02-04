@@ -48,6 +48,9 @@ public class DatabaseViewPopup : Popup {
                 return;
             }
 
+            _entryImage.sprite = null;
+            _entryImage.gameObject.SetActive(false);
+
             if (_entryDataCTS != null) {
                 _entryDataCTS.Cancel();
                 _entryDataCTS.Dispose();
@@ -61,9 +64,10 @@ public class DatabaseViewPopup : Popup {
 
             _selectedEntry = value;
 
-            _entryImage.gameObject.SetActive(false);
             if (_selectedEntry != null) {
-                _loadingWheel.SetActive(true);
+                if (!_loadingWheel.activeSelf) {
+                    _loadingWheel.SetActive(true);
+                }
                 if (_selectedEntry.Sprite.RuntimeKeyIsValid()) {
                     var spriteHandle = Addressables.LoadAssetAsync<Sprite>(_selectedEntry.Sprite);
                     _entryDataHandles.Add(spriteHandle);
@@ -117,7 +121,10 @@ public class DatabaseViewPopup : Popup {
         _searchInput.onValueChanged.AddListener(OnInputChanged);
         _clearSearch.onClick.AddListener(() => _searchInput.text = "");
 
-        _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
+        _closeButton.onClick.AddListener(() => {
+            SelectedEntry = null;
+            _ = PopupManager.Instance.Back();
+        });
         _profileButton.onClick.AddListener(() => {
             PopupManager.Instance.GetOrLoadPopup<EntryViewPopup>(restore: false).ContinueWith(popup => {
                 Action prev = null;
@@ -184,6 +191,20 @@ public class DatabaseViewPopup : Popup {
 
     private void OnDisable() {
         PopupManager.Instance.OnStackChange -= OnStackChange;
+    }
+
+    private void OnDestroy() {
+        if (_entryDataCTS != null) {
+            _entryDataCTS.Cancel();
+            _entryDataCTS.Dispose();
+            _entryDataCTS = null;
+        }
+
+        for (int iHandle = 0; iHandle < _entryDataHandles.Count; ++iHandle) {
+            Addressables.Release(_entryDataHandles[iHandle]);
+        }
+        _entryDataHandles.Clear();
+        _entryImage.gameObject.SetActive(false);
     }
 
     private void OnStackChange() {

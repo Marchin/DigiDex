@@ -1715,6 +1715,7 @@ MonoBehaviour:
   Vertical: 1
   FullScreen: 1
   _entryImage: {fileID: 1597262766557158477}
+  _missingDigimon: {fileID: 21300000, guid: 70150367f59effe41af51a71efb3505d, type: 3}
   _searchInput: {fileID: 2934319160028129326}
   _clearSearch: {fileID: 72540677867912952}
   _searchIcon: {fileID: 487179845260466899}

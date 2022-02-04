@@ -214,6 +214,7 @@ public class EntryViewPopup : Popup {
     }
     
     public override void OnClose() {
+        _image.sprite = null;
         for (int iHandle = 0; iHandle < _dataHandles.Count; ++iHandle) {
             Addressables.Release(_dataHandles[iHandle]);
         }

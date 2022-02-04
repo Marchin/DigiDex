@@ -69,6 +69,13 @@ public class EvolutionElement : MonoBehaviour, IDataUIElement<Evolution> {
         }
     }
 
+    private void OnDestroy() {
+        _entryImage.sprite = null;
+        for (int iHandle = 0; iHandle < _handles.Count; ++iHandle) {
+            Addressables.Release(_handles[iHandle]);
+        }
+    }
+
     public void SetSelected(bool state) {
         _fill.color = state ? _selectedColor : _unselectedColor;
     }

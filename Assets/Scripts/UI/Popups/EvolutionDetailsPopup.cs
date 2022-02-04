@@ -108,6 +108,12 @@ public class EvolutionDetailsPopup : Popup {
         }
     }
 
+    private void OnDestroy() {
+        for (int iHandle = 0; iHandle < _handles.Count; ++iHandle) {
+            Addressables.Release(_handles[iHandle]);
+        }
+    }
+
     public override void OnClose() {
         foreach (var handle in _handles) {
             Addressables.Release(handle);

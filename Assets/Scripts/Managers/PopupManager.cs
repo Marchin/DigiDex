@@ -357,7 +357,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     
             return rotationOn == 1;
         }
-#endif
+#else
         return true;
+#endif
     }
 }

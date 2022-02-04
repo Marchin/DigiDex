@@ -1,12 +1,14 @@
 using System;
 using System.IO;
 using System.Xml;
+using System.Globalization;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.U2D;
 using UnityEngine.AddressableAssets;
 using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings.GroupSchemas;
 using UnityEngine.U2D;
 using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
@@ -43,8 +45,8 @@ public static class AppmonDataRetriever {
 
     [MenuItem("DigiDex/Appmon/Retrieve Data")]
     public static async void RetrieveData() {
-        // await GenerateTypeList();
-        // await GenerateGradeList();
+        await GenerateTypeList();
+        await GenerateGradeList();
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
 
         if (!Directory.Exists(AppmonsDataPath)) {
@@ -58,6 +60,8 @@ public static class AppmonDataRetriever {
         var dataGroup = DataRetriever.GetOrAddAddressableGroup(AppmonListGroupName);
 
         var spriteAtlasGroup = DataRetriever.GetOrAddAddressableGroup(AppmonSpriteAtlasesGroupName);
+        var schema = spriteAtlasGroup.GetSchema<BundledAssetGroupSchema>();
+        schema.BundleMode = BundledAssetGroupSchema.BundlePackingMode.PackSeparately;
 
         AppmonDatabase appmonDB = GetAppmonDatabase();
 
@@ -71,6 +75,60 @@ public static class AppmonDataRetriever {
         AssetDatabase.Refresh();
         string appAtlasGUID = AssetDatabase.GUIDFromAssetPath(appAtlasPath).ToString();
         addressablesSettings.CreateOrMoveEntry(appAtlasGUID, spriteAtlasGroup);
+
+        Dictionary<string, int> imagesToSkip = new Dictionary<string, int> {
+            {"Biomon", 1},
+            {"Calcumon", 1},
+            {"Consulmon", 1},
+            {"Coordemon", 1},
+            {"Dantemon", 1},
+            {"Deusmon", 1},
+            {"Diarimon", 1},
+            {"Denpamon", 3},
+            {"Docmon", 1},
+            {"Dogamon", 1},
+            {"DoGatchmon", 1},
+            {"Dreammon", 1},
+            {"Ecomon", 3},
+            {"Gaiamon (Appmon)", 1},
+            {"Gatchmon", 1},
+            {"Hadesmon", 1},
+            {"Jetmon", 1},
+            {"Kakeimon", 1},
+            {"Kosomon", 1},
+            {"Mediamon", 2},
+            {"Medicmon", 1},
+            {"Messemon", 1},
+            {"Mirrormon", 2},
+            {"Musclemon", 2},
+            {"Musimon", 1},
+            {"Navimon (Appmon)", 1},
+            {"Offmon", 1},
+            {"Oujamon", 1},
+            {"Ouranosmon", 1},
+            {"Perorimon", 1},
+            {"Pokomon (Appmon)", 1},
+            {"Poseidomon", 1},
+            {"Puzzlemon", 1},
+            {"Racemon", 1},
+            {"Raidramon", 1},
+            {"Rebootmon", 3},
+            {"Roamon", 1},
+            {"Ropuremon", 1},
+            {"Rocketmon", 1},
+            {"Savemon", 1},
+            {"Sateramon", 1},
+            {"Setmon", 1},
+            {"Shutmon", 1},
+            {"Tarotmon", 2},
+            {"Trickmon", 1},
+            {"Tutomon", 1},
+            {"Uratekumon", 1},
+            {"Vegasmon", 1},
+            {"Warpmon", 1},
+            {"Warudamon", 1},
+        };
+
 
         XmlDocument appmonListSite = await DataRetriever.GetSite(AppmonListSubFix);
         XmlNodeList table = appmonListSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable']/tbody/tr/td[1]/a");
@@ -97,18 +155,52 @@ public static class AppmonDataRetriever {
 
                     bool hasArt = false;
                     if (!File.Exists(appmonArtPath)) {
-                        XmlNode image = appmonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[1]/td/div/div/a/img");
+                        XmlNode image = appmonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[1]/td/div/div/a");
                         if (image != null) {
-                            string linkToImage = DataRetriever.WikimonBaseURL + image.Attributes.GetNamedItem("src").InnerText;
-                            using (UnityWebRequest request = UnityWebRequest.Get(linkToImage)) {
-                                await request.SendWebRequest();
-                                if (request.result != UnityWebRequest.Result.ConnectionError) {
-                                    var data = request.downloadHandler.data;
-                                    var file = File.Create(appmonArtPath);
-                                    file.Write(data, 0, data.Length);
-                                    file.Close();
-                                    AssetDatabase.Refresh();
-                                    hasArt = true;
+                            string linkToImagePage = image.Attributes.GetNamedItem("href").InnerText;
+                            var hdImageSide = await DataRetriever.GetSite(linkToImagePage);
+                            XmlNode hdImage = null;
+                            XmlNodeList images = hdImageSide.SelectNodes("//table[@class='wikitable filehistory']/tr/td[4]");
+                            List<(XmlNode node, int result)> imagesList = new List<(XmlNode node, int result)>(images?.Count ?? 0);
+                            for (int iNode = 0; iNode < images.Count; ++iNode) {
+                                XmlNode imageItem = images.Item(iNode);
+                                // We extract the image resolution and fetch the best one
+                                string[] values = imageItem.InnerText.Split(' ');
+                                int width; 
+                                int height;
+                                if (int.TryParse(values[0], NumberStyles.AllowThousands, NumberFormatInfo.InvariantInfo, out width) &&
+                                    int.TryParse(values[2], NumberStyles.AllowThousands, NumberFormatInfo.InvariantInfo, out height)
+                                ) {
+                                    int value = width * height;
+                                    imagesList.Add((images.Item(iNode), value));
+                                }
+                            }
+
+                            if (imagesList.Count > 0) {
+                                imagesList.Sort((x, y) => y.result.CompareTo(x.result));
+                                if (imagesToSkip.ContainsKey(appmonNameSafe)) {
+                                    int toRemove = Mathf.Min(imagesToSkip[appmonNameSafe], imagesList.Count - 1);
+                                    
+                                    for (int iRemove = 0; iRemove < toRemove; ++iRemove) {
+                                        imagesList.RemoveAt(0);
+                                    }
+                                }
+
+                                hdImage = imagesList[0].node.PreviousSibling.FirstChild;
+                                if (hdImage != null) {
+                                    string linkToImage = DataRetriever.WikimonBaseURL + hdImage.Attributes.GetNamedItem("href").InnerText;
+
+                                    using (UnityWebRequest request = UnityWebRequest.Get(linkToImage)) {
+                                        await request.SendWebRequest();
+                                        if (request.result != UnityWebRequest.Result.ConnectionError) {
+                                            var data = request.downloadHandler.data;
+                                            var file = File.Create(appmonArtPath);
+                                            file.Write(data, 0, data.Length);
+                                            file.Close();
+                                            AssetDatabase.Refresh();
+                                            hasArt = true;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -290,6 +382,8 @@ public static class AppmonDataRetriever {
             for (int j = 0; j < sprites.Length; ++iAppmonArt, ++j) {
                 sprites[j] = AssetDatabase.LoadAssetAtPath<Sprite>(appmonsWithArt[iAppmonArt].path);
             }
+            TextureImporterPlatformSettings textureSettings = spriteAtlas.GetPlatformSettings("DefaultTexturePlatform");
+            textureSettings.crunchedCompression = true;
             spriteAtlas.Add(sprites);
             AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
             EditorUtility.SetDirty(appAtlas);
@@ -321,7 +415,7 @@ public static class AppmonDataRetriever {
         }
 
         GenerateAppmonList();
-        // GetEvolutions();
+        GetEvolutions();
 
         AssetDatabase.Refresh();
 
