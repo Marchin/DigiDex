@@ -119,10 +119,10 @@ public class EvolutionsPopup : Popup {
                 .ContinueWith(popup => {
                     Action prev = null;
                     Action next = null;
-                    List<Evolution> uniqueEntries = new List<Evolution>(_popupData.CurrEvolutionList);
+                    List<EntryIndex> uniqueEntries = new List<EntryIndex>(_popupData.CurrEvolutionList.Count);
                     for (int iEntry = 0; iEntry < _popupData.CurrEvolutionList.Count; ++iEntry) {
-                        if (!uniqueEntries.Contains(_popupData.CurrEvolutionList[iEntry])) {
-                            uniqueEntries.Add(_popupData.CurrEvolutionList[iEntry]);
+                        if (!uniqueEntries.Contains(_popupData.CurrEvolutionList[iEntry].Entry)) {
+                            uniqueEntries.Add(_popupData.CurrEvolutionList[iEntry].Entry);
                         }
                     }
                     int uniqueEvolution = uniqueEntries.Count;
