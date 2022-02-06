@@ -41,6 +41,7 @@ public class AddressablesEnforceSimplifyName {
             string sufix = popup.Vertical ? Popup.VerticalSufix : "";
             string forcedName = popup.GetType().Name + sufix;
             entry.address = forcedName;
+            entry.labels.Add(popup.Vertical ? "popup_vertical" : "popup");
             if (fileName != forcedName) {
                 AssetDatabase.RenameAsset(entry.AssetPath, entry.AssetPath.Replace(fileName, forcedName));
             }

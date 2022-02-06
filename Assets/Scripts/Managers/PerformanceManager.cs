@@ -6,28 +6,13 @@ public class PerformanceManager : MonoBehaviourSingleton<PerformanceManager> {
     private const int EfficiencyFrameRate = 30;
     // HACK: if we use 60 some devices go only up to 45, using 61 works as intended
     private const int HighPerformanceFrameRate = 61;
-    private List<Handle> _maxFPSHandles = new List<Handle>();
+    public OperationBySubscription HighPerformance { get; private set; }
 
-    private void Start() {
+    private void Awake() {
         Application.targetFrameRate = EfficiencyFrameRate;
-    }
-
-    public Handle RequestHighPerformance() {
-        Handle handle = new Handle();
-        _maxFPSHandles.Add(handle);
-
-        if (_maxFPSHandles.Count == 1) {
-            ReturnToTargetFrameRate();
-        }
-
-        return handle;
-    }
-
-    
-    private async void ReturnToTargetFrameRate() {
-        Application.targetFrameRate = HighPerformanceFrameRate;
-        await UniTask.WaitUntil(() => _maxFPSHandles.TrueForAll(h => h.IsComplete));
-        Application.targetFrameRate = EfficiencyFrameRate;
-        _maxFPSHandles.Clear();
+        HighPerformance = new OperationBySubscription(
+            onStart: () => Application.targetFrameRate = HighPerformanceFrameRate,
+            onAllFinished: () => Application.targetFrameRate = EfficiencyFrameRate
+        );
     }
 }

@@ -7,11 +7,6 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Cysharp.Threading.Tasks;
 
-public class Handle {
-    public bool IsComplete { get; private set; }
-    public void Complete() => IsComplete = true;
-}
-
 public static class UnityUtils {
     public const string LinkColor = "#feff6e";
     public static bool EditorClosing { get; private set; }
