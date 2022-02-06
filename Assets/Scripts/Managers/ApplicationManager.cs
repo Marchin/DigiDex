@@ -11,14 +11,21 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     public AssetReferenceAtlasedSprite MissingSpirte => _missingSprite;
     public OperationBySubscription ShowLoadingScreen { get; private set; }
     public OperationBySubscription ShowLoadingWheel { get; private set; }
+    public OperationBySubscription.Subscription _loadingWheelSubscription;
     public OperationBySubscription LockScreen { get; private set; }
     private DataCenter _centralDB;
     public bool Initialized { get; private set; }
     
     private async void Start() {
         ShowLoadingScreen = new OperationBySubscription(
-            onStart: () => _loadingScreen.SetActive(true),
-            onAllFinished: () => _loadingScreen.SetActive(false)
+            onStart: () => {
+                _loadingScreen.SetActive(true);
+                _loadingWheelSubscription = ShowLoadingWheel.Subscribe();
+            },
+            onAllFinished: () => {
+                _loadingScreen.SetActive(false);
+                _loadingWheelSubscription.Finish();
+            }
         );
 
         ShowLoadingWheel = new OperationBySubscription(
