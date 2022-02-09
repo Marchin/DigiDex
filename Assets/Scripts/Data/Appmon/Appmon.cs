@@ -118,10 +118,13 @@ public class Appmon : ScriptableObject, IEvolvable {
             information.Add(new InformationData { Prefix = "Attacks" });
             for (int iAttack = 0; iAttack < Attacks.Count; ++iAttack) {
                 Attack attack = Attacks[iAttack];
-                string message = attack.Description;
                 string displayName = attack.DisplayName;
+                string message = attack.Description;
                 if (attack.DubNames.Count > 0) {
-                    message += "\n\nOther Names:";
+                    if (!string.IsNullOrEmpty(message)) {
+                        message += "\n\n";
+                    }
+                    message += "Other Names:";
                     if (UserDataManager.Instance.UsingDub) {
                         message += $"\n·{attack.Name}";
                         displayName += $" ({attack.Name})";
@@ -131,9 +134,12 @@ public class Appmon : ScriptableObject, IEvolvable {
                         message += $"\n·{attack.DubNames[iName]}";
                     }
                 }
-                Action onMoreInfo = () => PopupManager.Instance.GetOrLoadPopup<MessagePopup>(restore: false)
-                    .ContinueWith(popup => popup.Populate(message, attack.DisplayName))
-                    .Forget();
+                bool hasInfo = !string.IsNullOrEmpty(attack.Description) || (DubNames.Count > 0);
+                Action onMoreInfo = hasInfo ?
+                    () => PopupManager.Instance.GetOrLoadPopup<MessagePopup>(restore: false)
+                        .ContinueWith(popup => popup.Populate(message, attack.DisplayName))
+                        .Forget() :
+                    (Action)null;
                 information.Add(
                     new InformationData {
                         Content = displayName,
