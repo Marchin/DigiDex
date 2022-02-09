@@ -2029,7 +2029,6 @@ MonoBehaviour:
   _dbViewButton: {fileID: 1045990508492778914}
   _zoomButton: {fileID: 7105345675219619593}
   _favoriteIndicator: {fileID: 8388128470353140646}
-  _nextPrevButtonContainer: {fileID: 9140823278979859324}
   _loadingWheel: {fileID: 1021244321889405338}
 --- !u!1 &8836179057158819055
 GameObject:
@@ -2496,7 +2495,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 16, y: -20}
+  m_SizeDelta: {x: 32, y: -20}
   m_Pivot: {x: 1, y: 1}
 --- !u!222 &8836179057459743959
 CanvasRenderer:
