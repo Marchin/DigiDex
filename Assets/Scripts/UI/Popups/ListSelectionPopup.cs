@@ -89,7 +89,7 @@ public class ListSelectionPopup : Popup {
         _pasteListsButton.onClick.AddListener(async () => {
             var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
             inputPopup.Populate(
-                "If you've copied someone else's lists paste it here down below:",
+                "If you've copied someone else's lists paste them here down below:",
                 "Paste Lists",
                 async input => {
                     bool validInput = await ParseLists(input);
@@ -112,7 +112,12 @@ public class ListSelectionPopup : Popup {
             var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
             Action<string> onConfirm = (Application.platform == RuntimePlatform.WebGLPlayer) ?
                 (Action<string>)null :
-                (input => { GUIUtility.systemCopyBuffer = input; });
+                (async input => { 
+                    GUIUtility.systemCopyBuffer = input; 
+                    _ = PopupManager.Instance.Back();
+                    var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                    msgPopup.Populate("Lists Copied!", "Copied");
+                });
             inputPopup.Populate(
                 "Share your lists by copying and sending the text down below:",
                 "Copy Lists",
