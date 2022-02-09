@@ -35,7 +35,6 @@ public class ElementScrollList : MonoBehaviour {
     private bool _blockCenteringDueScroll;
     private float _prevScrollPos;
     private bool _wasScrollingDown;
-    private bool _ignoreNextAdjustment;
     private CancellationTokenSource _mouseWheelCTS;
     private Action<int> OnConfirmed;
     public event Action<int> OnSelectedElementChanged;
@@ -228,11 +227,9 @@ public class ElementScrollList : MonoBehaviour {
         float delta = Mathf.Abs(newPos.y - ElementReuseScrollPoint);
         int count = Mathf.CeilToInt(delta / _elementNormalizedHeight);
         
-        bool isScrollingDown = _ignoreNextAdjustment ? 
-            _wasScrollingDown :
-            ((newPos.y - _prevScrollPos) != 0f) ?
-                ((newPos.y - _prevScrollPos) < 0f) :
-                _wasScrollingDown;
+        bool isScrollingDown = ((newPos.y - _prevScrollPos) != 0f) ?
+            ((newPos.y - _prevScrollPos) < 0f) :
+            _wasScrollingDown;
 
         if (count > 0) {
             if (_currElementScrollIndex < (_namesList.Count - _elements.Length) &&

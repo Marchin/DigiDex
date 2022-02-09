@@ -39,7 +39,6 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
     private float _handleSizeAdjustment;
     private float _prevScrollPos;
     private bool _wasScrollingDown;
-    private bool _ignoreNextAdjustment;
 
     private void Start() {
         _template.gameObject.SetActive(false);
@@ -255,13 +254,9 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
         float delta = Mathf.Abs(newPos.y - ElementReuseScrollPoint);
         int count = Mathf.CeilToInt(delta / _elementNormalizedLength);
 
-        bool isScrollingDown = _ignoreNextAdjustment ? 
-            _wasScrollingDown :
-            ((pos - _prevScrollPos) != 0f) ?
-                ((pos - _prevScrollPos) < 0f) :
-                _wasScrollingDown;
-
-        _ignoreNextAdjustment = false;
+        bool isScrollingDown = ((pos - _prevScrollPos) != 0f) ?
+            ((pos - _prevScrollPos) < 0f) :
+            _wasScrollingDown;
 
         if (count > 0) {
             if (_baseIndex < (_data.Count - _elements.Count) && isScrollingDown && pos < ((ElementReuseScrollPoint))) {
@@ -272,7 +267,6 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
                 } else {
                     _scroll.CustomSetVerticalNormalizedPosition(pos + _elementNormalizedLength * count);
                 }
-                _ignoreNextAdjustment = true;
             } else if (_baseIndex > 0 && !isScrollingDown && pos > (1f - (ElementReuseScrollPoint))) {
                 count = Mathf.Min(count, _baseIndex);
                 newScrollIndex -= count;
@@ -281,7 +275,6 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
                 } else {
                     _scroll.CustomSetVerticalNormalizedPosition(pos - _elementNormalizedLength * count);
                 }
-                _ignoreNextAdjustment = true;
             }
         }
         
