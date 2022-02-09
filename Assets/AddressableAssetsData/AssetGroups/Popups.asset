@@ -107,6 +107,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - popup_vertical
+  - m_GUID: 526d81bb429de464d87c0b8dbd03494a
+    m_Address: EntryZoomPopup (Vertical)
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - popup_vertical
+  - m_GUID: 95553745b22c90443a8b8205bf9cc371
+    m_Address: EntryZoomPopup
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - popup
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 540ef4b002fba424d86242275961d112, type: 2}
   m_SchemaSet:

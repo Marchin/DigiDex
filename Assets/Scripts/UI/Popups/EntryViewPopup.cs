@@ -39,6 +39,7 @@ public class EntryViewPopup : Popup {
     [SerializeField] private Button _prevButton = default;
     [SerializeField] private Button _nextButton = default;
     [SerializeField] private Button _dbViewButton = default;
+    [SerializeField] private Button _zoomButton = default;
     [SerializeField] private GameObject _favoriteIndicator = default;
     [SerializeField] private GameObject _nextPrevButtonContainer = default;
     [SerializeField] private GameObject _loadingWheel = default;
@@ -60,8 +61,11 @@ public class EntryViewPopup : Popup {
         _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
         _prevButton.onClick.AddListener(() => _prev?.Invoke());
         _nextButton.onClick.AddListener(() => _next?.Invoke());
-        _dbViewButton.onClick.AddListener(() =>
-            PopupManager.Instance.ClearStackUntilPopup<DatabaseViewPopup>());
+        _dbViewButton.onClick.AddListener(() => PopupManager.Instance.ClearStackUntilPopup<DatabaseViewPopup>());
+        _zoomButton.onClick.AddListener(async () => {
+            var popup = await PopupManager.Instance.GetOrLoadPopup<EntryZoomPopup>();
+            popup.Populate(_entry);
+        });
         _loadingWheel.SetActive(false);
 
         _dataToggle.onValueChanged.AddListener(isOn => {

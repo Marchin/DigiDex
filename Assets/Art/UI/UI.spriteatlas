@@ -63,6 +63,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 370a4584b57fe904f8c7579cdb96118c, type: 3}
   - {fileID: 21300000, guid: 441331b5dc1571f4e8571ebeaf3ad2cb, type: 3}
   - {fileID: 21300000, guid: 0ed4df76bc0998c439883849b78051e6, type: 3}
+  - {fileID: 21300000, guid: f6e78a96c573b934ea08d16520bf2e6c, type: 3}
   - {fileID: 21300000, guid: 94b13bd63efcfbb47aca3400d118b2c7, type: 3}
   - {fileID: 21300000, guid: 70150367f59effe41af51a71efb3505d, type: 3}
   - {fileID: 21300000, guid: 35991189482289447a31767289ead085, type: 3}
@@ -96,6 +97,7 @@ SpriteAtlas:
   - Button
   - Cog
   - Evolution Line
+  - Zoom
   - Arrow Thick
   - Missing Digimon
   - Vertical Gradient

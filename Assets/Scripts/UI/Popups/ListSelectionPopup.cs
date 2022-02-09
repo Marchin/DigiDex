@@ -111,7 +111,7 @@ public class ListSelectionPopup : Popup {
             }
             var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
             Action<string> onConfirm = (Application.platform == RuntimePlatform.WebGLPlayer) ?
-                null :
+                (Action<string>)null :
                 (input => { GUIUtility.systemCopyBuffer = input; });
             inputPopup.Populate(
                 "Share your lists by copying and sending the text down below:",

@@ -28,7 +28,7 @@ public class InformationElement : MonoBehaviour, IDataUIElement<InformationData>
     private AsyncOperationHandle<Sprite> _spriteHandle;
     private CancellationTokenSource _cts;
 
-    private void OnDisable() {
+    private void OnDestroy() {
         _image.sprite = null;
         if (_spriteHandle.IsValid()) {
             Addressables.Release(_spriteHandle);
