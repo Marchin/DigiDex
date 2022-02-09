@@ -17,6 +17,13 @@ public class PopupRestorationData {
 }
 
 public class PopupManager : MonoBehaviourSingleton<PopupManager> {
+    public enum AndroidOrientation {
+        Portrait,
+        LandscapeLeft,
+        PortraitUpsideDown,
+        LandscapeRight,
+    }
+
     private List<Popup> _stack = new List<Popup>();
     private List<AsyncOperationHandle<GameObject>> _handles = new List<AsyncOperationHandle<GameObject>>();
     private GameObject _parentCanvas;
@@ -27,6 +34,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     public event Action OnRotation;
     private List<PopupRestorationData> _restorationData = new List<PopupRestorationData>();
     private bool _autoRotationOn;
+    private AndroidOrientation _androidOrientation;
     private bool _loadingPopup;
     public bool ClosingPopup { get; private set; }
     public bool IsScreenOnPortrait => (Screen.height > Screen.width);
@@ -345,7 +353,24 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         Screen.autorotateToPortraitUpsideDown = _autoRotationOn;
         Screen.autorotateToLandscapeLeft = _autoRotationOn;
         Screen.autorotateToLandscapeRight = _autoRotationOn;
-        Screen.orientation = ScreenOrientation.AutoRotation;
+        if (_autoRotationOn) {
+            Screen.orientation = ScreenOrientation.AutoRotation;
+        } else {
+            switch (_androidOrientation) {
+                case AndroidOrientation.Portrait: {
+                    Screen.orientation = ScreenOrientation.Portrait;
+                } break;
+                case AndroidOrientation.LandscapeLeft: {
+                    Screen.orientation = ScreenOrientation.LandscapeLeft;
+                } break;
+                case AndroidOrientation.PortraitUpsideDown: {
+                    Screen.orientation = ScreenOrientation.PortraitUpsideDown;
+                } break;
+                case AndroidOrientation.LandscapeRight: {
+                    Screen.orientation = ScreenOrientation.LandscapeRight;
+                } break;
+            }
+        }
     }
      
     private bool DeviceAutoRotationIsOn() {
@@ -354,6 +379,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             var context = actClass.GetStatic<AndroidJavaObject>("currentActivity");
             AndroidJavaClass systemGlobal = new AndroidJavaClass("android.provider.Settings$System");
             var rotationOn = systemGlobal.CallStatic<int>("getInt", context.Call<AndroidJavaObject>("getContentResolver"), "accelerometer_rotation");
+            _androidOrientation = (AndroidOrientation)systemGlobal.CallStatic<int>("getInt", context.Call<AndroidJavaObject>("getContentResolver"), "user_rotation");
     
             return rotationOn == 1;
         }
