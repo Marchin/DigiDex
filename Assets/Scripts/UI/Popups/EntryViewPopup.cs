@@ -41,7 +41,6 @@ public class EntryViewPopup : Popup {
     [SerializeField] private Button _dbViewButton = default;
     [SerializeField] private Button _zoomButton = default;
     [SerializeField] private GameObject _favoriteIndicator = default;
-    [SerializeField] private GameObject _nextPrevButtonContainer = default;
     [SerializeField] private GameObject _loadingWheel = default;
     public event Action<IDataEntry> OnPopulate;
     private Action _prev;
@@ -111,11 +110,8 @@ public class EntryViewPopup : Popup {
     public void Initialize(Action prev, Action next) {
         _prev = prev;
         _next = next;
-        _prevButton.gameObject.SetActive(_prev != null);
-        _nextButton.gameObject.SetActive(_next != null);
-        if (_nextPrevButtonContainer != null) {
-            _nextPrevButtonContainer.SetActive(_prev != null || _next != null);
-        }
+        _prevButton.interactable = (_prev != null);
+        _nextButton.interactable = (_next != null);
     }
 
     public void Populate(IDataEntry entry) {
