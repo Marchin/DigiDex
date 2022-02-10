@@ -319,6 +319,10 @@ public static class DigimonDataRetriever {
                         for (int iAttack = 1; iAttack < attacks.Count; ++iAttack) {
                             XmlNode attackData = attacks.Item(iAttack);
 
+                            if (string.IsNullOrEmpty(attackData.FirstChild.InnerText)) {
+                                continue;
+                            }
+
                             Attack attack = new Attack();
                             attack.Name = attackData.FirstChild.InnerText;
                             attack.Description = "";
