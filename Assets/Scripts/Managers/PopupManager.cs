@@ -177,7 +177,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                     ++lastVisiblePopup;
                 }
             }
-            
+
             lastVisiblePopup = Mathf.Min(_stack.Count - 1, lastVisiblePopup);
             int counter = lastVisiblePopup;
             Popup popup = _stack[lastVisiblePopup];
@@ -274,6 +274,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                     --startingIndex;
                 }
                 handle.Finish();
+            } else {
+                CloseActivePopup();
             }
 
             ClosingPopup = false;
