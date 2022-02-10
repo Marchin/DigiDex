@@ -39,7 +39,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     public bool IsScreenOnPortrait => (Screen.height > Screen.width);
     private ScreenOrientation _lastDeviceOrientation;
     private Vector2 _lastScreenSize;
-    private AsyncOperationHandle<IList<GameObject>> _handle;
+    private AsyncOperationHandle<IList<GameObject>> _popupsHandle;
     public Popup ActivePopup {
         get {
             foreach (var popup in _stack) {
@@ -160,14 +160,14 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     private async void RefreshScaler() {
         RefreshReferenceResolution();
         if (_loadingPopup || ActivePopup == null || _stack.Count <= 0) return;
-
+        
         if (ActivePopup.Vertical != IsScreenOnPortrait) {
-            var handle = ApplicationManager.Instance.ShowLoadingScreen.Subscribe();
-
-            if (_handle.IsValid()) {
-                Addressables.Release(_handle);
-                _handle = default;
+            if (_popupsHandle.IsValid()) {
+                Addressables.Release(_popupsHandle);
+                _popupsHandle = default;
             }
+
+            var handle = ApplicationManager.Instance.ShowLoadingScreen.Subscribe();
 
             // Cleaning up inactive popup facilitates the algorithm and at this point their orientation probably don't match
             while (!_stack[0].gameObject.activeSelf) {
@@ -202,8 +202,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             handle.Finish();
         }
         
-        if (!_handle.IsValid() && ApplicationManager.Instance.Initialized) {
-            _handle = Addressables.LoadAssetsAsync<GameObject>(
+        if (!_popupsHandle.IsValid() && ApplicationManager.Instance.Initialized) {
+            _popupsHandle = Addressables.LoadAssetsAsync<GameObject>(
                 IsScreenOnPortrait ? "popup_vertical" : "popup",
                 null);
         }
@@ -255,6 +255,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 }
             }
 
+            CloseActivePopup();
+
             if (startingIndex >= 0) {
                 var handle = ApplicationManager.Instance.ShowLoadingScreen.Subscribe();
                 while (startingIndex >= 0) {
@@ -262,8 +264,6 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
 
                     if (restorationData.Data != null) {
                         await RestorePopup(restorationData);
-                    } else {
-                        CloseActivePopup();
                     }
                     
                     if (startingIndex == 0) {
@@ -274,8 +274,6 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                     --startingIndex;
                 }
                 handle.Finish();
-            } else {
-                CloseActivePopup();
             }
 
             ClosingPopup = false;
