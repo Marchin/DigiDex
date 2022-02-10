@@ -8,7 +8,11 @@ public class InputPopup : Popup {
         public string Title;
         public string Message;
         public Action<string> OnConfirm;
+        public string ButtonText;
+        public string InputText;
+        public bool ReadOnly;
     }
+
     [SerializeField] private TextMeshProUGUI _title = default;
     [SerializeField] private TextMeshProUGUI _message = default;
     [SerializeField] private TextMeshProUGUI _confirmButtonText = default;
@@ -58,7 +62,10 @@ public class InputPopup : Popup {
         PopupData data = new PopupData {
             Title = _title.text,
             Message = _message.text,
-            OnConfirm = this.OnConfirm
+            OnConfirm = this.OnConfirm,
+            ButtonText = _confirmButtonText.text,
+            InputText = _input.text,
+            ReadOnly = _input.readOnly
         };
 
         return data;
@@ -66,7 +73,13 @@ public class InputPopup : Popup {
 
     public override void Restore(object data) {
         if (data is PopupData popupData) {
-            Populate(popupData.Message, popupData.Title, popupData.OnConfirm);
+            Populate(
+                popupData.Message,
+                popupData.Title,
+                popupData.OnConfirm,
+                popupData.ButtonText,
+                popupData.InputText,
+                popupData.ReadOnly);
         }
     }
 }
