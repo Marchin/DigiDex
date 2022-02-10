@@ -116,21 +116,21 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         bool inPortait = Screen.height > Screen.width;
         if (popup == null) {
             int popupIndex = _stack.FindIndex(0, _stack.Count, popup => popup.GetType() == typeof(T));
+            while (popupIndex > 0) {
+                _stack[0].OnClose();
+                RemovePopup();
+                --popupIndex;
+            }
 
-            if (popupIndex >= 0) {
-                Popup aux = _stack[popupIndex];
-                if (inPortait != aux.Vertical) {
-                    RemovePopup(popupIndex);
+            if (popupIndex == 0) {
+                Popup aux = _stack[0];
+                if (inPortait != _stack[0].Vertical) {
+                    RemovePopup();
                     popupIndex = -1;
                 }
             }
 
             if (popupIndex >= 0) {
-                while (popupIndex > 0) {
-                    _stack[0].OnClose();
-                    RemovePopup();
-                    --popupIndex;
-                }
                 Debug.Assert(_stack[0] is T, "The found popup type doesn't correspond with the request");
                 popup = _stack[0] as T;
                 popup.gameObject.SetActive(true);
@@ -162,11 +162,6 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
         if (_loadingPopup || ActivePopup == null || _stack.Count <= 0) return;
         
         if (ActivePopup.Vertical != IsScreenOnPortrait) {
-            if (_popupsHandle.IsValid()) {
-                Addressables.Release(_popupsHandle);
-                _popupsHandle = default;
-            }
-
             var handle = ApplicationManager.Instance.ShowLoadingScreen.Subscribe();
 
             // Cleaning up inactive popup facilitates the algorithm and at this point their orientation probably don't match
@@ -182,7 +177,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                     ++lastVisiblePopup;
                 }
             }
-
+            
             lastVisiblePopup = Mathf.Min(_stack.Count - 1, lastVisiblePopup);
             int counter = lastVisiblePopup;
             Popup popup = _stack[lastVisiblePopup];
@@ -197,6 +192,11 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 await RestorePopup(restorationData);
                 popup = _stack[lastVisiblePopup];
                 --counter;
+            }
+
+            if (_popupsHandle.IsValid()) {
+                Addressables.Release(_popupsHandle);
+                _popupsHandle = default;
             }
 
             handle.Finish();
@@ -254,9 +254,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                     --startingIndex;
                 }
             }
-
-            CloseActivePopup();
-
+            
             if (startingIndex >= 0) {
                 var handle = ApplicationManager.Instance.ShowLoadingScreen.Subscribe();
                 while (startingIndex >= 0) {
@@ -264,6 +262,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
 
                     if (restorationData.Data != null) {
                         await RestorePopup(restorationData);
+                    } else {
+                        CloseActivePopup();
                     }
                     
                     if (startingIndex == 0) {
