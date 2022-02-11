@@ -134,7 +134,7 @@ public class Appmon : ScriptableObject, IEvolvable {
                         message += $"\n·{attack.DubNames[iName]}";
                     }
                 }
-                bool hasInfo = !string.IsNullOrEmpty(attack.Description) || (DubNames.Count > 0);
+                bool hasInfo = !string.IsNullOrEmpty(attack.Description) || (attack.DubNames.Count > 0);
                 Action onMoreInfo = hasInfo ?
                     () => PopupManager.Instance.GetOrLoadPopup<MessagePopup>(restore: false)
                         .ContinueWith(popup => popup.Populate(message, attack.DisplayName))
