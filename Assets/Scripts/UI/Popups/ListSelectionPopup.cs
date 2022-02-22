@@ -88,6 +88,7 @@ public class ListSelectionPopup : Popup {
 
         _pasteListsButton.onClick.AddListener(async () => {
             var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
+            bool validClipboard = UserDataManager.Instance.IsValidData(GUIUtility.systemCopyBuffer);
             inputPopup.Populate(
                 "If you've copied someone else's lists paste them here down below:",
                 "Paste Lists",
@@ -99,7 +100,10 @@ public class ListSelectionPopup : Popup {
                         await UniTask.WaitWhile(() => msgPopup != null && msgPopup.gameObject.activeSelf);
                     }
                     await PopupManager.Instance.Back();
-                });
+                },
+                "Add",
+                validClipboard ? GUIUtility.systemCopyBuffer : ""
+            );
         });
 
         _copyListsButton.onClick.AddListener(async () => {

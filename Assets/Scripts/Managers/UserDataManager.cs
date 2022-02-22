@@ -369,6 +369,10 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
         PlayerPrefs.SetString(LastLocalSavePref, time.Ticks.ToString());
     }
 
+    public bool IsValidData(string data) {
+        return IsValidData(data, out _, out _);
+    }
+
     public bool IsValidData(string data, out Database db, out Dictionary<string, HashSet<Hash128>> parsedList) {
         bool isValid = true;
         parsedList = null;
@@ -382,9 +386,8 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
             } else {
                 isValid = false;
             }
-        } catch (Exception ex) {
+        } catch {
             isValid = false;
-            Debug.LogError($"{ex.Message} - {ex.Message}");
         }
 
         return isValid;
