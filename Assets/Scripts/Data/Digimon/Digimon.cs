@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.AddressableAssets;
 using Cysharp.Threading.Tasks;
 
@@ -19,9 +18,7 @@ public class AssetReferenceDigimon : AssetReferenceT<Digimon> {
 public class Digimon : ScriptableObject, IEvolvable {
     [SerializeField] private string _name = default;
     [SerializeField] private List<string> _dubNames = default;
-    [FormerlySerializedAs("ProfileData")]
     [SerializeField] private string _profile = default;
-    [FormerlySerializedAs("EvolutionData")]
     [SerializeField] private AssetReferenceEvolutionData _evolutionDataRef = default;
     [SerializeField] private AssetReferenceAtlasedSprite _sprite = default;
     [SerializeField] private Hash128 _hash = default;
