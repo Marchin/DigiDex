@@ -595,6 +595,7 @@ MonoBehaviour:
   _zoomSpeed: 0.5
   _pinchZoomScaling: 0.000005
   _closeButtonOnDelay: 0.5
+  _closeButtonOffDelay: 0.1
 --- !u!1 &5213751490427004448
 GameObject:
   m_ObjectHideFlags: 0

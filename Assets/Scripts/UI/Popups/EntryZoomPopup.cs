@@ -10,6 +10,7 @@ public class EntryZoomPopup : Popup {
     }
 
     private const float MinZoom = 1f;
+    private const float MinDeltaSqDist = 0.1f;
     [SerializeField] private Image _image = default;
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private GameObject _loadingWheel = default;
@@ -19,12 +20,15 @@ public class EntryZoomPopup : Popup {
     [SerializeField] private float _zoomSpeed = default;
     [SerializeField] private float _pinchZoomScaling = default;
     [SerializeField] private float _closeButtonOnDelay = default;
+    [SerializeField] private float _closeButtonOffDelay = default;
     private IDataEntry _entry;
     private bool _wasMouseDown;
     private Vector2 _lastMousePos;
     private Vector2? _lastFingerDiff;
     private OperationBySubscription.Subscription _performanceHandle;
     private bool _draggingImage;
+    private bool _isHidding;
+    private bool _isShowing;
     private CancellationTokenSource _cts;
 
     private void Awake() {
@@ -38,7 +42,7 @@ public class EntryZoomPopup : Popup {
         rect.anchoredPosition = Vector2.zero;
         rect.localScale = Vector3.one;
 
-        CancelShowCloseButton();
+        CancelCloseButtonTransition();
         _closeButton.gameObject.SetActive(true);
 
         _loadingWheel.gameObject.SetActive(true);
@@ -59,13 +63,13 @@ public class EntryZoomPopup : Popup {
     }
 
     private void OnDisable() {
-        CancelShowCloseButton();
+        CancelCloseButtonTransition();
     }
 
     private void Update() {
         bool isMouseDown = Input.GetMouseButton(0) && (_wasMouseDown || _imagePointerDetector.IsPointerIn);
 
-        if (!isMouseDown && !_imagePointerDetector.IsPointerIn) {
+        if (!isMouseDown && !_imagePointerDetector.IsPointerIn && !_closeButton.gameObject.activeSelf) {
             ShowCloseButton();
             _wasMouseDown = false;
             return; 
@@ -112,7 +116,9 @@ public class EntryZoomPopup : Popup {
                 MinZoom,
                 _maxZoom);
 
-        if ((delta != Vector2.zero)) { 
+        float deltaDistSq = delta.sqrMagnitude;
+
+        if ((deltaDistSq > MinDeltaSqDist)) { 
             rect.anchoredPosition += delta;
             Vector2 pos = rect.anchoredPosition;
             float halfHeight = 0.5f * rect.rect.height;
@@ -150,16 +156,23 @@ public class EntryZoomPopup : Popup {
         _wasMouseDown = isMouseDown;
         _lastMousePos = mousePos;
 
-        bool showCloseButton = (delta == Vector2.zero) && 
+        bool showCloseButton = (deltaDistSq < MinDeltaSqDist) && 
             (scaleIncrease == 0f) && 
-            !isMouseDown && 
+            (!isMouseDown) && 
             (Input.touchCount == 0);
         
-        if (showCloseButton) {
-            ShowCloseButton();
-        } else {
-            CancelShowCloseButton();
-            _closeButton.gameObject.SetActive(false);
+        if (showCloseButton != _closeButton.gameObject.activeSelf) {
+            if (showCloseButton) {
+                if (!_isShowing) {
+                    ShowCloseButton();
+                }
+            } else {
+                if (!_isHidding) {
+                    HideCloseButton(withDelay: (scaleIncrease == 0f));
+                }
+            }
+        } else if (showCloseButton && _isHidding) {
+            CancelCloseButtonTransition();
         }
 
         if (isMouseDown || (Input.touchCount > 0)) {
@@ -170,14 +183,15 @@ public class EntryZoomPopup : Popup {
     }
 
     private async void ShowCloseButton() {
-        if (_cts == null) {
-            _cts = new CancellationTokenSource();
-        } else {
+        if (_isShowing) {
             return;
         }
+        _cts = new CancellationTokenSource();
 
+        _isShowing = true;
         bool isCanceled = await UniTask.Delay((int)(_closeButtonOnDelay * 1000f), cancellationToken: _cts.Token)
             .SuppressCancellationThrow();
+        _isShowing = false;
 
         if (!isCanceled) {
             _closeButton.gameObject.SetActive(true);
@@ -186,7 +200,30 @@ public class EntryZoomPopup : Popup {
         }
     }
 
-    private void CancelShowCloseButton() {
+    private async void HideCloseButton(bool withDelay) {
+        if (_isHidding) {
+            return;
+        }
+
+        if (!withDelay) {
+            _closeButton.gameObject.SetActive(false);
+            return;
+        }
+        
+        _cts = new CancellationTokenSource();
+        _isHidding = true;
+        bool isCanceled = await UniTask.Delay((int)(_closeButtonOffDelay * 1000f), cancellationToken: _cts.Token)
+            .SuppressCancellationThrow();
+        _isHidding = false;
+
+        if (!isCanceled) {
+            _closeButton.gameObject.SetActive(false);
+            _cts.Dispose();
+            _cts = null;
+        }
+    }
+
+    private void CancelCloseButtonTransition() {
         if (_cts != null) {
             if (!_cts.IsCancellationRequested) {
                 _cts.Cancel();
