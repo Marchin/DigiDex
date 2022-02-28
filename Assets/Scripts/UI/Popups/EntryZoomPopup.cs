@@ -21,9 +21,12 @@ public class EntryZoomPopup : Popup {
     [SerializeField] private float _pinchZoomScaling = default;
     [SerializeField] private float _closeButtonOnDelay = default;
     [SerializeField] private float _closeButtonOffDelay = default;
+    [SerializeField] private float _tapInterval = default;
+    [SerializeField] private float _doubleTapZoom = default;
     private IDataEntry _entry;
     private bool _wasMouseDown;
     private Vector2 _lastMousePos;
+    private Vector2? _initMousePos;
     private Vector2? _lastFingerDiff;
     private OperationBySubscription.Subscription _performanceHandle;
     private bool _draggingImage;
@@ -69,18 +72,26 @@ public class EntryZoomPopup : Popup {
     private void Update() {
         bool isMouseDown = Input.GetMouseButton(0) && (_wasMouseDown || _imagePointerDetector.IsPointerIn);
 
+        if (!isMouseDown) {
+            _initMousePos = null;
+            _draggingImage = false;
+        }
+
         if (!isMouseDown && !_imagePointerDetector.IsPointerIn && !_closeButton.gameObject.activeSelf) {
             ShowCloseButton();
             _wasMouseDown = false;
             return; 
         }
 
-        _draggingImage = isMouseDown;
         float scaleIncrease = 0f;
         Vector2 delta = Vector2.zero;
         RectTransform rect = _image.transform as RectTransform;
 
         Vector2 mousePos = Input.mousePosition;
+
+        if (_wasMouseDown && isMouseDown && !_initMousePos.HasValue) {
+            _initMousePos = mousePos;
+        }
 
         if ((Input.touchCount <= 1) && !_lastFingerDiff.HasValue && isMouseDown && _wasMouseDown) {
             delta = (mousePos - _lastMousePos);
@@ -120,38 +131,17 @@ public class EntryZoomPopup : Popup {
 
         if ((deltaDistSq > MinDeltaSqDist)) { 
             rect.anchoredPosition += delta;
-            Vector2 pos = rect.anchoredPosition;
-            float halfHeight = 0.5f * rect.rect.height;
-            float halfWidth = 0.5f * rect.rect.width;
-            float xMax = pos.x + halfWidth * _image.transform.localScale.x;
-            float xMin = pos.x - halfWidth * _image.transform.localScale.x;
-            float yMax = pos.y + halfHeight * _image.transform.localScale.y;
-            float yMin = pos.y - halfHeight * _image.transform.localScale.y;
-
-            if (Vertical || ((rect.rect.width * _image.transform.localScale.x) > _bounds.rect.width)) {
-                if ((xMin > _bounds.rect.xMin)) {
-                    pos.x += _bounds.rect.xMin - xMin;
-                }
-                if ((xMax < _bounds.rect.xMax)) {
-                    pos.x += _bounds.rect.xMax - xMax;
-                }
-            } else {
-                pos.x = 0f;
-            } 
-
-            if (!Vertical || ((rect.rect.height * _image.transform.localScale.y) > _bounds.rect.height)) {
-                if ((yMin > _bounds.rect.yMin)) {
-                    pos.y += _bounds.rect.yMin - yMin;
-                }
-                if ((yMax < _bounds.rect.yMax)) {
-                    pos.y += _bounds.rect.yMax - yMax;
-                }
-            } else {
-                pos.y = 0f;
-            } 
-
-            rect.anchoredPosition = pos;
+            AdjustImage();
         }
+
+        if (!_draggingImage && _initMousePos.HasValue) {
+            Vector2 dragDelta = mousePos - _initMousePos.Value;
+            if (dragDelta.sqrMagnitude >= 200f) {
+                _draggingImage = true;
+            }
+        }
+
+        bool triggerDoubleTap = isMouseDown && !_wasMouseDown;
 
         _wasMouseDown = isMouseDown;
         _lastMousePos = mousePos;
@@ -175,11 +165,93 @@ public class EntryZoomPopup : Popup {
             CancelCloseButtonTransition();
         }
 
+        if (triggerDoubleTap) {
+            TrackDoubleTap();
+        }
+
         if (isMouseDown || (Input.touchCount > 0)) {
             _performanceHandle = PerformanceManager.Instance.HighPerformance.Subscribe();
         } else {
             _performanceHandle?.Finish();
         }
+    }
+
+    private void AdjustImage() {
+        RectTransform rect = _image.transform as RectTransform;
+        
+        Vector2 pos = rect.anchoredPosition;
+        float halfHeight = 0.5f * rect.rect.height;
+        float halfWidth = 0.5f * rect.rect.width;
+        float xMax = pos.x + halfWidth * _image.transform.localScale.x;
+        float xMin = pos.x - halfWidth * _image.transform.localScale.x;
+        float yMax = pos.y + halfHeight * _image.transform.localScale.y;
+        float yMin = pos.y - halfHeight * _image.transform.localScale.y;
+
+        if (Vertical || ((rect.rect.width * _image.transform.localScale.x) > _bounds.rect.width)) {
+            if ((xMin > _bounds.rect.xMin)) {
+                pos.x += _bounds.rect.xMin - xMin;
+            }
+            if ((xMax < _bounds.rect.xMax)) {
+                pos.x += _bounds.rect.xMax - xMax;
+            }
+        } else {
+            pos.x = 0f;
+        } 
+
+        if (!Vertical || ((rect.rect.height * _image.transform.localScale.y) > _bounds.rect.height)) {
+            if ((yMin > _bounds.rect.yMin)) {
+                pos.y += _bounds.rect.yMin - yMin;
+            }
+            if ((yMax < _bounds.rect.yMax)) {
+                pos.y += _bounds.rect.yMax - yMax;
+            }
+        } else {
+            pos.y = 0f;
+        } 
+
+        rect.anchoredPosition = pos;
+    }
+
+    private async void TrackDoubleTap() {
+        int interval = (int)(1000f * _tapInterval);
+        var trigger = UniTask.WaitUntil(() => !_wasMouseDown || _draggingImage);
+        var timeOut = UniTask.Delay(interval);
+
+        await UniTask.WhenAny(trigger, timeOut);
+
+        if (_wasMouseDown || _draggingImage) {
+            return;
+        }
+        
+        trigger = UniTask.WaitUntil(() => _wasMouseDown);
+        timeOut = UniTask.Delay(interval);
+
+        await UniTask.WhenAny(trigger, timeOut);
+        
+        if (!_wasMouseDown) {
+            return;
+        }
+
+        
+        trigger = UniTask.WaitUntil(() => !_wasMouseDown || _draggingImage);
+        timeOut = UniTask.Delay(interval);
+
+        await UniTask.WhenAny(trigger, timeOut);
+
+        if (_wasMouseDown || _draggingImage) {
+            return;
+        }
+
+        if (_image.transform.localScale.x == MinZoom) {
+            _image.transform.localScale = Vector3.one * _doubleTapZoom;
+            _image.transform.localPosition = _doubleTapZoom * 
+                -(Input.mousePosition - 0.5f * new Vector3(Screen.width, Screen.height));
+        } else {
+            _image.transform.localScale = Vector3.one;
+            _image.transform.localPosition = Vector3.zero;
+        }
+    
+        AdjustImage();
     }
 
     private async void ShowCloseButton() {
