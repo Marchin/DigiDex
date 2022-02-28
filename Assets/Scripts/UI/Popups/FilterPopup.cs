@@ -21,7 +21,7 @@ public class FilterPopup : Popup {
     private FilterCallback ApplyCallback;
 
     private void Awake() {
-        _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
+        _closeButton.onClick.AddListener(OnBackPressed);
         _applyButton.onClick.AddListener(() => {
             ApplyCallback?.Invoke(_filters, _toggles);
             _ = PopupManager.Instance.Back();
@@ -45,6 +45,14 @@ public class FilterPopup : Popup {
             }
             _filterEntriesList.gameObject.SetActive(false);
         });
+    }
+
+    private void OnEnable() {
+        ApplicationManager.Instance.OverrideBack += OnBackPressed;
+    }
+
+    private void OnDisable() {
+        ApplicationManager.Instance.OverrideBack -= OnBackPressed;
     }
 
     public void Populate(
@@ -76,6 +84,14 @@ public class FilterPopup : Popup {
 
         _filterEntriesList.gameObject.SetActive(false);
         gameObject.SetActive(true);
+    }
+
+    private void OnBackPressed() {
+        if (_filterEntriesList.gameObject.activeSelf) {
+            _filterEntriesList.gameObject.SetActive(false);
+        } else {
+            _ = PopupManager.Instance.Back();
+        }
     }
 
     public override object GetRestorationData() {

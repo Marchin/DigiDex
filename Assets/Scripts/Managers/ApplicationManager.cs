@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -11,8 +12,9 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     public AssetReferenceAtlasedSprite MissingSpirte => _missingSprite;
     public OperationBySubscription ShowLoadingScreen { get; private set; }
     public OperationBySubscription ShowLoadingWheel { get; private set; }
-    public OperationBySubscription.Subscription _loadingWheelSubscription;
     public OperationBySubscription LockScreen { get; private set; }
+    private OperationBySubscription.Subscription _loadingWheelSubscription;
+    public event Action OverrideBack;
     private DataCenter _centralDB;
     public bool Initialized { get; private set; }
     
@@ -135,7 +137,11 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     
     private void Update() {
         if (Input.GetKeyDown(KeyCode.Escape)) {
-            _ = PopupManager.Instance.Back();
+            if (OverrideBack != null && OverrideBack.GetInvocationList().Length > 0) {
+                OverrideBack?.Invoke();
+            } else {
+                _ = PopupManager.Instance.Back();
+            }
         }
     }
 }
