@@ -98,8 +98,9 @@ public class ListSelectionPopup : Popup {
                         var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                         msgPopup.Populate("No list detected", "No List");
                         await UniTask.WaitWhile(() => msgPopup != null && msgPopup.gameObject.activeSelf);
+                    } else {
+                        _ = PopupManager.Instance.Back();
                     }
-                    await PopupManager.Instance.Back();
                 },
                 "Add",
                 validClipboard ? GUIUtility.systemCopyBuffer : ""
@@ -218,7 +219,6 @@ public class ListSelectionPopup : Popup {
             Populate(popupData.Entry, popupData.CurrTab, popupData.ListsToCopy);
         }
     }
-
     
     public async UniTask<bool> ParseLists(string input) {
         bool listDetected = false;
@@ -241,9 +241,9 @@ public class ListSelectionPopup : Popup {
                 foreach (var list in listsInConflict)  {
                     const string NameConflict = "Name Conflict";
 
-                    bool areEqual = true;
-                    foreach (var kvp in list.Value) {
-                        if (!db.Lists.ContainsKey(list.Key)) {
+                    bool areEqual = db.Lists[list.Key].Count == list.Value.Count;
+                    foreach (var value in list.Value) {
+                        if (!db.Lists[list.Key].Contains(value)) {
                             areEqual = false;
                             break;
                         }
@@ -257,7 +257,9 @@ public class ListSelectionPopup : Popup {
                     bool renameList = false;
                     msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                     List<ButtonData> buttons = new List<ButtonData>(2);
-                    buttons.Add(new ButtonData { Text = "No", Callback = async () => { await PopupManager.Instance.Back(); }});
+                    buttons.Add(new ButtonData { Text = "No", Callback = async () => {
+                        await PopupManager.Instance.Back();
+                    }});
                     buttons.Add(new ButtonData { Text = "Yes", Callback = async () => {
                         renameList = true;
                         await PopupManager.Instance.Back();
@@ -274,6 +276,7 @@ public class ListSelectionPopup : Popup {
                         PopupManager.Instance.ClosingPopup);
 
                     if (renameList) {
+                        bool waitingForRename = true;
                         var inputPopup = await PopupManager.Instance.GetOrLoadPopup<InputPopup>();
                             inputPopup.Populate($"{list.Key} is already in use please select a new name",
                             NameConflict,
@@ -283,6 +286,7 @@ public class ListSelectionPopup : Popup {
                                         db.AddEntryToList(name, entry);
                                     }
                                     await PopupManager.Instance.Back();
+                                    waitingForRename = false;
                                 } else {
                                     var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                                     msgPopup.Populate("Name is empty or already in use, please try another one", "Try Again");
@@ -290,22 +294,22 @@ public class ListSelectionPopup : Popup {
                                 }
                             }
                         );
-                        await UniTask.WaitWhile(() =>
-                            ((inputPopup != null) && inputPopup.gameObject.activeSelf) ||
-                            PopupManager.Instance.ClosingPopup);
+                        await UniTask.WaitWhile(() => waitingForRename);
                     }
                 }
 
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine($"You already have these exact same lists:");
-                foreach (var list in skippedLists) {
-                    sb.AppendLine($"· {list}");
+                if (skippedLists.Count > 0) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine($"You already have these exact same lists:");
+                    foreach (var list in skippedLists) {
+                        sb.AppendLine($"· {list}");
+                    }
+                    msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
+                    msgPopup.Populate(sb.ToString(), "Skipped List");
+                    await UniTask.WaitWhile(() =>
+                        ((msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup)) ||
+                        PopupManager.Instance.ClosingPopup);
                 }
-                msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
-                msgPopup.Populate(sb.ToString(), "Skipped List");
-                await UniTask.WaitWhile(() =>
-                    ((msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup)) ||
-                    PopupManager.Instance.ClosingPopup);
             }
             
             if (newLists.Count > 0) {
