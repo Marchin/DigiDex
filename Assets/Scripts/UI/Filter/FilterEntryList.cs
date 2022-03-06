@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IPointerEnterHandler, IPointerExitHandler {
     [SerializeField] private float _hideInSecs = 2f;
     [SerializeField] private RectTransform _safeArea = default;
+    public GameObject ListBackground;
     [System.NonSerialized] public UnityEngine.Object LastCaller;
     [System.NonSerialized] public bool IsMouseOut;
     private float accum = 0f;
@@ -14,6 +15,10 @@ public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IP
             IsMouseOut = false;
             accum = 0f;
         };
+    }
+
+    private void OnEnable() {
+        ListBackground.gameObject.SetActive(false);
     }
 
     public void ResetScroll() {

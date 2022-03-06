@@ -226,8 +226,13 @@ public class UserDataManager : MonoBehaviourSingleton<UserDataManager> {
                                 List<ToggleData> toggles = new List<ToggleData>(1);
                                 toggles.Add(keepCopyToggle);
                                 string msg = "There's a newer version of your data, which one you want to use?";
-                                popup.Populate(msg, "Data Conflict", buttonDataList: buttons, toggleDataList: toggles);
-                                popup.ShowCloseButton = false;
+                                popup.Populate(
+                                    msg,
+                                    "Data Conflict",
+                                    buttonDataList: buttons,
+                                    toggleDataList: toggles,
+                                    showCloseButton: false
+                                );
 
                                 await UniTask.WaitWhile(() => (popup != null) && (popup.isActiveAndEnabled));
                             } else {

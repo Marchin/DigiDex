@@ -14,6 +14,7 @@ public class MessagePopup : Popup {
         public List<ButtonData> ButtonOptionsList;
         public List<ToggleData> ToggleOptionsList;
         public int Columns;
+        public bool ShowCloseButton;
     }
 
     [SerializeField] private TextMeshProUGUI _title = default;
@@ -23,21 +24,37 @@ public class MessagePopup : Popup {
     [SerializeField] private ToggleList _toggleList = default;
     [SerializeField] private ButtonElementList _buttonList = default;
     [SerializeField] private GridLayoutGroup _buttonGrid = default;
+    [SerializeField] private PopupCloser _backgroundCloser = default;
     private List<ButtonData> _buttonDataList;
     private List<ToggleData> _toggleDataList;
     private AssetReferenceAtlasedSprite _spriteReference;
     private AsyncOperationHandle _spriteHandle;
     private CancellationTokenSource _cts;
     private int _columns;
-    public bool ShowCloseButton {
+    private OperationBySubscription.Subscription _disableBackButton;
+    private bool ShowCloseButton {
         get => _closeButton.transform.parent.gameObject.activeSelf;
         set {
             _closeButton.gameObject.SetActive(value);
+            _backgroundCloser.CloserEnabled = value;
+            if (value) {
+                _disableBackButton?.Finish();
+                _disableBackButton = null;
+            } else {
+                if (_disableBackButton == null) {
+                    _disableBackButton = ApplicationManager.Instance.DisableBackButton.Subscribe();
+                }
+            }
         }
     }
 
     private void Awake() {
         _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
+    }
+
+    private void OnDisable() {
+        _disableBackButton?.Finish();
+        _disableBackButton = null;
     }
 
     public void Populate(
@@ -46,7 +63,8 @@ public class MessagePopup : Popup {
         AssetReferenceAtlasedSprite spriteReference = null,
         List<ButtonData> buttonDataList = null,
         List<ToggleData> toggleDataList = null,
-        int columns = 2
+        int columns = 2,
+        bool showCloseButton = true
     ) {
         if (_cts != null) {
             _cts.Cancel();
@@ -57,7 +75,7 @@ public class MessagePopup : Popup {
             Addressables.Release(_spriteHandle);
         }
 
-        ShowCloseButton = true;
+        ShowCloseButton = showCloseButton;
         _content.text = message;
         _content.gameObject.SetActive(!string.IsNullOrEmpty(_content.text));
         _title.text = string.IsNullOrEmpty(title) ? "Message" : title;
@@ -84,7 +102,8 @@ public class MessagePopup : Popup {
             SpriteReference = _spriteReference,
             ButtonOptionsList = _buttonDataList,
             ToggleOptionsList = _toggleDataList,
-            Columns = _columns
+            Columns = _columns,
+            ShowCloseButton = this.ShowCloseButton
         };
 
         return popupData;
@@ -98,7 +117,8 @@ public class MessagePopup : Popup {
                 popupData.SpriteReference, 
                 popupData.ButtonOptionsList,
                 popupData.ToggleOptionsList,
-                popupData.Columns
+                popupData.Columns,
+                popupData.ShowCloseButton
             );
         }
     }

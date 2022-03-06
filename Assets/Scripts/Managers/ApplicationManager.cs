@@ -12,9 +12,9 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     public AssetReferenceAtlasedSprite MissingSpirte => _missingSprite;
     public OperationBySubscription ShowLoadingScreen { get; private set; }
     public OperationBySubscription ShowLoadingWheel { get; private set; }
+    public OperationBySubscription DisableBackButton { get; private set; }
     public OperationBySubscription LockScreen { get; private set; }
     private OperationBySubscription.Subscription _loadingWheelSubscription;
-    public event Action OverrideBack;
     private DataCenter _centralDB;
     public bool Initialized { get; private set; }
     
@@ -34,6 +34,8 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
             onStart: () => _loadingWheel.SetActive(true),
             onAllFinished: () => _loadingWheel.SetActive(false)
         );
+
+        DisableBackButton = new OperationBySubscription(null, null);
 
         LockScreen = new OperationBySubscription(
             onStart: () => _inputLock.SetActive(true),
@@ -93,8 +95,9 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         msgPopup.Populate(
             message, 
             "Naming", 
-            buttonDataList: buttonList);
-        msgPopup.ShowCloseButton = showCloseButton;
+            buttonDataList: buttonList,
+            showCloseButton: false
+        );
         
         await UniTask.WaitWhile(() => (msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup));
     }
@@ -136,12 +139,8 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
     public List<Database> GetDatabases() => _centralDB?.GetDatabases();
     
     private void Update() {
-        if (Input.GetKeyDown(KeyCode.Escape)) {
-            if (OverrideBack != null && OverrideBack.GetInvocationList().Length > 0) {
-                OverrideBack?.Invoke();
-            } else {
-                _ = PopupManager.Instance.Back();
-            }
+        if (!DisableBackButton.IsRunning && Input.GetKeyDown(KeyCode.Escape)) {
+            _ = PopupManager.Instance.Back();
         }
     }
 }

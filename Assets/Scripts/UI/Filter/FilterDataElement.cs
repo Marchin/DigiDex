@@ -112,12 +112,14 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
 
             if (_filterData.List.LastCaller == this && _filterData.List.gameObject.activeSelf) {
                 _filterData.List.gameObject.SetActive(false);
+                _filterData.List.ListBackground.SetActive(false);
             } else {
                 RectTransform rectTransform = transform as RectTransform;
                 RectTransform scrollRectTransform = _filterData.List.transform as RectTransform;
                 
                 _filterData.List.Populate(_filterData.Elements);
                 _filterData.List.gameObject.SetActive(true);
+                _filterData.List.ListBackground.SetActive(true);
                 await UniTask.DelayFrame(1,
                     cancellationToken: this.GetCancellationTokenOnDestroy())
                     .SuppressCancellationThrow();

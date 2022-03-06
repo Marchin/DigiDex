@@ -48,11 +48,11 @@ public class FilterPopup : Popup {
     }
 
     private void OnEnable() {
-        ApplicationManager.Instance.OverrideBack += OnBackPressed;
+        PopupManager.Instance.OverrideBack += OnBackPressed;
     }
 
     private void OnDisable() {
-        ApplicationManager.Instance.OverrideBack -= OnBackPressed;
+        PopupManager.Instance.OverrideBack -= OnBackPressed;
     }
 
     public void Populate(
@@ -89,7 +89,9 @@ public class FilterPopup : Popup {
     private void OnBackPressed() {
         if (_filterEntriesList.gameObject.activeSelf) {
             _filterEntriesList.gameObject.SetActive(false);
+            _filterEntriesList.ListBackground.SetActive(false);
         } else {
+            PopupManager.Instance.OverrideBack -= OnBackPressed;
             _ = PopupManager.Instance.Back();
         }
     }

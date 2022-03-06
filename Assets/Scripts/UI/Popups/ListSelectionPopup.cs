@@ -268,8 +268,9 @@ public class ListSelectionPopup : Popup {
                         $"There's already a list called {list.Key}," + 
                             " do you want to rename the new one and add it?",
                         NameConflict,
-                        buttonDataList: buttons);
-                    msgPopup.ShowCloseButton = false;
+                        buttonDataList: buttons,
+                        showCloseButton: false
+                    );
 
                     await UniTask.WaitWhile(() =>
                         ((msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup)) ||
@@ -292,7 +293,8 @@ public class ListSelectionPopup : Popup {
                                     msgPopup.Populate("Name is empty or already in use, please try another one", "Try Again");
                                     await UniTask.WaitWhile(() => (msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup));
                                 }
-                            }
+                            },
+                            showCloseButton: false
                         );
                         await UniTask.WaitWhile(() => waitingForRename);
                     }
@@ -330,8 +332,13 @@ public class ListSelectionPopup : Popup {
                     }
                     _ = PopupManager.Instance.Back();
                 }});
-                msgPopup.Populate(sb.ToString(), "Add List", null, buttonDataList: buttons);
-                msgPopup.ShowCloseButton = false;
+                msgPopup.Populate(
+                    sb.ToString(),
+                    "Add List",
+                    null,
+                    buttonDataList: buttons,
+                    showCloseButton: false
+                );
 
                 await UniTask.WaitWhile(() =>
                     ((msgPopup != null) && msgPopup.gameObject.activeSelf) ||

@@ -31,6 +31,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     public event Action OnStackChange;
     public event Action OnWindowResize;
     public event Action OnRotation;
+    public event Action OverrideBack;
     private List<PopupRestorationData> _restorationData = new List<PopupRestorationData>();
     private bool _autoRotationOn;
     private AndroidOrientation _androidOrientation;
@@ -238,6 +239,11 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     public async UniTask Back() {
         if (ClosingPopup) {
             Debug.LogWarning("A popup is already being closed");
+            return;
+        }
+        
+        if (OverrideBack != null && OverrideBack.GetInvocationList().Length > 0) {
+            OverrideBack?.Invoke();
             return;
         }
 

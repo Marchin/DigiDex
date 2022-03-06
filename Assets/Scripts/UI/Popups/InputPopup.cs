@@ -11,6 +11,7 @@ public class InputPopup : Popup {
         public string ButtonText;
         public string InputText;
         public bool ReadOnly;
+        public bool ShowCloseButton;
     }
 
     [SerializeField] private TextMeshProUGUI _title = default;
@@ -19,6 +20,23 @@ public class InputPopup : Popup {
     [SerializeField] private InputField _input = default;
     [SerializeField] private Button _confirmButton = default;
     [SerializeField] private Button _closeButton = default;
+    [SerializeField] private PopupCloser _backgroundCloser = default;
+    private OperationBySubscription.Subscription _disableBackButton;
+    private bool ShowCloseButton {
+        get => _closeButton.gameObject.activeSelf;
+        set {
+            _closeButton.gameObject.SetActive(value);
+            _backgroundCloser.CloserEnabled = value;
+            if (value) {
+                _disableBackButton?.Finish();
+                _disableBackButton = null;
+            } else {
+                if (_disableBackButton == null) {
+                    _disableBackButton = ApplicationManager.Instance.DisableBackButton.Subscribe();
+                }
+            }
+        }
+    }
     private Action<string> OnConfirm;
 
     private void Awake() {
@@ -31,6 +49,8 @@ public class InputPopup : Popup {
 
     private void OnDisable() {
         PopupManager.Instance.OnStackChange -= HideKeyboard;
+        _disableBackButton?.Finish();
+        _disableBackButton = null;
     }
 
     private void HideKeyboard() {
@@ -43,8 +63,10 @@ public class InputPopup : Popup {
         Action<string> onConfirm,
         string buttonText = "Confirm",
         string inputText = "",
-        bool readOnly = false
+        bool readOnly = false,
+        bool showCloseButton = true
     ) {
+        ShowCloseButton = showCloseButton;
         _message.text = message;
         _title.text = title;
         OnConfirm = onConfirm;
@@ -65,7 +87,8 @@ public class InputPopup : Popup {
             OnConfirm = this.OnConfirm,
             ButtonText = _confirmButtonText.text,
             InputText = _input.text,
-            ReadOnly = _input.readOnly
+            ReadOnly = _input.readOnly,
+            ShowCloseButton = ShowCloseButton
         };
 
         return data;
@@ -79,7 +102,9 @@ public class InputPopup : Popup {
                 popupData.OnConfirm,
                 popupData.ButtonText,
                 popupData.InputText,
-                popupData.ReadOnly);
+                popupData.ReadOnly,
+                popupData.ShowCloseButton
+            );
         }
     }
 }

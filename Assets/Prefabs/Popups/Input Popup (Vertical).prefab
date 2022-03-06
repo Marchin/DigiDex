@@ -1550,6 +1550,7 @@ MonoBehaviour:
   _input: {fileID: 4490574008387976264}
   _confirmButton: {fileID: 7603547642427846753}
   _closeButton: {fileID: 4901826957218704990}
+  _backgroundCloser: {fileID: 5950965498473050952}
 --- !u!114 &4901826957218704990 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7031780620901892911, guid: fd982396f3850ce458aa477e20b2ae2a,
@@ -1572,6 +1573,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5950965498473050952 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8576328157738982969, guid: fd982396f3850ce458aa477e20b2ae2a,
+    type: 3}
+  m_PrefabInstance: {fileID: 2707559007595343217}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5932b7ada3bd4a46a8875879de45419, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!224 &7054200215193262264 stripped
