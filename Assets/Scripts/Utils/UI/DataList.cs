@@ -118,6 +118,9 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
                 // If destroyed we return
                 return;
             }
+            if (_scroll == null) {
+                return;
+            }
             float viewportLength = (_direction == Direction.Horizontal) ? 
                 _scroll.viewport.rect.width :
                 _scroll.viewport.rect.height;

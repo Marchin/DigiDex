@@ -97,7 +97,10 @@ public class ListSelectionPopup : Popup {
                     if (!validInput) {
                         var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                         msgPopup.Populate("No list detected", "No List");
-                        await UniTask.WaitWhile(() => msgPopup != null && msgPopup.gameObject.activeSelf);
+                        await UniTask.WaitWhile(() =>
+                            (PopupManager.Instance.ActivePopup.GetType() == typeof(MessagePopup)) ||
+                            PopupManager.Instance.ClosingPopup ||
+                            PopupManager.Instance.ReloadingPopups);
                     } else {
                         _ = PopupManager.Instance.Back();
                     }
@@ -273,8 +276,9 @@ public class ListSelectionPopup : Popup {
                     );
 
                     await UniTask.WaitWhile(() =>
-                        ((msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup)) ||
-                        PopupManager.Instance.ClosingPopup);
+                        (PopupManager.Instance.ActivePopup.GetType() == typeof(MessagePopup)) ||
+                        PopupManager.Instance.ClosingPopup ||
+                        PopupManager.Instance.ReloadingPopups);
 
                     if (renameList) {
                         bool waitingForRename = true;
@@ -291,7 +295,10 @@ public class ListSelectionPopup : Popup {
                                 } else {
                                     var msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                                     msgPopup.Populate("Name is empty or already in use, please try another one", "Try Again");
-                                    await UniTask.WaitWhile(() => (msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup));
+                                    await UniTask.WaitWhile(() =>
+                                        (PopupManager.Instance.ActivePopup.GetType() == typeof(MessagePopup)) ||
+                                        PopupManager.Instance.ClosingPopup ||
+                                        PopupManager.Instance.ReloadingPopups);
                                 }
                             },
                             showCloseButton: false
@@ -309,8 +316,9 @@ public class ListSelectionPopup : Popup {
                     msgPopup = await PopupManager.Instance.GetOrLoadPopup<MessagePopup>();
                     msgPopup.Populate(sb.ToString(), "Skipped List");
                     await UniTask.WaitWhile(() =>
-                        ((msgPopup != null) && (PopupManager.Instance.ActivePopup == msgPopup)) ||
-                        PopupManager.Instance.ClosingPopup);
+                        (PopupManager.Instance.ActivePopup.GetType() == typeof(MessagePopup)) ||
+                        PopupManager.Instance.ClosingPopup ||
+                        PopupManager.Instance.ReloadingPopups);
                 }
             }
             
@@ -341,8 +349,9 @@ public class ListSelectionPopup : Popup {
                 );
 
                 await UniTask.WaitWhile(() =>
-                    ((msgPopup != null) && msgPopup.gameObject.activeSelf) ||
-                    PopupManager.Instance.ClosingPopup);
+                    (PopupManager.Instance.ActivePopup.GetType() == typeof(MessagePopup)) ||
+                    PopupManager.Instance.ClosingPopup ||
+                    PopupManager.Instance.ReloadingPopups);
             }
         }
 

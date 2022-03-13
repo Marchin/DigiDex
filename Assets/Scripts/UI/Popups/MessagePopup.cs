@@ -33,7 +33,7 @@ public class MessagePopup : Popup {
     private int _columns;
     private OperationBySubscription.Subscription _disableBackButton;
     private bool ShowCloseButton {
-        get => _closeButton.transform.parent.gameObject.activeSelf;
+        get => _closeButton.gameObject.activeSelf;
         set {
             _closeButton.gameObject.SetActive(value);
             _backgroundCloser.CloserEnabled = value;

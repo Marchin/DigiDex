@@ -37,6 +37,7 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     private AndroidOrientation _androidOrientation;
     private bool _loadingPopup;
     public bool ClosingPopup { get; private set; }
+    public bool ReloadingPopups { get; private set; }
     public bool IsScreenOnPortrait => (Screen.height > Screen.width);
     private ScreenOrientation _lastDeviceOrientation;
     private Vector2 _lastScreenSize;
@@ -144,7 +145,9 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 var handle = Addressables.InstantiateAsync(popupName, _parentCanvas.transform);
                 _handles.Insert(0, handle);
                 popup = (await handle).GetComponent<T>();
-                (popup.transform as RectTransform).AdjustToSafeZone();
+                Debug.Assert(popup!= null);
+                RectTransform popupRect = (popup.transform as RectTransform);
+                popupRect.AdjustToSafeZone();
                 _stack.Insert(0, popup);
                 loadingHandle.Finish();
             }
@@ -161,6 +164,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
     private async void RefreshScaler() {
         RefreshReferenceResolution();
         if (_loadingPopup || ActivePopup == null || _stack.Count <= 0) return;
+
+        ReloadingPopups = true;
         
         if (ActivePopup.Vertical != IsScreenOnPortrait) {
             var handle = ApplicationManager.Instance.ShowLoadingScreen.Subscribe();
@@ -180,19 +185,23 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
             }
 
             lastVisiblePopup = Mathf.Min(_stack.Count - 1, lastVisiblePopup);
-            int counter = lastVisiblePopup;
-            Popup popup = _stack[lastVisiblePopup];
-            while (counter >= 0) {
+            Popup popup = _stack[0];
+            var restores = new List<PopupRestorationData>(lastVisiblePopup);
+            while (lastVisiblePopup >= 0) {
                 PopupRestorationData restorationData = new PopupRestorationData {
                     PopupType = popup.GetType(),
                     IsFullScreen = popup.FullScreen,
                     Vertical = popup.Vertical,
                     Data = popup.GetRestorationData()
                 };
-                RemovePopup(lastVisiblePopup);
+                RemovePopup();
+                restores.Insert(0, restorationData);
+                popup = _stack[0];
+                --lastVisiblePopup;
+            }
+
+            foreach (var restorationData in restores) {
                 await RestorePopup(restorationData);
-                popup = _stack[lastVisiblePopup];
-                --counter;
             }
 
             if (_popupsHandle.IsValid()) {
@@ -208,6 +217,8 @@ public class PopupManager : MonoBehaviourSingleton<PopupManager> {
                 IsScreenOnPortrait ? "popup_vertical" : "popup",
                 null);
         }
+        
+        ReloadingPopups = false;
     }
 
     public T GetLoadedPopupOfType<T>() where T : Popup {
