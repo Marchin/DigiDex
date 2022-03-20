@@ -100,9 +100,13 @@ public static class DataRetriever {
         return result;
     }
 
-    public static async UniTask<XmlDocument> GetSite(string linkSubFix) {
+    public static async UniTask<XmlDocument> GetSite(string linkSubFix, Action<string> OnFinalSubFix = null) {
         if (string.IsNullOrEmpty(linkSubFix)) {
             return null;
+        }
+
+        if (SitesFinalLink.ContainsKey(linkSubFix)) {
+            linkSubFix = SitesFinalLink[linkSubFix];
         }
 
         if (!SitesData.ContainsKey(linkSubFix)) {
@@ -110,6 +114,12 @@ public static class DataRetriever {
             string link = WikimonBaseURL + linkSubFix;
             try {
                 List<string> subLinks = new List<string> { linkSubFix };
+                string unescapedSubFix = Uri.UnescapeDataString(linkSubFix);
+                if (unescapedSubFix != linkSubFix) {
+                    linkSubFix = unescapedSubFix;
+                    subLinks.Add(unescapedSubFix);
+                }
+
                 string data = "";
                 using (UnityWebRequest request = UnityWebRequest.Get(link)) {
                     await request.SendWebRequest();
@@ -118,6 +128,12 @@ public static class DataRetriever {
                         if (finalLinkSubFix != linkSubFix) {
                             subLinks.Add(finalLinkSubFix);
                             linkSubFix = finalLinkSubFix;
+
+                            string unescapedFinalSubFix = Uri.UnescapeDataString(finalLinkSubFix);
+                            if (unescapedFinalSubFix != finalLinkSubFix) {
+                                subLinks.Add(unescapedFinalSubFix);
+                                linkSubFix = unescapedFinalSubFix;
+                            }
                         }
                         data = Encoding.ASCII.GetString(request.downloadHandler.data);
                         data = RemoveXmlComments(data);
@@ -162,7 +178,15 @@ public static class DataRetriever {
             await UniTask.WaitWhile(() => SitesData[linkSubFix] == null);
         }
         
+        OnFinalSubFix?.Invoke(linkSubFix);
+
         return SitesData[linkSubFix];
+    }
+
+    [MenuItem("DigiDex/Clear Site Cache")]
+    public static void ClearSiteCache() {
+        _sitesData?.Clear();
+        _sitesFinalLink?.Clear();
     }
 
     public static AddressableAssetGroup GetOrAddAddressableGroup(string name) {

@@ -62,7 +62,7 @@ public static class MediaDataRetriever {
         XmlDocument videogameListSite = await DataRetriever.GetSite(VideoGamesListSubFix);
 
         XmlNodeList table = videogameListSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/ul/li/a");
-        for (int i = 56; i < 57; i++) {
+        for (int i = 0; i < table.Count; i++) {
             string videogameLinkSubFix = table.Item(i)?.Attributes.Item(0)?.InnerText ?? "";
             if (!string.IsNullOrEmpty(videogameLinkSubFix)) {
                 try {
@@ -73,7 +73,7 @@ public static class MediaDataRetriever {
                     }
 
                     string videogameName = videogameSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
-                    Debug.LogError(videogameName);
+                    Debug.Log(videogameName);
                     string videogameNameSafe = videogameName.AddresableSafe();
                     string videogameArtPath = ArtMediaPath + videogameNameSafe + ".png";
                     string videogameDataPath = VideoGamesDataPath + "/" + videogameNameSafe + ".asset";
@@ -179,20 +179,20 @@ public static class MediaDataRetriever {
                                     Name = lastCategoryName,
                                     CharacterRefs = new List<CharacterReference>()
                                 };
-                                XmlNodeList characters = auxNode.SelectNodes("li");
+
+                                XmlNodeList characters = auxNode.SelectNodes(".//li");
+
                                 for (int iCharacter = 0; iCharacter < characters.Count; ++iCharacter) {
                                     XmlNode characterNode = characters[iCharacter];
                                     CharacterReference characterRef = new CharacterReference();
-                                    characterRef.Name = characterNode.InnerText;
-                                    string linkSubFix = characterNode.SelectSingleNode("a")?.Attributes.GetNamedItem("href")?.InnerText ?? "";
+                                    characterRef.Name = characterNode.SelectSingleNode(".//a/text()")?.InnerText;
+                                    string linkSubFix = characterNode.SelectSingleNode(".//a")?.Attributes.GetNamedItem("href")?.InnerText ?? "";
 
                                     if (!string.IsNullOrEmpty(linkSubFix)) {
                                         if (!DataRetriever.SitesFinalLink.ContainsKey(linkSubFix)) {
-                                            await DataRetriever.GetSite(linkSubFix);
+                                            await DataRetriever.GetSite(linkSubFix, finalLink => linkSubFix = finalLink);
                                         }
 
-                                        linkSubFix = DataRetriever.SitesFinalLink[linkSubFix];
-                                        
                                         IDataEntry entry = dataCenter.DigimonDB.Digimons.Find(
                                             d => string.Compare(d.LinkSubFix, linkSubFix, StringComparison.InvariantCultureIgnoreCase) == 0);
                                         
@@ -206,6 +206,7 @@ public static class MediaDataRetriever {
                                         }
 
                                         if (entry != null) {
+                                            characterRef.Name = entry.Name;
                                             characterRef.Index = new EntryIndex(entry.GetType(), entry.Hash);
                                         }
                                     }
