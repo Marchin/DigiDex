@@ -182,38 +182,46 @@ public static class MediaDataRetriever {
 
                                 XmlNodeList characters = auxNode.SelectNodes(".//li");
 
-                                for (int iCharacter = 0; iCharacter < characters.Count; ++iCharacter) {
-                                    XmlNode characterNode = characters[iCharacter];
-                                    CharacterReference characterRef = new CharacterReference();
-                                    characterRef.Name = characterNode.SelectSingleNode(".//a/text()")?.InnerText;
-                                    string linkSubFix = characterNode.SelectSingleNode(".//a")?.Attributes.GetNamedItem("href")?.InnerText ?? "";
+                                for (int iCharacter = 0; iCharacter < characters.Count && iCharacter < 10; ++iCharacter) {
+                                    XmlNodeList characterNodes = characters[iCharacter].SelectNodes(".//a");
+                                    for (int jCharacter = 0; jCharacter < characterNodes.Count && jCharacter < 10; ++jCharacter) {
+                                        XmlNode characterNode = characterNodes[jCharacter];
+                                        CharacterReference characterRef = new CharacterReference();
+                                        characterRef.Name = characterNode.SelectSingleNode("text()")?.InnerText;
+                                        string linkSubFix = characterNode.Attributes.GetNamedItem("href")?.InnerText ?? "";
 
-                                    if (!string.IsNullOrEmpty(linkSubFix)) {
-                                        if (!DataRetriever.SitesFinalLink.ContainsKey(linkSubFix)) {
-                                            await DataRetriever.GetSite(linkSubFix, finalLink => linkSubFix = finalLink);
+                                        if (!string.IsNullOrEmpty(linkSubFix)) {
+                                            if (!DataRetriever.SitesFinalLink.ContainsKey(linkSubFix)) {
+                                                await DataRetriever.GetSite(linkSubFix, finalLink => linkSubFix = finalLink);
+                                            } else {
+                                                linkSubFix = DataRetriever.SitesFinalLink[linkSubFix];
+                                            }
+
+                                            IDataEntry entry = dataCenter.DigimonDB.Digimons.Find(
+                                                d => string.Compare(d.LinkSubFix, linkSubFix, StringComparison.InvariantCultureIgnoreCase) == 0);
+                                            
+                                            if (entry == null) {
+                                                entry = dataCenter.AppmonDB.Appmons.Find(
+                                                    a => string.Compare(a.LinkSubFix, linkSubFix, StringComparison.InvariantCultureIgnoreCase) == 0);
+                                            }
+
+                                            if (entry == null) {
+                                                entry = await CharacterDataRetriever.AddCharacter(linkSubFix);
+                                            }
+
+                                            if (entry != null) {
+                                                characterRef.Name = entry.Name;
+                                                characterRef.Index = new EntryIndex(entry.GetType(), entry.Hash);
+                                            }
                                         }
 
-                                        IDataEntry entry = dataCenter.DigimonDB.Digimons.Find(
-                                            d => string.Compare(d.LinkSubFix, linkSubFix, StringComparison.InvariantCultureIgnoreCase) == 0);
-                                        
-                                        if (entry == null) {
-                                            entry = dataCenter.AppmonDB.Appmons.Find(
-                                                a => string.Compare(a.LinkSubFix, linkSubFix, StringComparison.InvariantCultureIgnoreCase) == 0);
-                                        }
-
-                                        if (entry == null) {
-                                            entry = await CharacterDataRetriever.AddCharacter(linkSubFix);
-                                        }
-
-                                        if (entry != null) {
-                                            characterRef.Name = entry.Name;
-                                            characterRef.Index = new EntryIndex(entry.GetType(), entry.Hash);
+                                        if (set.CharacterRefs.Find(character => characterRef.Name == character.Name) == null) {
+                                            set.CharacterRefs.Add(characterRef);
                                         }
                                     }
-                                    set.CharacterRefs.Add(characterRef);
                                 }
 
-                                if (characters.Count > 0) {
+                                if (set.CharacterRefs.Count > 0) {
                                     videogameData.CharactersSet.Add(set);
                                 }
 

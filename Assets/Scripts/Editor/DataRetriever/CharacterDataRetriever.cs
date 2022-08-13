@@ -48,6 +48,11 @@ public static class CharacterDataRetriever {
             var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
 
             XmlDocument characterSite = await DataRetriever.GetSite(characterLinkSubFix);
+
+            if (characterSite == null) {
+                return null;
+            }
+
             string characterName = characterSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
             string characterNameSafe = characterName.AddresableSafe();
             string characterArtPath = ArtCharactersPath + characterNameSafe + ".png";
