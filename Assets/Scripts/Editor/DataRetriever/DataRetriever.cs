@@ -1,11 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.Xml;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
+using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
 
 public static class DataRetriever {
@@ -27,10 +30,79 @@ public static class DataRetriever {
             return _sitesData;
         }
     }
+    private static Dictionary<string, string> _sitesFinalLink;
+    public static Dictionary<string, string> SitesFinalLink {
+        get {
+            if (_sitesFinalLink == null) {
+                _sitesFinalLink = new Dictionary<string, string>();
+            }
+            
+            return _sitesFinalLink;
+        }
+    }
 
-    public static async UniTask<XmlDocument> GetSite(string linkSubFix) {
-        if (string.IsNullOrEmpty(linkSubFix)) {
-            return null;
+    private static string RemoveXmlComments(string xml) {
+        List<(int, int)> ranges = new List<(int, int)>();
+        int index = 0;
+        int startingIndex = 0;
+        for (int i = 0; i < xml.Length; ++i) {
+            switch (xml[i]) {
+                case '<': {
+                    if (index <= 3) {
+                        index = 1;
+                        startingIndex = i;
+                    } else if (index > 4) {
+                        index = 4;
+                    }
+                } break;
+                case '!': {
+                    if (index == 1) {
+                        index = 2;
+                    } else if (index == 2 || index == 3) {
+                        index = 0;
+                    } else if (index > 4) {
+                        index = 4;
+                    }
+                } break;
+                case '-': {
+                    if (index >= 2 && index <= 5) {
+                        ++index;
+                    } else if (index == 6) {
+                        index = 4;
+                    }
+                } break;
+                case '>': {
+                    if (index == 6) {
+                        ranges.Add((startingIndex, i));
+                        index = 0;
+                    }
+                } break;
+
+                default: {
+                    if (index <= 2) {
+                        index = 0;
+                    } else if (index > 4) {
+                        index = 4;
+                    }
+                } break;
+            }
+        }
+
+        string result = xml;
+        for (int iRange = 0; iRange < ranges.Count; ++iRange) {
+            int baseIndex = ranges[iRange].Item1;
+            for (int jRange = 0; jRange < iRange; ++jRange) {
+                baseIndex -= (ranges[jRange].Item2 - ranges[jRange].Item1);
+            }
+            result = result.Remove(baseIndex, ranges[iRange].Item2 - ranges[iRange].Item1);
+        }
+
+        return result;
+    }
+
+    public static async UniTask<XmlDocument> GetSite(string linkSubFix, Action<string> OnFinalSubFix = null) {
+        if (SitesFinalLink.ContainsKey(linkSubFix)) {
+            linkSubFix = SitesFinalLink[linkSubFix];
         }
 
         if (!SitesData.ContainsKey(linkSubFix)) {
@@ -38,8 +110,37 @@ public static class DataRetriever {
             string link = WikimonBaseURL + linkSubFix;
             try {
                 List<string> subLinks = new List<string> { linkSubFix };
+                string unescapedSubFix = Uri.UnescapeDataString(linkSubFix);
+                if (unescapedSubFix != linkSubFix) {
+                    linkSubFix = unescapedSubFix;
+                    subLinks.Add(unescapedSubFix);
+                }
+
+                string data = "";
+                using (UnityWebRequest request = UnityWebRequest.Get(link)) {
+                    await request.SendWebRequest();
+                    if (request.result != UnityWebRequest.Result.ConnectionError) {
+                        string finalLinkSubFix = request.url.Replace(WikimonBaseURL, "");
+                        if (finalLinkSubFix != linkSubFix) {
+                            subLinks.Add(finalLinkSubFix);
+                            linkSubFix = finalLinkSubFix;
+
+                            string unescapedFinalSubFix = Uri.UnescapeDataString(finalLinkSubFix);
+                            if (unescapedFinalSubFix != finalLinkSubFix) {
+                                subLinks.Add(unescapedFinalSubFix);
+                                linkSubFix = unescapedFinalSubFix;
+                            }
+                        }
+                        data = Encoding.UTF8.GetString(request.downloadHandler.data);
+                        data = RemoveXmlComments(data);
+                    } else {
+                        return null;
+                    }
+                }
+
                 XmlDocument site = new XmlDocument();
-                site.Load(link);
+                site.LoadXml(data);
+
                 // Sometimes name variants are used for the list, we look for the name used in the profile
                 XmlNode redirectNode = site.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
                 while (redirectNode != null) {
@@ -50,9 +151,44 @@ public static class DataRetriever {
                     site = await DataRetriever.GetSite(linkSubFix);
                     redirectNode = site.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
                 }
-                foreach (var subLink in subLinks) {
-                    SitesData[subLink] = site;
+
+                if (linkSubFix.Contains('(') || linkSubFix.Contains(':')) {
+                    var linkNode = site.SelectSingleNode("//link[@rel='canonical']");
+                    if (linkNode != null) {
+                        string newLinkSubFix = linkNode.Attributes.GetNamedItem("href")?.InnerText.Replace(WikimonBaseURL, "");
+
+                        if (!string.IsNullOrEmpty(newLinkSubFix) && (newLinkSubFix != linkSubFix)) {
+                            subLinks.Add(newLinkSubFix);
+                            linkSubFix = newLinkSubFix;
+                        }
+                    }
+
+                    foreach (var subLink in subLinks) {
+                        SitesFinalLink[subLink] = linkSubFix;
+                        SitesData[subLink] = site;
+                    }
+                } else {
+                    string siteMeta = site.SelectSingleNode("/html/body").Attributes.GetNamedItem("class").InnerText;
+                    const string rootpage = "rootpage";
+                    int rootpageStart = siteMeta.IndexOf(rootpage);
+                    int rootpageEnd = siteMeta.IndexOf(' ', rootpageStart);
+                    int linkNameStart = rootpageStart + rootpage.Length + 1;
+                    string finalLink = $"/{siteMeta.Substring(linkNameStart, rootpageEnd - linkNameStart)}".TrimEnd();
+                    if (finalLink != linkSubFix) {
+                        subLinks.Add(finalLink);
+                        foreach (var subLink in subLinks) {
+                            SitesFinalLink[subLink] = finalLink;
+                            SitesData[subLink] = site;
+                        }
+                    } else {
+                        foreach (var subLink in subLinks) {
+                            SitesFinalLink[subLink] = linkSubFix;
+                            SitesData[subLink] = site;
+                        }
+                    }
                 }
+
+
             } catch (Exception ex) {
                 SitesData.Remove(linkSubFix);
                 Debug.LogError($"Error while loading {linkSubFix}: \n {ex.Message} \n {ex.StackTrace}");
@@ -62,7 +198,15 @@ public static class DataRetriever {
             await UniTask.WaitWhile(() => SitesData[linkSubFix] == null);
         }
         
+        OnFinalSubFix?.Invoke(SitesFinalLink[linkSubFix]);
+
         return SitesData[linkSubFix];
+    }
+
+    [MenuItem("DigiDex/Clear Site Cache")]
+    public static void ClearSiteCache() {
+        _sitesData?.Clear();
+        _sitesFinalLink?.Clear();
     }
 
     public static AddressableAssetGroup GetOrAddAddressableGroup(string name) {
@@ -116,13 +260,14 @@ public static class DataRetriever {
             IDataEntry entryData = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(paths[iEntry]) as IDataEntry;
             string evolutionDataPath =  $"{evolutionsDataPath}/{entryData.Name.AddresableSafe()} Evolutions.asset";
             EvolutionData evolutionData = GetOrCreateScriptableObject<EvolutionData>(evolutionDataPath);
-            pairtList.Add((entryData, evolutionData));
-            EditorUtility.SetDirty(evolutionData);
-            EditorUtility.SetDirty(entryData as UnityEngine.Object);
-
             XmlDocument entrySite = null;
 
             try {
+                pairtList.Add((entryData, evolutionData));
+                EditorUtility.SetDirty(evolutionData);
+                EditorUtility.SetDirty(entryData as UnityEngine.Object);
+
+
                 entrySite = await GetSite(entryData.LinkSubFix);
 
                 evolutionData.PreEvolutions = await ParseEvolutionList("Evolves_From");
