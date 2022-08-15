@@ -1,12 +1,18 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IPointerEnterHandler, IPointerExitHandler {
     [SerializeField] private float _hideInSecs = 2f;
     [SerializeField] private RectTransform _safeArea = default;
-    public GameObject ListBackground;
+    [SerializeField] private GameObject _listBackground = default;
+    [SerializeField] private Toggle _anyToggle = default;
+    [SerializeField] private Toggle _allToggle = default;
     [System.NonSerialized] public UnityEngine.Object LastCaller;
     [System.NonSerialized] public bool IsMouseOut;
+    public GameObject ListBackground => _listBackground;
+    public Toggle AnyToggle => _anyToggle;
+    public Toggle AllToggle => _allToggle;
     private float accum = 0f;
     private bool _wasScrolling;
 
@@ -18,7 +24,7 @@ public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IP
     }
 
     private void OnEnable() {
-        ListBackground.gameObject.SetActive(false);
+        _listBackground.gameObject.SetActive(false);
     }
 
     public void ResetScroll() {
