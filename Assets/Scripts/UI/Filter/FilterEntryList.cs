@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IPointerEnterHandler, IPointerExitHandler {
     [SerializeField] private float _hideInSecs = 2f;
     [SerializeField] private RectTransform _safeArea = default;
+    [SerializeField] private RectTransform _togglesRect = default;
     [SerializeField] private GameObject _listBackground = default;
     [SerializeField] private Toggle _anyToggle = default;
     [SerializeField] private Toggle _allToggle = default;
@@ -61,7 +62,7 @@ public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IP
             float yMax = _safeArea.rect.yMax + _safeArea.position.y;
             scrollRectTransform.sizeDelta = new Vector2(
                 rectTransform.rect.width, 
-                Mathf.Min(_scroll.content.rect.height,
+                Mathf.Min(_scroll.content.rect.height + _togglesRect.rect.height,
                     yMax - scrollRectTransform.position.y));
         } else {
             scrollRectTransform.pivot = new Vector2(0.5f, 1f);
@@ -71,7 +72,7 @@ public class FilterEntryList : DataList<FilterEntryElement, FilterEntryData>, IP
             float yMin = _safeArea.rect.yMin + _safeArea.position.y;
             scrollRectTransform.sizeDelta = new Vector2(
                 rectTransform.rect.width, 
-                Mathf.Min(_scroll.content.rect.height, 
+                Mathf.Min(_scroll.content.rect.height + _togglesRect.rect.height, 
                     scrollRectTransform.position.y - yMin));
         }
         CalculateSizes();
