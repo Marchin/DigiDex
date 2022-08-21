@@ -129,9 +129,6 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
                 _filterData.List.gameObject.SetActive(false);
                 _filterData.List.ListBackground.SetActive(false);
             } else {
-                RectTransform rectTransform = transform as RectTransform;
-                RectTransform scrollRectTransform = _filterData.List.transform as RectTransform;
-                
                 _filterData.List.Populate(_filterData.Elements);
                 _filterData.List.gameObject.SetActive(true);
                 _filterData.List.ListBackground.SetActive(true);
