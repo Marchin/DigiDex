@@ -10,6 +10,7 @@ public class FilterData {
     public string Name;
     public List<FilterEntryData> Elements;
     public FilterEntryList List;
+    public bool Any;
     private Func<IDataEntry, List<int>> _getFilteringComponent;
 
     public FilterData(string name, Func<IDataEntry, List<int>> getFilteringComponent) {
@@ -20,6 +21,7 @@ public class FilterData {
     public FilterData Clone() {
         FilterData newFilter = new FilterData(Name, _getFilteringComponent);
 
+        newFilter.Any = this.Any;
         newFilter.List = this.List;
         newFilter.Elements = new List<FilterEntryData>(Elements.Count);
         for (int iElement = 0; iElement < Elements.Count; ++iElement) {
@@ -46,10 +48,23 @@ public class FilterData {
             List<int> filteringComponent = _getFilteringComponent?.Invoke(list[iElement]);
 
             bool add = true;
-            for (int iRequired = 0; iRequired < required.Count; ++iRequired) {
-                if (!filteringComponent.Contains(required[iRequired])) {
-                    add = false;
-                    break;
+            
+            if (required.Count > 0) {
+                add = Any ? false : true;
+                if (Any) {
+                    for (int iRequired = 0; iRequired < required.Count; ++iRequired) {
+                        if (filteringComponent.Contains(required[iRequired])) {
+                            add = true;
+                            break;
+                        }
+                    }
+                } else {
+                    for (int iRequired = 0; iRequired < required.Count; ++iRequired) {
+                        if (!filteringComponent.Contains(required[iRequired])) {
+                            add = false;
+                            break;
+                        }
+                    }                
                 }
             }
 
@@ -114,20 +129,24 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
                 _filterData.List.gameObject.SetActive(false);
                 _filterData.List.ListBackground.SetActive(false);
             } else {
-                RectTransform rectTransform = transform as RectTransform;
-                RectTransform scrollRectTransform = _filterData.List.transform as RectTransform;
-                
                 _filterData.List.Populate(_filterData.Elements);
                 _filterData.List.gameObject.SetActive(true);
                 _filterData.List.ListBackground.SetActive(true);
                 await UniTask.DelayFrame(1,
-                    cancellationToken: this.GetCancellationTokenOnDestroy())
+                        cancellationToken: this.GetCancellationTokenOnDestroy())
                     .SuppressCancellationThrow();
                 _filterData.List.AdjustPosition(transform as RectTransform);
                 _filterData.List.ResetScroll();
             }
             
+            _filterData.List.AnyToggle.onValueChanged.RemoveAllListeners();
             _filterData.List.LastCaller = this;
+            _filterData.List.AnyToggle.onValueChanged.AddListener(OnAnyToggleChange);
+            if (_filterData.Any) {
+                _filterData.List.AnyToggle.isOn = true;
+            } else {
+                _filterData.List.AllToggle.isOn = true;
+            }
         });
 
         PopupManager.Instance.OnWindowResize += OnWindowResize;
@@ -135,6 +154,12 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
 
     private void OnDestroy() {
         PopupManager.Instance.OnWindowResize -= OnWindowResize;
+    }
+
+    private void OnAnyToggleChange(bool state) {
+        if ((_filterData != null) && (_filterData.List.LastCaller == this)) {
+            _filterData.Any = state;
+        }
     }
 
     private void OnWindowResize() {
@@ -149,6 +174,7 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
 
     public void Populate(FilterData data) {
         _filterData = data;
+        _filterData.List.AnyToggle.onValueChanged.AddListener(OnAnyToggleChange);
         RefreshLabel();
 
         for (int iElement = 0; iElement < _filterData.Elements.Count; ++iElement) {

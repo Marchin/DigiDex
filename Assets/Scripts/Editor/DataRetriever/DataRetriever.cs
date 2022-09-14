@@ -101,8 +101,8 @@ public static class DataRetriever {
     }
 
     public static async UniTask<XmlDocument> GetSite(string linkSubFix, Action<string> OnFinalSubFix = null) {
-        if (string.IsNullOrEmpty(linkSubFix)) {
-            return null;
+        if (SitesFinalLink.ContainsKey(linkSubFix)) {
+            linkSubFix = SitesFinalLink[linkSubFix];
         }
 
         if (SitesFinalLink.ContainsKey(linkSubFix)) {

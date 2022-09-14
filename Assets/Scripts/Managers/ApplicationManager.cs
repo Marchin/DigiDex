@@ -75,7 +75,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
 
     public async UniTask PickNaming(bool showCloseButton) {
         List<ButtonData> buttonList = new List<ButtonData>();
-        buttonList.Add(new ButtonData("Original", () => { 
+        buttonList.Add(new ButtonData("Japanese", () => { 
             UserDataManager.Instance.UsingDub = false;
             _ = PopupManager.Instance.Back();
         }));
@@ -85,7 +85,7 @@ public class ApplicationManager : MonoBehaviourSingleton<ApplicationManager> {
         }));
 
         string message = "What naming convention do you want to use?";
-        string currentNaming = UserDataManager.Instance.UsingDub ? "Dub" : "Original";
+        string currentNaming = UserDataManager.Instance.UsingDub ? "Dub" : "Japanese";
 
         if (UserDataManager.Instance.HasNamingBeenPicked) {
             message += $"\n(Current: {currentNaming})";

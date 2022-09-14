@@ -3,7 +3,37 @@
     <package>net.openid:appauth:0.11.+</package>
   </packages>
   <files>
+    <file>Assets/Plugins/Android/androidx.activity.activity-1.2.3.aar</file>
+    <file>Assets/Plugins/Android/androidx.annotation.annotation-1.2.0.jar</file>
+    <file>Assets/Plugins/Android/androidx.annotation.annotation-experimental-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.appcompat.appcompat-1.3.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.appcompat.appcompat-resources-1.3.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.arch.core.core-common-2.1.0.jar</file>
+    <file>Assets/Plugins/Android/androidx.arch.core.core-runtime-2.1.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.browser.browser-1.3.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.collection.collection-1.1.0.jar</file>
+    <file>Assets/Plugins/Android/androidx.concurrent.concurrent-futures-1.0.0.jar</file>
+    <file>Assets/Plugins/Android/androidx.core.core-1.5.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.cursoradapter.cursoradapter-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.customview.customview-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.drawerlayout.drawerlayout-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.fragment.fragment-1.3.4.aar</file>
+    <file>Assets/Plugins/Android/androidx.interpolator.interpolator-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-common-2.3.1.jar</file>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-livedata-2.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-livedata-core-2.3.1.aar</file>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-runtime-2.3.1.aar</file>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-viewmodel-2.3.1.aar</file>
+    <file>Assets/Plugins/Android/androidx.lifecycle.lifecycle-viewmodel-savedstate-2.3.1.aar</file>
     <file>Assets/Plugins/Android/androidx.loader.loader-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.savedstate.savedstate-1.1.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.tracing.tracing-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.vectordrawable.vectordrawable-1.1.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.vectordrawable.vectordrawable-animated-1.1.0.aar</file>
+    <file>Assets/Plugins/Android/androidx.versionedparcelable.versionedparcelable-1.1.1.aar</file>
+    <file>Assets/Plugins/Android/androidx.viewpager.viewpager-1.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.guava.listenablefuture-1.0.jar</file>
+    <file>Assets/Plugins/Android/net.openid.appauth-0.11.1.aar</file>
   </files>
   <settings>
     <setting name="androidAbis" value="arm64-v8a,armeabi-v7a" />

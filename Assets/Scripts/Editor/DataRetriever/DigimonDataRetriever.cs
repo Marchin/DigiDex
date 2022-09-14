@@ -86,6 +86,8 @@ public static class DigimonDataRetriever {
             {"Ceresmon Medium", 1},
             {"Crys Paledramon", 1},
             {"Deadly Tuwarmon Hell Mode", 1},
+            {"Dracomon + Cyberdramon", 1},
+            {"Dorbickmon Darkness Mode (Huanglongmon)", 1},
             {"Duramon", 1},
             {"Durandamon", 1},
             {"Fros Velgrmon", 1},
@@ -101,6 +103,7 @@ public static class DigimonDataRetriever {
             {"Mad Leomon (Orochi Mode)", 1},
             {"Mervamon", 1},
             {"Metal Greymon (2010 Anime Version)", 1},
+            {"Minervamon", 1},
             {"Mitamamon", 1},
             {"Monimon", 1},
             {"Nise Drimogemon", 1},
@@ -119,7 +122,7 @@ public static class DigimonDataRetriever {
         };
 
         XmlDocument digimonListSite = await DataRetriever.GetSite(DigimonListSubFix);
-        XmlNodeList table = digimonListSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable']/tbody/tr/td[1]/a");
+        XmlNodeList table = digimonListSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable'][position() < 27]/tbody/tr/td[1]/a");
         for (int i = 0; i < table.Count; i++) {
             string digimonLinkSubFix = table.Item(i)?.Attributes.Item(0)?.InnerText ?? "";
 
@@ -127,7 +130,11 @@ public static class DigimonDataRetriever {
                 try {
                     XmlDocument digimonSite = await DataRetriever.GetSite(digimonLinkSubFix);
 
-                    digimonLinkSubFix = digimonSite.BaseURI.Replace(DataRetriever.WikimonBaseURL, "");
+                    digimonLinkSubFix = string.IsNullOrEmpty(digimonSite.BaseURI) ?
+                        digimonLinkSubFix :
+                        digimonSite.BaseURI.Replace(DataRetriever.WikimonBaseURL, "");
+
+                    Debug.Log(digimonLinkSubFix);
 
                     if (digimons.Find(d => d.LinkSubFix == digimonLinkSubFix)) {
                         continue;
@@ -739,7 +746,7 @@ public static class DigimonDataRetriever {
     [MenuItem("DigiDex/Digimon/Generate/Level List")]
     public static async UniTask GenerateLevelList() {
         XmlDocument levelSite = await DataRetriever.GetSite(LevelListSubFix);
-        XmlNodeList table = levelSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable']/tbody/tr/td/a");
+        XmlNodeList table = levelSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[position() > 0][position() < 3]/tbody/tr/td/b/a");
         string levelsDataPath = DigimonDataPath + "Levels";
         if (!Directory.Exists(levelsDataPath)) {
             Directory.CreateDirectory(levelsDataPath);
