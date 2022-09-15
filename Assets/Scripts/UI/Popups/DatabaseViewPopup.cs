@@ -190,6 +190,7 @@ public class DatabaseViewPopup : Popup {
     }
 
     private void OnDisable() {
+        _entryImage.sprite = null;
         PopupManager.Instance.OnStackChange -= OnStackChange;
     }
 
