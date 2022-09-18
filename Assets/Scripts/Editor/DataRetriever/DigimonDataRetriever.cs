@@ -746,7 +746,7 @@ public static class DigimonDataRetriever {
     [MenuItem("DigiDex/Digimon/Generate/Level List")]
     public static async UniTask GenerateLevelList() {
         XmlDocument levelSite = await DataRetriever.GetSite(LevelListSubFix);
-        XmlNodeList table = levelSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[position() > 0][position() < 3]/tbody/tr/td/b/a");
+        XmlNodeList table = levelSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[position() > 0][position() < 4]/tbody/tr/td/b/a");
         string levelsDataPath = DigimonDataPath + "Levels";
         if (!Directory.Exists(levelsDataPath)) {
             Directory.CreateDirectory(levelsDataPath);
@@ -756,7 +756,7 @@ public static class DigimonDataRetriever {
         for (int i = 0; i < table.Count; i++) {
             XmlNode fieldData = table.Item(i);
             string levelName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
-            string levelDubName = fieldData.ParentNode.ParentNode.LastChild.InnerText;
+            string levelDubName = fieldData.ParentNode.ParentNode.LastChild.PreviousSibling.InnerText;
 
             if (levelName == "Digitama" || levelName == "Super Ultimate") {
                 continue;
