@@ -131,6 +131,11 @@ public class MainMenu : MonoBehaviour {
         RefreshButtons();
     }
 
+    private void OnValidate() {
+        PopupManager.Instance.RegisterCanvasScalerForRotationScaling(_canvasScaler);
+        (_content.transform as RectTransform).AdjustToSafeZone();
+    }
+
     private void RefreshButtons() {
         if (UserDataManager.Instance.IsUserLoggedIn || UserDataManager.Instance.IsLoggingIn) {
             _loginButton.gameObject.SetActive(false);
