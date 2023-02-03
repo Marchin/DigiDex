@@ -1,9 +1,11 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public interface IDataUIElement<T> {
     void Populate(T data);
@@ -14,13 +16,20 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
         Vertical,
         Horizontal
     }
+    
+    public class ScrollData {
+        public int BaseIndex;
+        public Vector2 NormalizedPos;
+    }
 
     private const float MinHandleLenght = 24f;
     private const float ElementReuseScrollPoint = 0.4f;
+
     [SerializeField] private T _template = default;
     [SerializeField] private RectTransform _root = default;
     [SerializeField] private int _maxDisplayCount = default;
     [SerializeField] private GameObject _overflowDisplay = default;
+
     [Header("Scrolling")]
     [SerializeField] protected CustomScrollRect _scroll = default;
     [SerializeField] private HorizontalOrVerticalLayoutGroup _layoutGroup = default;
@@ -28,21 +37,45 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
     [SerializeField] private RectTransform _fakeScrollBar = default;
     [SerializeField] private RectTransform _fakeScrollBarHandle = default;
     [SerializeField] private DragHandler _scrollBarHandler = default;
-	private List<T> _elements = new List<T>();
+
+    private List<T> _elements = new List<T>();
     public IReadOnlyList<T> Elements => _elements;
-    public event Action<List<D>> OnPopulate;
+    public event Action<IReadOnlyList<D>> OnPopulate;
     public event Action OnRefresh;
-	private List<T> _pool = new List<T>();
-    private List<D> _data;
+    private List<T> _pool = new List<T>();
+    public IReadOnlyList<D> Data { get; private set; }
     private int _baseIndex;
     private float _elementNormalizedLength;
     private float _handleSizeAdjustment;
     private float _prevScrollPos;
     private bool _wasScrollingDown;
+    private bool _calculatingSizes;
+    private CancellationTokenSource _scrollCTS;
+    public T this[int i] => Elements[i];
+
+    public ScrollData GetScrollData() {
+        ScrollData scroll = null;
+        
+        if (Data != null) {
+            scroll = new ScrollData {
+                BaseIndex = _baseIndex,
+                NormalizedPos = _scroll.normalizedPosition
+            };
+        } else if (_direction == Direction.Vertical) {
+            scroll = new ScrollData {
+                BaseIndex = 0,
+                NormalizedPos = Vector2.up
+            };
+        }
+
+
+        return scroll;
+    }
 
     private void Start() {
         _template.gameObject.SetActive(false);
         PopupManager.Instance.OnWindowResize += CalculateSizes;
+
         if (_scroll != null) {
             _scroll.onValueChanged.AddListener(OnScroll);
 
@@ -59,10 +92,14 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
 
     private void OnDestroy() {
         PopupManager.Instance.OnWindowResize -= CalculateSizes;
+        if (_scrollCTS != null) {
+            _scrollCTS.Cancel();
+            _scrollCTS.Dispose();
+        }
     }
 
-    public void Populate(List<D> data) {
-        _data = data;
+    public void Populate(IReadOnlyList<D> data, ScrollData scrollData = null) {
+        Data = data;
         if (data == null || data.Count == 0) {
             Clear();
             return;
@@ -72,10 +109,10 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
             _overflowDisplay.SetActive(false);
         }
 
-        _baseIndex = 0;
+        _baseIndex = scrollData?.BaseIndex ?? 0;
 
         int index = 0;
-        for (; index < data.Count; ++index) {
+        for (; index + _baseIndex < data.Count; ++index) {
             if (_maxDisplayCount > 0 && index >= _maxDisplayCount) {
                 if (_overflowDisplay != null) {
                     _overflowDisplay.SetActive(true);
@@ -94,7 +131,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
                 }
             }
             T element = _elements[index];
-            element.Populate(data[index]);
+            element.Populate(data[index + _baseIndex]);
             element.gameObject.SetActive(true);
         }
 
@@ -105,44 +142,52 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
             _elements.RemoveAt(index2);
         }
 
-        CalculateSizes();
+        CalculateSizes(scrollData);
 
         OnPopulate?.Invoke(data);
     }
+    
+    public void CalculateSizes() {
+        CalculateSizes(null);
+    }
 
-    public async void CalculateSizes() {
+    public async void CalculateSizes(ScrollData scrollData) {
         if (_scroll != null) {
+            _calculatingSizes = true;
             try {
-                await UniTask.WaitForEndOfFrame(cancellationToken: this.GetCancellationTokenOnDestroy());
+                await UniTask.DelayFrame(1, cancellationToken : this.GetCancellationTokenOnDestroy());
             } catch {
                 // If destroyed we return
                 return;
             }
-            if (_scroll == null) {
-                return;
-            }
-            float viewportLength = (_direction == Direction.Horizontal) ? 
+            float viewportLength = (_direction == Direction.Horizontal) ?
                 _scroll.viewport.rect.width :
                 _scroll.viewport.rect.height;
-            float scrollableLength = (_direction == Direction.Horizontal) ? 
+            float scrollableLength = (_direction == Direction.Horizontal) ?
                 _scroll.content.rect.width - viewportLength :
                 _scroll.content.rect.height - viewportLength;
-            float elementLength = (_direction == Direction.Horizontal) ? 
+            float elementLength = (_direction == Direction.Horizontal) ?
                 (_template.transform as RectTransform).rect.width :
                 (_template.transform as RectTransform).rect.height;
             if (_layoutGroup != null) {
                 elementLength += _layoutGroup.spacing;
             }
             _elementNormalizedLength = elementLength / scrollableLength;
-            
+
+            if (scrollData != null) {
+                _scroll.normalizedPosition = scrollData.NormalizedPos;
+            } else {
+                _scroll.normalizedPosition = Vector2.up;
+            }
+
             if (_fakeScrollBar != null && _fakeScrollBarHandle != null) {
                 bool showScrollbar = scrollableLength > 1f;
                 if (showScrollbar) {
                     _fakeScrollBar.gameObject.SetActive(true);
                     float scrollBarLength = (_direction == Direction.Horizontal) ?
-                        _fakeScrollBar.rect.width : 
+                        _fakeScrollBar.rect.width :
                         _fakeScrollBar.rect.height;
-                    float handleLength = (viewportLength / (elementLength * _data.Count)) * scrollBarLength;
+                    float handleLength = (viewportLength / (elementLength * Data.Count)) * scrollBarLength;
                     if (handleLength < MinHandleLenght) {
                         _handleSizeAdjustment = MinHandleLenght - handleLength;
                         handleLength = MinHandleLenght;
@@ -162,31 +207,32 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
                             _fakeScrollBarHandle.rect.width,
                             handleLength);
                     }
-                    OnScroll(_scroll.normalizedPosition);
+                    OnScroll(scrollData?.NormalizedPos ?? _scroll.normalizedPosition);
                 } else {
                     _fakeScrollBar.gameObject.SetActive(false);
                 }
                 if (_direction == Direction.Horizontal) {
                     Vector2 offset = _scroll.viewport.offsetMax;
-                    offset.y = showScrollbar ? 
+                    offset.y = showScrollbar ?
                         -Mathf.CeilToInt(_fakeScrollBarHandle.rect.height) :
                         0;
                     _scroll.viewport.offsetMax = offset;
                 } else {
                     Vector2 offset = _scroll.viewport.offsetMax;
-                    offset.x = showScrollbar ? 
+                    offset.x = showScrollbar ?
                         -Mathf.CeilToInt(_fakeScrollBarHandle.rect.width) :
                         0;
                     _scroll.viewport.offsetMax = offset;
                 }
             }
+            _calculatingSizes = false;
         }
     }
 
     private void Refresh() {
-        _baseIndex = Mathf.Min(_baseIndex, _data.Count - _elements.Count);
+        _baseIndex = Mathf.Min(_baseIndex, Data.Count - _elements.Count);
         for (int iData = _baseIndex, iElement = 0; iElement < _elements.Count; ++iData, ++iElement) {
-            _elements[iElement].Populate(_data[iData]);
+            _elements[iElement].Populate(Data[iData]);
         }
         OnRefresh?.Invoke();
     }
@@ -204,17 +250,30 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
         }
     }
 
-    public void ScrollTo(int index) {
-        if ((_data == null) || (_scroll == null)) {
+    public async void ScrollTo(int index) {
+        if ((Data == null) || (_scroll == null)) {
             return;
         }
 
-        index = Mathf.Clamp(index, 0, _data.Count - 1);
-        int scrolled = Mathf.Min(index, _data.Count - _elements.Count);
+        if (_scrollCTS != null) {
+            _scrollCTS.Cancel();
+            _scrollCTS.Dispose();
+        }
+        _scrollCTS = new CancellationTokenSource();
+
+        try {
+            await UniTask.WaitWhile(() => _calculatingSizes, cancellationToken : _scrollCTS.Token);
+        } catch {
+            // If destroyed we return
+            return;
+        }
+
+        index = Mathf.Clamp(index, 0, Data.Count - 1);
+        int scrolled = Mathf.Min(index, Data.Count - _elements.Count);
         _baseIndex = index;
         Vector2 pos = _scroll.normalizedPosition;
         if (_direction == Direction.Horizontal) {
-            pos.x = 1f - (scrolled - index) * _elementNormalizedLength;
+            pos.x = (index - scrolled) * _elementNormalizedLength;
         } else {
             pos.y = 1f - (scrolled - index) * _elementNormalizedLength;
         }
@@ -229,19 +288,19 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
         if (_direction == Direction.Horizontal) {
             float minX = rect.TransformPoint(_fakeScrollBar.rect.min).x;
             float maxX = rect.TransformPoint(_fakeScrollBar.rect.max).x;
-            float scrollPos = Mathf.InverseLerp(minX, maxX, 
+            float scrollPos = Mathf.InverseLerp(minX, maxX,
                 pos.x + (0.5f * _fakeScrollBarHandle.rect.size.x));
-            float scrolledElements = (1f - scrollPos) * _data.Count;
-            int scrolled = Mathf.Min(Mathf.FloorToInt(scrolledElements), _data.Count - _elements.Count);
+            float scrolledElements = (1f - scrollPos) * Data.Count;
+            int scrolled = Mathf.Min(Mathf.FloorToInt(scrolledElements), Data.Count - _elements.Count);
             _baseIndex = scrolled;
             pos.x = 1f - (scrolledElements - scrolled) * _elementNormalizedLength;
         } else {
             float minY = rect.TransformPoint(_fakeScrollBar.rect.min).y;
             float maxY = rect.TransformPoint(_fakeScrollBar.rect.max).y;
-            float scrollPos = Mathf.InverseLerp(minY, maxY, 
+            float scrollPos = Mathf.InverseLerp(minY, maxY,
                 pos.y + (0.5f * _fakeScrollBarHandle.rect.size.y));
-            float scrolledElements = (1f - scrollPos) * _data.Count;
-            int scrolled = Mathf.Min(Mathf.FloorToInt(scrolledElements), _data.Count - _elements.Count);
+            float scrolledElements = (1f - scrollPos) * Data.Count;
+            int scrolled = Mathf.Min(Mathf.FloorToInt(scrolledElements), Data.Count - _elements.Count);
             _baseIndex = scrolled;
             pos.y = 1f - (scrolledElements - scrolled) * _elementNormalizedLength;
         }
@@ -254,33 +313,41 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
         int newScrollIndex = _baseIndex;
         float pos = (_direction == Direction.Horizontal) ? newPos.x : newPos.y;
 
-        float delta = Mathf.Abs(newPos.y - ElementReuseScrollPoint);
+        float delta = Mathf.Abs(pos - ElementReuseScrollPoint);
         int count = Mathf.CeilToInt(delta / _elementNormalizedLength);
 
-        bool isScrollingDown = ((pos - _prevScrollPos) != 0f) ?
-            ((pos - _prevScrollPos) < 0f) :
-            _wasScrollingDown;
+        bool isScrollingForwards = ((pos - _prevScrollPos) == 0f) ?
+            _wasScrollingDown :
+            (_direction == Direction.Horizontal) ?
+                ((pos - _prevScrollPos) > 0f) :
+                ((pos - _prevScrollPos) < 0f);
+        bool pastScrollForwardPoint = (_direction == Direction.Horizontal) ?
+            (pos > (1f - ElementReuseScrollPoint)) :
+            (pos < ElementReuseScrollPoint);
+        bool pastScrollBackwardPoint = (_direction == Direction.Horizontal) ?
+            (pos < ElementReuseScrollPoint) :
+            (pos > (1f - ElementReuseScrollPoint));
 
         if (count > 0) {
-            if (_baseIndex < (_data.Count - _elements.Count) && isScrollingDown && pos < ((ElementReuseScrollPoint))) {
-                count = Mathf.Min(count, (_data.Count - _elements.Count) - _baseIndex);
+            if (_baseIndex < (Data.Count - _elements.Count) && isScrollingForwards && pastScrollForwardPoint) {
+                count = Mathf.Min(count, (Data.Count - _elements.Count) - _baseIndex);
                 newScrollIndex += count;
                 if (_direction == Direction.Horizontal) {
-                    _scroll.CustomSetHorizontalNormalizedPosition(pos + _elementNormalizedLength * count);
+                    _scroll.CustomSetHorizontalNormalizedPosition(pos - _elementNormalizedLength * count);
                 } else {
                     _scroll.CustomSetVerticalNormalizedPosition(pos + _elementNormalizedLength * count);
                 }
-            } else if (_baseIndex > 0 && !isScrollingDown && pos > (1f - (ElementReuseScrollPoint))) {
+            } else if (_baseIndex > 0 && !isScrollingForwards && pastScrollBackwardPoint) {
                 count = Mathf.Min(count, _baseIndex);
                 newScrollIndex -= count;
                 if (_direction == Direction.Horizontal) {
-                    _scroll.CustomSetHorizontalNormalizedPosition(pos - _elementNormalizedLength * count);
+                    _scroll.CustomSetHorizontalNormalizedPosition(pos + _elementNormalizedLength * count);
                 } else {
                     _scroll.CustomSetVerticalNormalizedPosition(pos - _elementNormalizedLength * count);
                 }
             }
         }
-        
+
         if (newScrollIndex != _baseIndex) {
             _baseIndex = newScrollIndex;
             Refresh();
@@ -288,17 +355,17 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
 
         if (_fakeScrollBar != null && _fakeScrollBarHandle != null) {
             if (_direction == Direction.Horizontal) {
-                float elementsScrolled = _baseIndex  + 
+                float elementsScrolled = _baseIndex +
                     ((1f - _scroll.horizontalNormalizedPosition) / _elementNormalizedLength);
-                float newX = -(elementsScrolled / _data.Count) * (_fakeScrollBar.rect.width - _handleSizeAdjustment);
+                float newX = -(elementsScrolled / Data.Count) * (_fakeScrollBar.rect.width - _handleSizeAdjustment);
                 _fakeScrollBarHandle.anchoredPosition = new Vector2(
                     newX - (0.5f * _fakeScrollBarHandle.rect.width),
                     _fakeScrollBarHandle.anchoredPosition.y
                 );
             } else {
-                float elementsScrolled = _baseIndex  + 
+                float elementsScrolled = _baseIndex +
                     ((1f - _scroll.verticalNormalizedPosition) / _elementNormalizedLength);
-                float newY = -(elementsScrolled / _data.Count) * (_fakeScrollBar.rect.height - _handleSizeAdjustment);
+                float newY = -(elementsScrolled / Data.Count) * (_fakeScrollBar.rect.height - _handleSizeAdjustment);
                 _fakeScrollBarHandle.anchoredPosition = new Vector2(
                     _fakeScrollBarHandle.anchoredPosition.x,
                     newY - (0.5f * _fakeScrollBarHandle.rect.height)
@@ -307,6 +374,6 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
         }
 
         _prevScrollPos = (_direction == Direction.Horizontal) ? newPos.x : newPos.y;
-        _wasScrollingDown = isScrollingDown;
+        _wasScrollingDown = isScrollingForwards;
     }
 }
