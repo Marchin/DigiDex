@@ -1,12 +1,10 @@
-﻿using TMPro;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 using System;
 using System.Threading;
 using System.Globalization;
-using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
@@ -19,12 +17,11 @@ public class DatabaseViewPopup : Popup {
         public string SelectedEntry;
     }
 
-    [SerializeField] private Image _entryImage = default;
     [SerializeField] private InputField _searchInput = default;
     [SerializeField] private Button _clearSearch = default;
     [SerializeField] private GameObject _searchIcon = default;
     [SerializeField] private Button _profileButton = default;
-    [SerializeField] private ElementScrollList _elementScrollList = default;
+    [SerializeField] private EntryElementList _entryElementList = default;
     [SerializeField] private Button _filterButton = default;
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private GameObject _activeFilterIndicator = default;
@@ -40,59 +37,6 @@ public class DatabaseViewPopup : Popup {
     private string _lastQuery = "";
     private Database _db;
     private bool _initialized;
-    private IDataEntry _selectedEntry;
-    public IDataEntry SelectedEntry {
-        get => _selectedEntry;
-        private set {
-            if (value != null && _selectedEntry == value) {
-                return;
-            }
-
-            _entryImage.sprite = null;
-            _entryImage.gameObject.SetActive(false);
-
-            if (_entryDataCTS != null) {
-                _entryDataCTS.Cancel();
-                _entryDataCTS.Dispose();
-            }
-            _entryDataCTS = new CancellationTokenSource();
-
-            for (int iHandle = 0; iHandle < _entryDataHandles.Count; ++iHandle) {
-                Addressables.Release(_entryDataHandles[iHandle]);
-            }
-            _entryDataHandles.Clear();
-
-            _selectedEntry = value;
-
-            if (_selectedEntry != null) {
-                if (!_loadingWheel.activeSelf) {
-                    _loadingWheel.SetActive(true);
-                }
-                if (_selectedEntry.Sprite.RuntimeKeyIsValid()) {
-                    var spriteHandle = Addressables.LoadAssetAsync<Sprite>(_selectedEntry.Sprite);
-                    _entryDataHandles.Add(spriteHandle);
-                    spriteHandle.WithCancellation(_entryDataCTS.Token).ContinueWith(sprite => {
-                        _loadingWheel.SetActive(false);
-                        if (sprite != null) {
-                            _entryImage.gameObject.SetActive(true);
-                            _entryImage.sprite = sprite;
-                        }
-                    }).Forget();
-                }
-            } else {
-                _loadingWheel.SetActive(false);
-                var spriteHandle = Addressables.LoadAssetAsync<Sprite>(ApplicationManager.Instance.MissingSpirte);
-                _entryDataHandles.Add(spriteHandle);
-                spriteHandle.WithCancellation(_entryDataCTS.Token).ContinueWith(sprite => {
-                    _loadingWheel.SetActive(false);
-                    if (sprite != null) {
-                        _entryImage.gameObject.SetActive(true);
-                        _entryImage.sprite = sprite;
-                    }
-                }).Forget();
-            }
-        }
-    }
 
     private void Start() {
         _clearSearch.gameObject.SetActive(false);
@@ -114,39 +58,32 @@ public class DatabaseViewPopup : Popup {
             });
         });
 
-        _elementScrollList.OnSelectedElementChanged += _ => {
-            _profileButton.gameObject.SetActive(false);
-        };
-
         _searchInput.onValueChanged.AddListener(OnInputChanged);
         _clearSearch.onClick.AddListener(() => _searchInput.text = "");
 
-        _closeButton.onClick.AddListener(() => {
-            SelectedEntry = null;
-            _ = PopupManager.Instance.Back();
-        });
-        _profileButton.onClick.AddListener(() => {
-            PopupManager.Instance.GetOrLoadPopup<EntryViewPopup>(restore: false).ContinueWith(popup => {
-                Action prev = null;
-                Action next = null;
+        _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
+        // _profileButton.onClick.AddListener(() => {
+        //     PopupManager.Instance.GetOrLoadPopup<EntryViewPopup>(restore: false).ContinueWith(popup => {
+        //         Action prev = null;
+        //         Action next = null;
 
-                if (_currEntries.Count > 1) {
-                    prev = () => {
-                        --_elementScrollList.CurrentIndex;
-                        EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
-                        activePopupInstance?.Populate(SelectedEntry);
-                    };
-                    next = () => {
-                        ++_elementScrollList.CurrentIndex;
-                        EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
-                        activePopupInstance?.Populate(SelectedEntry);
-                    };
-                }
+        //         if (_currEntries.Count > 1) {
+        //             prev = () => {
+        //                 --_elementScrollList.CurrentIndex;
+        //                 EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
+        //                 activePopupInstance?.Populate(SelectedEntry);
+        //             };
+        //             next = () => {
+        //                 ++_elementScrollList.CurrentIndex;
+        //                 EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
+        //                 activePopupInstance?.Populate(SelectedEntry);
+        //             };
+        //         }
                 
-                popup.Initialize(prev, next);
-                popup.Populate(SelectedEntry);
-            });
-        });
+        //         popup.Initialize(prev, next);
+        //         popup.Populate(SelectedEntry);
+        //     });
+        // });
 
         _initialized = true;
     }
@@ -165,19 +102,20 @@ public class DatabaseViewPopup : Popup {
         for (int iEntry = 0; iEntry < _currEntries.Count; ++iEntry) {
             nameList.Add(_currEntries[iEntry].DisplayName);
         }
-        _elementScrollList.Initialize(
-            nameList: nameList,
-            onConfirmed: (index) => {
-                int count = _currEntries.Count;
-                if (index >= 0 && count > 0 && index <= count) {
-                    SelectedEntry = _currEntries[index];
-                    _profileButton.gameObject.SetActive(true);
-                } else {
-                    SelectedEntry = null;
-                    _profileButton.gameObject.SetActive(false);
-                }
-            }
-        );
+        _entryElementList.Populate(database.Entries);
+        // _elementScrollList.Initialize(
+        //     nameList: nameList,
+        //     onConfirmed: (index) => {
+        //         int count = _currEntries.Count;
+        //         if (index >= 0 && count > 0 && index <= count) {
+        //             SelectedEntry = _currEntries[index];
+        //             _profileButton.gameObject.SetActive(true);
+        //         } else {
+        //             SelectedEntry = null;
+        //             _profileButton.gameObject.SetActive(false);
+        //         }
+        //     }
+        // );
         _filters = filters ?? _db.RetrieveFiltersData();
         _toggles = toggles ?? _db.RetrieveTogglesData();
         _lastQuery = lastQuery;
@@ -190,7 +128,6 @@ public class DatabaseViewPopup : Popup {
     }
 
     private void OnDisable() {
-        _entryImage.sprite = null;
         PopupManager.Instance.OnStackChange -= OnStackChange;
     }
 
@@ -205,13 +142,12 @@ public class DatabaseViewPopup : Popup {
             Addressables.Release(_entryDataHandles[iHandle]);
         }
         _entryDataHandles.Clear();
-        _entryImage.gameObject.SetActive(false);
     }
 
     private void OnStackChange() {
         ReApplyFilterAndRefresh();
         HideKeyboard();
-        _elementScrollList.enabled = PopupManager.Instance.ActivePopup == this;        
+        // _elementScrollList.enabled = PopupManager.Instance.ActivePopup == this;        
     }
 
     private void HideKeyboard() {
@@ -238,10 +174,10 @@ public class DatabaseViewPopup : Popup {
             _activeFilterIndicator.SetActive((_toggles.Find(t => t.IsOn) != null) || 
                 (_filters.Find(f => f.Elements.Find(e => e.State != FilterState.None) != null) != null));
             
-            _elementScrollList.ScrollEnabled = true;
+            // _elementScrollList.ScrollEnabled = true;
             RefreshList();
         } else {
-            _elementScrollList.ScrollEnabled = false;
+            // _elementScrollList.ScrollEnabled = false;
         }
     }
 
@@ -277,7 +213,7 @@ public class DatabaseViewPopup : Popup {
         for (int iEntry = 0; iEntry < _currEntries.Count; ++iEntry) {
             nameList.Add(_currEntries[iEntry].DisplayName);
         }
-        _elementScrollList.UpdateList(nameList);
+        // _elementScrollList.UpdateList(nameList);
 
         bool isEmpty = nameList.Count == 0;
         _noEntriesFoundText.SetActive(isEmpty);
@@ -297,7 +233,7 @@ public class DatabaseViewPopup : Popup {
             Toggles = _toggles,
             LastQuery = _lastQuery,
             DB = _db,
-            SelectedEntry = SelectedEntry?.DisplayName
+            // SelectedEntry = SelectedEntry?.DisplayName
         };
 
         return data;
@@ -307,7 +243,7 @@ public class DatabaseViewPopup : Popup {
         if (data is PopupData popupData) {
             Populate(popupData.DB, popupData.Filters, popupData.Toggles, popupData.LastQuery);
             await UniTask.DelayFrame(ElementScrollList.FrameDelayToAnimateList + 1);
-            _elementScrollList.ScrollTo(popupData.SelectedEntry, withAnimation: true);
+            // _elementScrollList.ScrollTo(popupData.SelectedEntry, withAnimation: true);
         }
     }
 
