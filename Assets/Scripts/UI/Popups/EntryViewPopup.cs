@@ -187,11 +187,11 @@ public class EntryViewPopup : Popup {
         return data;
     }
 
-    public async override void Restore(object data) {
+    public override void Restore(object data) {
         if (data is PopupData popupData) {
             Initialize(popupData.Prev, popupData.Next);
             Populate(popupData.Entry);
-            await UniTask.DelayFrame(ElementScrollList.FrameDelayToAnimateList);
+            
             // Turn both on to adjust scroll
             _dataContent.gameObject.SetActive(true);
             _profileContent.gameObject.SetActive(true);

@@ -132,8 +132,7 @@ public class FilterDataElement : MonoBehaviour, IDataUIElement<FilterData>, IPoi
                 _filterData.List.Populate(_filterData.Elements);
                 _filterData.List.gameObject.SetActive(true);
                 _filterData.List.ListBackground.SetActive(true);
-                await UniTask.DelayFrame(1,
-                        cancellationToken: this.GetCancellationTokenOnDestroy())
+                await UniTask.Yield(this.GetCancellationTokenOnDestroy())
                     .SuppressCancellationThrow();
                 _filterData.List.AdjustPosition(transform as RectTransform);
                 _filterData.List.ResetScroll();

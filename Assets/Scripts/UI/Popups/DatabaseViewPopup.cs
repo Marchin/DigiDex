@@ -218,10 +218,9 @@ public class DatabaseViewPopup : Popup {
         return data;
     }
 
-    public async override void Restore(object data) {
+    public override void Restore(object data) {
         if (data is PopupData popupData) {
             Populate(popupData.DB, popupData.Filters, popupData.Toggles, popupData.LastQuery);
-            await UniTask.DelayFrame(ElementScrollList.FrameDelayToAnimateList + 1);
             // _elementScrollList.ScrollTo(popupData.SelectedEntry, withAnimation: true);
         }
     }
