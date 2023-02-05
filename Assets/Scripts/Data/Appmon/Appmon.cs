@@ -38,7 +38,7 @@ public class Appmon : ScriptableObject, IEvolvable {
             if (_sprite.RuntimeKeyIsValid()) {
                 return _sprite;
             } else {
-                return ApplicationManager.Instance.MissingSpirte;
+                return ApplicationManager.Instance.MissingSprite;
             }
         }
         set => _sprite = value;
