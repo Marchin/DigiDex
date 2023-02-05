@@ -20,14 +20,11 @@ public class DatabaseViewPopup : Popup {
     [SerializeField] private InputField _searchInput = default;
     [SerializeField] private Button _clearSearch = default;
     [SerializeField] private GameObject _searchIcon = default;
-    [SerializeField] private Button _profileButton = default;
     [SerializeField] private EntryElementList _entryElementList = default;
     [SerializeField] private Button _filterButton = default;
     [SerializeField] private Button _closeButton = default;
     [SerializeField] private GameObject _activeFilterIndicator = default;
-    [SerializeField] private GameObject _loadingWheel = default;
     [SerializeField] private GameObject _noEntriesFoundText = default;
-    [SerializeField] private GameObject _highlighter = default;
     private CancellationTokenSource _entryDataCTS;
     private List<AsyncOperationHandle> _entryDataHandles = new List<AsyncOperationHandle>();
     private List<IDataEntry> _filteredEntries;
@@ -103,19 +100,6 @@ public class DatabaseViewPopup : Popup {
             nameList.Add(_currEntries[iEntry].DisplayName);
         }
         _entryElementList.Populate(database.Entries);
-        // _elementScrollList.Initialize(
-        //     nameList: nameList,
-        //     onConfirmed: (index) => {
-        //         int count = _currEntries.Count;
-        //         if (index >= 0 && count > 0 && index <= count) {
-        //             SelectedEntry = _currEntries[index];
-        //             _profileButton.gameObject.SetActive(true);
-        //         } else {
-        //             SelectedEntry = null;
-        //             _profileButton.gameObject.SetActive(false);
-        //         }
-        //     }
-        // );
         _filters = filters ?? _db.RetrieveFiltersData();
         _toggles = toggles ?? _db.RetrieveTogglesData();
         _lastQuery = lastQuery;
@@ -147,7 +131,7 @@ public class DatabaseViewPopup : Popup {
     private void OnStackChange() {
         ReApplyFilterAndRefresh();
         HideKeyboard();
-        // _elementScrollList.enabled = PopupManager.Instance.ActivePopup == this;        
+        _entryElementList.enabled = PopupManager.Instance.ActivePopup == this;        
     }
 
     private void HideKeyboard() {
@@ -170,7 +154,7 @@ public class DatabaseViewPopup : Popup {
             foreach (var filter in _filters) {
                 _filteredEntries = filter.Apply(_filteredEntries);
             }
-
+            
             _activeFilterIndicator.SetActive((_toggles.Find(t => t.IsOn) != null) || 
                 (_filters.Find(f => f.Elements.Find(e => e.State != FilterState.None) != null) != null));
             
@@ -209,15 +193,10 @@ public class DatabaseViewPopup : Popup {
         _currEntries.AddRange(displayNameContains);
         _currEntries.AddRange(anyNameContains);
 
-        List<string> nameList = new List<string>(_currEntries.Count);
-        for (int iEntry = 0; iEntry < _currEntries.Count; ++iEntry) {
-            nameList.Add(_currEntries[iEntry].DisplayName);
-        }
-        // _elementScrollList.UpdateList(nameList);
-
-        bool isEmpty = nameList.Count == 0;
+        _entryElementList.Populate(_currEntries);
+        
+        bool isEmpty = _currEntries.Count == 0;
         _noEntriesFoundText.SetActive(isEmpty);
-        _highlighter.SetActive(!isEmpty);
     }
 
     private void OnInputChanged(string query) {

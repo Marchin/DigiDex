@@ -2666,7 +2666,7 @@ PrefabInstance:
     - target: {fileID: 3802096369360747186, guid: bace96bf35fb6f64eb41e1aed094bf91,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3802096369360747186, guid: bace96bf35fb6f64eb41e1aed094bf91,
         type: 3}
@@ -2676,17 +2676,17 @@ PrefabInstance:
     - target: {fileID: 3802096369360747186, guid: bace96bf35fb6f64eb41e1aed094bf91,
         type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3802096369360747186, guid: bace96bf35fb6f64eb41e1aed094bf91,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 1052
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3802096369360747186, guid: bace96bf35fb6f64eb41e1aed094bf91,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 280
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3802096369360747186, guid: bace96bf35fb6f64eb41e1aed094bf91,
         type: 3}
@@ -2726,12 +2726,12 @@ PrefabInstance:
     - target: {fileID: 3802096369360747186, guid: bace96bf35fb6f64eb41e1aed094bf91,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 534
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3802096369360747186, guid: bace96bf35fb6f64eb41e1aed094bf91,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -148
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3802096369360747186, guid: bace96bf35fb6f64eb41e1aed094bf91,
         type: 3}
@@ -3432,11 +3432,6 @@ PrefabInstance:
     - target: {fileID: 6424878513564975452, guid: 48dffc42a652730438d4e6a1249bab72,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7458474747545297969, guid: 48dffc42a652730438d4e6a1249bab72,
-        type: 3}
-      propertyPath: m_ShowMaskGraphic
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
