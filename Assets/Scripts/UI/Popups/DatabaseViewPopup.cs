@@ -14,7 +14,7 @@ public class DatabaseViewPopup : Popup {
         public List<ToggleActionData> Toggles;
         public string LastQuery;
         public Database DB;
-        public string SelectedEntry;
+        public int InspectedIndex;
     }
 
     [SerializeField] private InputField _searchInput = default;
@@ -103,15 +103,12 @@ public class DatabaseViewPopup : Popup {
          _db.Entries.Sort((x, y) => x.DisplayName.CompareTo(y.DisplayName));
         _currEntries = new List<IDataEntry>(_db.Entries);
         _filteredEntries = new List<IDataEntry>(_currEntries);
-        List<string> nameList = new List<string>(_currEntries.Count);
-        for (int iEntry = 0; iEntry < _currEntries.Count; ++iEntry) {
-            nameList.Add(_currEntries[iEntry].DisplayName);
-        }
         PopulateList(database.Entries);
         _filters = filters ?? _db.RetrieveFiltersData();
         _toggles = toggles ?? _db.RetrieveTogglesData();
         _lastQuery = lastQuery;
         _searchInput.text = _lastQuery;
+        inspectedIndex = 0;
         ReApplyFilterAndRefresh();
     }
 
@@ -164,25 +161,20 @@ public class DatabaseViewPopup : Popup {
             return;
         }
 
-        if (PopupManager.Instance.ActivePopup == this) {
-            _db.RefreshFilters(ref _filters, ref _toggles);
-            _filteredEntries = new List<IDataEntry>(_db.Entries);
-            foreach (var toggle in _toggles) {
-                _filteredEntries = toggle.Apply(_filteredEntries);
-            }
-
-            foreach (var filter in _filters) {
-                _filteredEntries = filter.Apply(_filteredEntries);
-            }
-            
-            _activeFilterIndicator.SetActive((_toggles.Find(t => t.IsOn) != null) || 
-                (_filters.Find(f => f.Elements.Find(e => e.State != FilterState.None) != null) != null));
-            
-            // _elementScrollList.ScrollEnabled = true;
-            RefreshList();
-        } else {
-            // _elementScrollList.ScrollEnabled = false;
+        _db.RefreshFilters(ref _filters, ref _toggles);
+        _filteredEntries = new List<IDataEntry>(_db.Entries);
+        foreach (var toggle in _toggles) {
+            _filteredEntries = toggle.Apply(_filteredEntries);
         }
+
+        foreach (var filter in _filters) {
+            _filteredEntries = filter.Apply(_filteredEntries);
+        }
+        
+        _activeFilterIndicator.SetActive((_toggles.Find(t => t.IsOn) != null) || 
+            (_filters.Find(f => f.Elements.Find(e => e.State != FilterState.None) != null) != null));
+        
+        RefreshList();
     }
 
     private void RefreshList() {
@@ -232,7 +224,7 @@ public class DatabaseViewPopup : Popup {
             Toggles = _toggles,
             LastQuery = _lastQuery,
             DB = _db,
-            // SelectedEntry = SelectedEntry?.DisplayName
+            InspectedIndex = inspectedIndex
         };
 
         return data;
@@ -241,6 +233,7 @@ public class DatabaseViewPopup : Popup {
     public override void Restore(object data) {
         if (data is PopupData popupData) {
             Populate(popupData.DB, popupData.Filters, popupData.Toggles, popupData.LastQuery);
+            inspectedIndex = popupData.InspectedIndex;
             // _entryElementList.ScrollTo(cu);
         }
     }
