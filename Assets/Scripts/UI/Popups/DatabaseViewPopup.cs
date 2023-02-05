@@ -34,6 +34,11 @@ public class DatabaseViewPopup : Popup {
     private string _lastQuery = "";
     private Database _db;
     private bool _initialized;
+    private int _inspectedIndex;
+    private int inspectedIndex {
+        get => _inspectedIndex;
+        set =>_inspectedIndex = UnityUtils.Repeat(value, _currEntries.Count);
+    }
 
     private void Start() {
         _clearSearch.gameObject.SetActive(false);
@@ -59,30 +64,33 @@ public class DatabaseViewPopup : Popup {
         _clearSearch.onClick.AddListener(() => _searchInput.text = "");
 
         _closeButton.onClick.AddListener(() => _ = PopupManager.Instance.Back());
-        // _profileButton.onClick.AddListener(() => {
-        //     PopupManager.Instance.GetOrLoadPopup<EntryViewPopup>(restore: false).ContinueWith(popup => {
-        //         Action prev = null;
-        //         Action next = null;
-
-        //         if (_currEntries.Count > 1) {
-        //             prev = () => {
-        //                 --_elementScrollList.CurrentIndex;
-        //                 EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
-        //                 activePopupInstance?.Populate(SelectedEntry);
-        //             };
-        //             next = () => {
-        //                 ++_elementScrollList.CurrentIndex;
-        //                 EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
-        //                 activePopupInstance?.Populate(SelectedEntry);
-        //             };
-        //         }
-                
-        //         popup.Initialize(prev, next);
-        //         popup.Populate(SelectedEntry);
-        //     });
-        // });
 
         _initialized = true;
+    }
+
+    private void OnInspect(IDataEntry data) {
+        inspectedIndex = _currEntries.IndexOf(data);
+
+        PopupManager.Instance.GetOrLoadPopup<EntryViewPopup>(restore: false).ContinueWith(popup => {
+            Action prev = null;
+            Action next = null;
+
+            if (_currEntries.Count > 1) {
+                prev = () => {
+                    --inspectedIndex;
+                    EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
+                    activePopupInstance?.Populate(_currEntries[inspectedIndex]);
+                };
+                next = () => {
+                    ++inspectedIndex;
+                    EntryViewPopup activePopupInstance = PopupManager.Instance.GetLoadedPopupOfType<EntryViewPopup>();
+                    activePopupInstance?.Populate(_currEntries[inspectedIndex]);
+                };
+            }
+            
+            popup.Initialize(prev, next);
+            popup.Populate(data);
+        });
     }
 
     public void Populate(
@@ -99,7 +107,7 @@ public class DatabaseViewPopup : Popup {
         for (int iEntry = 0; iEntry < _currEntries.Count; ++iEntry) {
             nameList.Add(_currEntries[iEntry].DisplayName);
         }
-        _entryElementList.Populate(database.Entries);
+        PopulateList(database.Entries);
         _filters = filters ?? _db.RetrieveFiltersData();
         _toggles = toggles ?? _db.RetrieveTogglesData();
         _lastQuery = lastQuery;
@@ -128,10 +136,22 @@ public class DatabaseViewPopup : Popup {
         _entryDataHandles.Clear();
     }
 
+    private void PopulateList(IReadOnlyList<IDataEntry> data) {
+        _entryElementList.Populate(data);
+
+        foreach (var element in _entryElementList.Elements) {
+            element.ButtonCallback = OnInspect;
+        }
+    }
+
     private void OnStackChange() {
-        ReApplyFilterAndRefresh();
         HideKeyboard();
-        _entryElementList.enabled = PopupManager.Instance.ActivePopup == this;        
+
+        if (PopupManager.Instance.ActivePopup == this)
+        {
+            ReApplyFilterAndRefresh();
+            _entryElementList.ScrollTo(inspectedIndex);        
+        }
     }
 
     private void HideKeyboard() {
@@ -193,7 +213,7 @@ public class DatabaseViewPopup : Popup {
         _currEntries.AddRange(displayNameContains);
         _currEntries.AddRange(anyNameContains);
 
-        _entryElementList.Populate(_currEntries);
+        PopulateList(_currEntries);
         
         bool isEmpty = _currEntries.Count == 0;
         _noEntriesFoundText.SetActive(isEmpty);
@@ -221,7 +241,7 @@ public class DatabaseViewPopup : Popup {
     public override void Restore(object data) {
         if (data is PopupData popupData) {
             Populate(popupData.DB, popupData.Filters, popupData.Toggles, popupData.LastQuery);
-            // _elementScrollList.ScrollTo(popupData.SelectedEntry, withAnimation: true);
+            // _entryElementList.ScrollTo(cu);
         }
     }
 
