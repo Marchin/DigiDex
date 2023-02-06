@@ -120,6 +120,12 @@ public class DatabaseViewPopup : Popup {
         PopupManager.Instance.OnStackChange -= OnStackChange;
     }
 
+    private void Update() {
+        foreach (var element in _entryElementList.Elements) {
+            element.ScrollingText = _entryElementList.Scroll.velocity.sqrMagnitude <= 0.001f;
+        }
+    }
+
     private void OnDestroy() {
         if (_entryDataCTS != null) {
             _entryDataCTS.Cancel();

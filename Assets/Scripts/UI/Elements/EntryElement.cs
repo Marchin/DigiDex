@@ -10,11 +10,16 @@ public class EntryElement : MonoBehaviour, IDataUIElement<IDataEntry> {
     [SerializeField] private Button _entryButton;
     [SerializeField] private Image _entryImage;
     [SerializeField] private TextMeshProUGUI _nameText;
+    [SerializeField] private ScrollContent _scrollingText = default;
     private AsyncOperationHandle<Sprite> _spriteLoading;
     private AsyncOperationHandle<Sprite> _defaultSpriteLoading;
     private CancellationTokenSource _cts;
     private IDataEntry _data;
     public Action<IDataEntry> ButtonCallback;
+    public bool ScrollingText {
+        get => _scrollingText.enabled;
+        set => _scrollingText.enabled = value;
+    }
 
     private void Awake() {
         _entryButton.onClick.AddListener(() => ButtonCallback?.Invoke(_data));

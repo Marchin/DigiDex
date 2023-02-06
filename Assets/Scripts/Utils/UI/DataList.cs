@@ -52,6 +52,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
     private bool _calculatingSizes;
     private CancellationTokenSource _scrollCTS;
     public T this[int i] => Elements[i];
+    public CustomScrollRect Scroll => _scroll;
 
     public ScrollData GetScrollData() {
         ScrollData scroll = null;
