@@ -150,8 +150,7 @@ public class DatabaseViewPopup : Popup {
     private void OnStackChange() {
         HideKeyboard();
 
-        if (PopupManager.Instance.ActivePopup == this)
-        {
+        if (PopupManager.Instance.ActivePopup == this) {
             ReApplyFilterAndRefresh();
             _entryElementList.ScrollTo(inspectedIndex);        
         }

@@ -46,28 +46,8 @@ SpriteAtlas:
     isAtlasV2: 0
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites:
-  - {fileID: 21300000, guid: 12ce6a0024c2f6d41a0974ff570021ec, type: 3}
-  - {fileID: 21300000, guid: 20c0b7d09db9a8a49b3d4b1c72e03e52, type: 3}
-  - {fileID: 21300000, guid: 57555c437a1784a4988bd3ff2bb04c4e, type: 3}
-  - {fileID: 21300000, guid: 9b30e5b36a1cdb84088cfddf07c57c78, type: 3}
-  - {fileID: 21300000, guid: 4b073527d938003489336b52360d7ff5, type: 3}
-  - {fileID: 21300000, guid: 11142dd7aa3ddf74e845a94163c4b41d, type: 3}
-  - {fileID: 21300000, guid: 666c4329f832f2b4fac58e781ab97a34, type: 3}
-  - {fileID: 21300000, guid: b9b94ea97df53d54ea4a40268ff58c66, type: 3}
-  - {fileID: 21300000, guid: 115ba97a0649fdf4db77ec34ba557be8, type: 3}
-  - {fileID: 21300000, guid: 202d62db5efe670479db53e3a51a96a3, type: 3}
-  m_PackedSpriteNamesToIndex:
-  - Nature Spirits
-  - Virus Busters
-  - Nightmare Soldiers
-  - Deep Savers
-  - Metal Empire
-  - Dragon's Roar
-  - Dark Area
-  - Wind Guardians
-  - Jungle Troopers
-  - Unknown
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
   m_RenderDataMap: {}
   m_Tag: Fields
   m_IsVariant: 0

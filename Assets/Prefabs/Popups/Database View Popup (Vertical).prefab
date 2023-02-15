@@ -1276,14 +1276,11 @@ MonoBehaviour:
   _searchInput: {fileID: 2934319160028129326}
   _clearSearch: {fileID: 72540677867912952}
   _searchIcon: {fileID: 487179845260466899}
-  _profileButton: {fileID: 0}
   _entryElementList: {fileID: 6279234687540053658}
   _filterButton: {fileID: 6457417603514890366}
   _closeButton: {fileID: 4336221233791300692}
   _activeFilterIndicator: {fileID: 7480411346049523588}
-  _loadingWheel: {fileID: 0}
   _noEntriesFoundText: {fileID: 1929151229875036298}
-  _highlighter: {fileID: 0}
 --- !u!1 &5213751489634708578
 GameObject:
   m_ObjectHideFlags: 0
@@ -1587,7 +1584,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.8773585, g: 0.5975114, b: 0, a: 1}
+  m_Color: {r: 0, g: 0.20595926, b: 0.46226418, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2126,10 +2123,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.16037738, g: 0.16037738, b: 0.16037738, a: 1}
-    m_HighlightedColor: {r: 0.16037738, g: 0.16037738, b: 0.16037738, a: 1}
-    m_PressedColor: {r: 0.16037738, g: 0.16037738, b: 0.16037738, a: 1}
-    m_SelectedColor: {r: 0.16037738, g: 0.16037738, b: 0.16037738, a: 1}
+    m_NormalColor: {r: 0, g: 0.1254902, b: 0.3019608, a: 1}
+    m_HighlightedColor: {r: 0, g: 0.20595926, b: 0.46226418, a: 1}
+    m_PressedColor: {r: 0.10439658, g: 0.20621216, b: 0.3207547, a: 1}
+    m_SelectedColor: {r: 0, g: 0.1254902, b: 0.3019608, a: 1}
     m_DisabledColor: {r: 0, g: 0, b: 0, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -2748,6 +2745,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3829279478518443372, guid: bace96bf35fb6f64eb41e1aed094bf91,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6908434381602897461, guid: bace96bf35fb6f64eb41e1aed094bf91,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 0.6037736
+      objectReference: {fileID: 0}
+    - target: {fileID: 6908434381602897461, guid: bace96bf35fb6f64eb41e1aed094bf91,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.39951083
+      objectReference: {fileID: 0}
+    - target: {fileID: 6908434381602897461, guid: bace96bf35fb6f64eb41e1aed094bf91,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 0.12246352
+      objectReference: {fileID: 0}
     - target: {fileID: 8781611817803029743, guid: bace96bf35fb6f64eb41e1aed094bf91,
         type: 3}
       propertyPath: m_Name
@@ -2952,7 +2969,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
-  m_MinWidth: 120
+  m_MinWidth: 116
   m_MinHeight: -1
   m_PreferredWidth: -1
   m_PreferredHeight: -1
@@ -3242,7 +3259,7 @@ PrefabInstance:
     - target: {fileID: 4369968451516858402, guid: 87dba41710c9ffb40a20c32de4f82441,
         type: 3}
       propertyPath: m_MinWidth
-      value: 140
+      value: 116
       objectReference: {fileID: 0}
     - target: {fileID: 4369968451516858402, guid: 87dba41710c9ffb40a20c32de4f82441,
         type: 3}
@@ -3297,27 +3314,27 @@ PrefabInstance:
     - target: {fileID: 988397253387845409, guid: 48dffc42a652730438d4e6a1249bab72,
         type: 3}
       propertyPath: m_Spacing
-      value: 12
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 988397253387845409, guid: 48dffc42a652730438d4e6a1249bab72,
         type: 3}
       propertyPath: m_Padding.m_Top
-      value: 8
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 988397253387845409, guid: 48dffc42a652730438d4e6a1249bab72,
         type: 3}
       propertyPath: m_Padding.m_Left
-      value: 8
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 988397253387845409, guid: 48dffc42a652730438d4e6a1249bab72,
         type: 3}
       propertyPath: m_Padding.m_Right
-      value: 8
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 988397253387845409, guid: 48dffc42a652730438d4e6a1249bab72,
         type: 3}
       propertyPath: m_Padding.m_Bottom
-      value: 8
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 988397253387845409, guid: 48dffc42a652730438d4e6a1249bab72,
         type: 3}

@@ -60,13 +60,16 @@ SpriteAtlas:
   - {fileID: 21300000, guid: cfd7b823b76c26248817d3ab26498c59, type: 3}
   - {fileID: 21300000, guid: 2ad3d233864cf354aa7832bf46d69ccb, type: 3}
   - {fileID: 21300000, guid: d8bc289333dd90c44af3710cacfeefa3, type: 3}
+  - {fileID: 21300000, guid: 77ca81b32952be5448136cd23e8a20f3, type: 3}
   - {fileID: 21300000, guid: 370a4584b57fe904f8c7579cdb96118c, type: 3}
   - {fileID: 21300000, guid: 441331b5dc1571f4e8571ebeaf3ad2cb, type: 3}
   - {fileID: 21300000, guid: 0ed4df76bc0998c439883849b78051e6, type: 3}
   - {fileID: 21300000, guid: f6e78a96c573b934ea08d16520bf2e6c, type: 3}
   - {fileID: 21300000, guid: 94b13bd63efcfbb47aca3400d118b2c7, type: 3}
   - {fileID: 21300000, guid: 70150367f59effe41af51a71efb3505d, type: 3}
+  - {fileID: 21300000, guid: 9cc98d599c550f841810f7072a820ad8, type: 3}
   - {fileID: 21300000, guid: 35991189482289447a31767289ead085, type: 3}
+  - {fileID: 21300000, guid: 93c962b99b9b6544192a88454d650367, type: 3}
   - {fileID: 21300000, guid: bf49087a50ec0994b9c741fa75d54106, type: 3}
   - {fileID: 21300000, guid: abed23fad562d394bb12747f021ed734, type: 3}
   - {fileID: 21300000, guid: b1d57e0b71316cc4b9c3f3d5f42dac69, type: 3}
@@ -78,6 +81,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: b8f1844df6878f24f9c51c333e75e9f5, type: 3}
   - {fileID: 21300000, guid: dd49927d3f70e824b9d61aa5ffa8168c, type: 3}
   - {fileID: 21300000, guid: e23e9c9dad83acf4c8d077baac392861, type: 3}
+  - {fileID: 21300000, guid: 329cf67eaf21db448bb6e232b999a136, type: 3}
   - {fileID: 21300000, guid: 2ab1148ea0f57de45821527943b840aa, type: 3}
   - {fileID: 21300000, guid: 43f689ae86fb59c4b829373f3a43bbbf, type: 3}
   - {fileID: 21300000, guid: bfae806f1ef21ff41b585c226bc64ef2, type: 3}
@@ -94,13 +98,16 @@ SpriteAtlas:
   - Rounded Square Big
   - Paste Icon
   - Circle Gradient
+  - Frame
   - Button
   - Cog
   - Evolution Line
   - Zoom
   - Arrow Thick
   - Missing Digimon
+  - Frame Filler
   - Vertical Gradient
+  - Tile
   - Plus
   - Twitter Logo
   - Discord Logo
@@ -112,6 +119,7 @@ SpriteAtlas:
   - DB Icon
   - Horizontal Gradient
   - Instagram Logo
+  - Gradient
   - Arrow
   - Favorite
   - Favorite Fill

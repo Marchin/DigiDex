@@ -191,7 +191,7 @@ public class EntryViewPopup : Popup {
         if (data is PopupData popupData) {
             Initialize(popupData.Prev, popupData.Next);
             Populate(popupData.Entry);
-            
+
             // Turn both on to adjust scroll
             _dataContent.gameObject.SetActive(true);
             _profileContent.gameObject.SetActive(true);
