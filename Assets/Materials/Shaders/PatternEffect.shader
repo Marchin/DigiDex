@@ -2,11 +2,13 @@ Shader "Unlit/PatternEffect"
 {
     Properties
     {
-        // _MainTex ("Texture", 2D)     = "white" {}
+        _MainTex ("Texture", 2D)     = "white" {}
         _Color ("Color", Color) = (0, 0, 0, 0)
         _Tint ("Tint", Color) = (0, 0, 0, 0)
         _PatternTex ("Pattern", 2D) = "white" {}
         _ShineTex ("Shine", 2D) = "white" {}
+        _PatternSpeed ("Pattern Speed", float) = 0
+        _PatternAngle ("PatternAngle", float) = 0
         _Speed ("Speed", float) = 0
         _Alpha ("Alpha", Range(0, 1)) = 0
     }
@@ -40,14 +42,16 @@ Shader "Unlit/PatternEffect"
                 float4 vertex : SV_POSITION;
             };
 
-            // sampler2D _MainTex;
-            // float4 _MainTex_ST;
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
             sampler2D _PatternTex;
             float4 _PatternTex_ST;
             sampler2D _ShineTex;
             float4 _ShineTex_ST;
             float4 _Color;
             float4 _Tint;
+            float _PatternSpeed;
+            float _PatternAngle;
             float _Speed;
             float _Alpha;
 
@@ -66,6 +70,7 @@ Shader "Unlit/PatternEffect"
                 // sample the texture
                 fixed4 col = _Color;
                 i.uvShine.x += _Time.y * _Speed;
+                i.uvPattern -= float2(cos(_PatternAngle), sin(_PatternAngle)) * _Time.y * _PatternSpeed;
                 col += tex2D(_PatternTex, i.uvPattern) * tex2D(_ShineTex, i.uvShine) * _Tint * fixed4(_Alpha, _Alpha, _Alpha, _Alpha);
                 // fixed4 col = tex2D(_ShineTex, i.uvShine);
                 return col;
