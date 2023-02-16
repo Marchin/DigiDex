@@ -5,14 +5,16 @@ using UnityEngine.UI;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using System.Threading;
+using Cysharp.Threading.Tasks;
+using System.Threading.Tasks;
 
 public class EntryElement : MonoBehaviour, IDataUIElement<IDataEntry> {
     [SerializeField] private Button _entryButton;
     [SerializeField] private Image _entryImage;
     [SerializeField] private TextMeshProUGUI _nameText;
+    [SerializeField] private GameObject _loadingWheel;
     [SerializeField] private ScrollContent _scrollingText = default;
     private AsyncOperationHandle<Sprite> _spriteLoading;
-    private AsyncOperationHandle<Sprite> _defaultSpriteLoading;
     private CancellationTokenSource _cts;
     private IDataEntry _data;
     public Action<IDataEntry> ButtonCallback;
@@ -23,20 +25,15 @@ public class EntryElement : MonoBehaviour, IDataUIElement<IDataEntry> {
 
     private void Awake() {
         _entryButton.onClick.AddListener(() => ButtonCallback?.Invoke(_data));
-
-        _defaultSpriteLoading = Addressables.LoadAssetAsync<Sprite>(ApplicationManager.Instance.MissingSprite);
     }
 
     private void OnDestroy() {
         if (_spriteLoading.IsValid()) {
             Addressables.Release(_spriteLoading);
         }
-        if (_defaultSpriteLoading.IsValid()) {
-            Addressables.Release(_defaultSpriteLoading);
-        }
     }
 
-    public void Populate(IDataEntry data) {
+    public async void Populate(IDataEntry data) {
         if (_cts != null) {
             _cts.Cancel();
             _cts.Dispose();
@@ -46,14 +43,28 @@ public class EntryElement : MonoBehaviour, IDataUIElement<IDataEntry> {
         _nameText.text = data.DisplayName;
         _data = data;
 
-        if (_defaultSpriteLoading.IsDone) {
-            _entryImage.sprite = _defaultSpriteLoading.Result;
-        }
+        _loadingWheel.SetActive(true);
+        var newHandle = Addressables.LoadAssetAsync<Sprite>(data.Sprite);;
 
-        if (_spriteLoading.IsValid()) {
-            Addressables.Release(_spriteLoading);
-        }
+        try
+        {
+            await newHandle.WithCancellation(_cts.Token);
+            if (newHandle.Status == AsyncOperationStatus.Succeeded) {
+                _entryImage.sprite = newHandle.Result;
+            }
+        } catch (OperationCanceledException) {
+        } finally {
+            if (newHandle.Status == AsyncOperationStatus.Succeeded) {
+                _loadingWheel.SetActive(false);
 
-        _spriteLoading = UnityUtils.LoadSprite(_entryImage, data.Sprite, _cts.Token);
+                if (_spriteLoading.IsValid()) {
+                    Addressables.Release(_spriteLoading);
+                }
+
+                _spriteLoading = newHandle;
+            } else {
+                _loadingWheel.SetActive(true);
+            }
+        }
     }
 }

@@ -79,10 +79,17 @@ public static class UnityUtils {
     ) {
         if (spriteRef.RuntimeKeyIsValid()) {
             var handle = Addressables.LoadAssetAsync<Sprite>(spriteRef);
-            handle.WithCancellation(cancellationToken).ContinueWith(sprite => {
-                image.sprite = sprite;
-                image.gameObject.SetActive(sprite != null);
-            }).SuppressCancellationThrow();
+            handle.Completed += op => {
+                image.sprite = null;
+                if (op.Status == AsyncOperationStatus.Succeeded) {
+                    image.sprite = op.Result;
+                    image.gameObject.SetActive(true);
+                } else {
+                    image.gameObject.SetActive(false);
+                }
+            };
+            
+            handle.WithCancellation(cancellationToken).SuppressCancellationThrow();
 
             return handle;
         } else {
