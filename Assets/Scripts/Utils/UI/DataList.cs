@@ -157,6 +157,7 @@ public class DataList<T, D> : MonoBehaviour where T : MonoBehaviour, IDataUIElem
             _calculatingSizes = true;
             try {
                 await UniTask.Yield(this.GetCancellationTokenOnDestroy());
+                await UniTask.Yield(this.GetCancellationTokenOnDestroy());
             } catch {
                 // If destroyed we return
                 return;

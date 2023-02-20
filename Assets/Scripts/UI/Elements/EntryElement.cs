@@ -34,6 +34,10 @@ public class EntryElement : MonoBehaviour, IDataUIElement<IDataEntry> {
     }
 
     public async void Populate(IDataEntry data) {
+        if ((_data != null) && (_data.Hash == data.Hash)) {
+            return;
+        }
+
         if (_cts != null) {
             _cts.Cancel();
             _cts.Dispose();
@@ -54,16 +58,16 @@ public class EntryElement : MonoBehaviour, IDataUIElement<IDataEntry> {
             }
         } catch (OperationCanceledException) {
         } finally {
+            _loadingWheel.SetActive(false);
             if (newHandle.Status == AsyncOperationStatus.Succeeded) {
-                _loadingWheel.SetActive(false);
 
                 if (_spriteLoading.IsValid()) {
                     Addressables.Release(_spriteLoading);
                 }
 
                 _spriteLoading = newHandle;
-            } else {
-                _loadingWheel.SetActive(true);
+            // } else {
+            //     _loadingWheel.SetActive(true);
             }
         }
     }

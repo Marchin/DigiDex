@@ -34,6 +34,7 @@ public class DatabaseViewPopup : Popup {
     private string _lastQuery = "";
     private Database _db;
     private bool _initialized;
+    private int _lastInspectedIndex;
     private int _inspectedIndex;
     private int inspectedIndex {
         get => _inspectedIndex;
@@ -74,6 +75,8 @@ public class DatabaseViewPopup : Popup {
         PopupManager.Instance.GetOrLoadPopup<EntryViewPopup>(restore: false).ContinueWith(popup => {
             Action prev = null;
             Action next = null;
+
+            _lastInspectedIndex = inspectedIndex;
 
             if (_currEntries.Count > 1) {
                 prev = () => {
@@ -150,8 +153,11 @@ public class DatabaseViewPopup : Popup {
     private void OnStackChange() {
         HideKeyboard();
 
-        if (PopupManager.Instance.ActivePopup == this) {
-            ReApplyFilterAndRefresh();
+        if ((PopupManager.Instance.ActivePopup == this) &&
+            (_lastInspectedIndex != inspectedIndex)) {
+
+            // ReApplyFilterAndRefresh();
+            _lastInspectedIndex = inspectedIndex;
             _entryElementList.ScrollTo(inspectedIndex);        
         }
     }
@@ -229,7 +235,7 @@ public class DatabaseViewPopup : Popup {
             Toggles = _toggles,
             LastQuery = _lastQuery,
             DB = _db,
-            InspectedIndex = inspectedIndex
+            InspectedIndex = inspectedIndex,
         };
 
         return data;
