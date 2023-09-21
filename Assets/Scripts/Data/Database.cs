@@ -95,7 +95,11 @@ public abstract class Database : ScriptableObject {
             if (_entryDict == null) {
                 _entryDict = new Dictionary<Hash128, IDataEntry>(Entries.Count);
                 for (int iEntry = 0; iEntry < Entries.Count; ++iEntry) {
-                    _entryDict.Add(Entries[iEntry].Hash, Entries[iEntry]);
+                    if (_entryDict.ContainsKey(Entries[iEntry].Hash)) {
+                        Debug.LogError($"{Entries[iEntry].Name} duplicates {_entryDict[Entries[iEntry].Hash].Name}");
+                    } else {
+                        _entryDict.Add(Entries[iEntry].Hash, Entries[iEntry]);
+                    }
                 }
             }
             return _entryDict;

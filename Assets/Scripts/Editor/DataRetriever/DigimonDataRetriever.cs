@@ -134,13 +134,12 @@ public static class DigimonDataRetriever {
                         digimonLinkSubFix :
                         digimonSite.BaseURI.Replace(DataRetriever.WikimonBaseURL, "");
 
-                    Debug.Log(digimonLinkSubFix);
+                    string digimonName = digimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
 
-                    if (digimons.Find(d => d.LinkSubFix == digimonLinkSubFix)) {
+                    if (digimons.Find(d => d.Name == digimonName)) {
                         continue;
                     }
 
-                    string digimonName = digimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
                     string digimonNameSafe = digimonName.AddresableSafe();
                     string digimonArtPath = ArtDigimonsPath + digimonNameSafe + ".png";
                     string digimonDataPath = DigimonsDataPath + "/" + digimonNameSafe + ".asset";

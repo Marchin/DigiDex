@@ -187,7 +187,6 @@ public static class MediaDataRetriever {
                                     for (int jCharacter = 0; jCharacter < characterNodes.Count && jCharacter < 10; ++jCharacter) {
                                         XmlNode characterNode = characterNodes[jCharacter];
                                         CharacterReference characterRef = new CharacterReference();
-                                        characterRef.Name = characterNode.SelectSingleNode("text()")?.InnerText;
                                         string linkSubFix = characterNode.Attributes.GetNamedItem("href")?.InnerText ?? "";
 
                                         if (!string.IsNullOrEmpty(linkSubFix)) {
@@ -197,12 +196,16 @@ public static class MediaDataRetriever {
                                                 linkSubFix = DataRetriever.SitesFinalLink[linkSubFix];
                                             }
 
+                                            XmlDocument characterSite = await DataRetriever.GetSite(linkSubFix);
+                                            characterRef.Name = characterSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
+                                            Debug.LogError(characterRef.Name);
+
                                             IDataEntry entry = dataCenter.DigimonDB.Digimons.Find(
-                                                d => string.Compare(d.LinkSubFix, linkSubFix, StringComparison.InvariantCultureIgnoreCase) == 0);
+                                                d => string.Compare(d.Name, characterRef.Name, StringComparison.InvariantCultureIgnoreCase) == 0);
                                             
                                             if (entry == null) {
                                                 entry = dataCenter.AppmonDB.Appmons.Find(
-                                                    a => string.Compare(a.LinkSubFix, linkSubFix, StringComparison.InvariantCultureIgnoreCase) == 0);
+                                                    a => string.Compare(a.Name, characterRef.Name, StringComparison.InvariantCultureIgnoreCase) == 0);
                                             }
 
                                             if (entry == null) {
