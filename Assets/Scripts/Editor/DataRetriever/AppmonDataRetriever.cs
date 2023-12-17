@@ -388,6 +388,7 @@ public static class AppmonDataRetriever {
             }
             TextureImporterPlatformSettings textureSettings = spriteAtlas.GetPlatformSettings("DefaultTexturePlatform");
             textureSettings.crunchedCompression = true;
+            spriteAtlas.SetPlatformSettings(textureSettings);
             spriteAtlas.Add(sprites);
             AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
             EditorUtility.SetDirty(appAtlas);

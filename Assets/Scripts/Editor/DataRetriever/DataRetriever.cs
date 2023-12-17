@@ -196,7 +196,7 @@ public static class DataRetriever {
             } catch (Exception ex) {
                 SitesData.Remove(linkSubFix);
                 Debug.LogError($"Error while loading {linkSubFix}: \n {ex.Message} \n {ex.StackTrace}");
-                return null;
+                throw ex;
             }
         } else {
             await UniTask.WaitWhile(() => SitesData[linkSubFix] == null);

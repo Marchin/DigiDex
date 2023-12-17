@@ -366,7 +366,6 @@ public static class DigimonDataRetriever {
             }
         }
 
-
         int atlasCount = Mathf.CeilToInt((float)digimonsWithArt.Count / (float)DigimonsPerAtlas);
         int iDigimonArt = 0;
         for (int i = 0; i < atlasCount; i++) {
@@ -378,6 +377,7 @@ public static class DigimonDataRetriever {
             }
             TextureImporterPlatformSettings textureSettings = spriteAtlas.GetPlatformSettings("DefaultTexturePlatform");
             textureSettings.crunchedCompression = true;
+            spriteAtlas.SetPlatformSettings(textureSettings);
             spriteAtlas.Add(sprites);
             AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
         }

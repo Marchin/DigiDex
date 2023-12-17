@@ -25,6 +25,8 @@ public static class CharacterDataRetriever {
     public const string CharactersDataPath = CharacterDataPath + "Characters/";
     public const string CharacterEvolutionsDataPath = CharactersDataPath + "Evolutions/";
     public const string CharacterDBPath = CharacterDataPath + "Character Database.asset";
+    public const string SpriteAtlasXPath = ArtCharactersPath + "Character ({0}).spriteatlas";
+    private static List<(Character character, string path)> charactersWithArt = new List<(Character character, string path)>();
 
     public static CharacterDatabase GetCharacterDatabase() {
         if (!Directory.Exists(CharacterDataPath)) {
@@ -71,7 +73,7 @@ public static class CharacterDataRetriever {
 
             bool hasArt = false;
             if (!File.Exists(characterArtPath)) {
-                XmlNode image = characterSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[1]/td/div/div/a");
+                XmlNode image = characterSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[2]/tbody/tr[2]/td/a");
                 if (image != null) {
                     string linkToImagePage = image.Attributes.GetNamedItem("href").InnerText;
                     var hdImageSide = await DataRetriever.GetSite(linkToImagePage);
@@ -138,7 +140,10 @@ public static class CharacterDataRetriever {
             XmlNode profileNode = characterSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td") ??
                 characterSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[2]/table/tbody/tr[2]/td/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td") ??
                 characterSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td") ??
-                characterSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td/p");
+                characterSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td/p") ??
+                characterSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/p[1]") ??
+                characterSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/p[3]") ??
+                characterSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/p");
 
             if (profileNode != null) {
                 if (profileNode.FirstChild?.LocalName == "span") {
@@ -196,8 +201,10 @@ public static class CharacterDataRetriever {
             EditorUtility.SetDirty(characterData);
             AssetDatabase.SaveAssets();
 
-            if (hasArt) {
-                // charactersWithArt.Add((characterData, characterArtPath));
+            var art = (characterData, characterArtPath);
+            if (hasArt && !charactersWithArt.Contains(art)) {
+        Debug.LogError("add");
+                charactersWithArt.Add(art);
             }
         
             addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(characterDataPath).ToString(), dataGroup);
@@ -206,5 +213,59 @@ public static class CharacterDataRetriever {
         }
         
         return characterData;
+    }
+
+    public static void PackCharacterArt() {
+        var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
+        var spriteAtlasGroup = DataRetriever.GetOrAddAddressableGroup(CharacterSpriteAtlasesGroupName);
+        Debug.LogError(charactersWithArt.Count);
+
+        int atlasCount = Mathf.CeilToInt((float)charactersWithArt.Count / (float)CharactersPerAtlas);
+        int iCharacterArt = 0;
+        for (int i = 0; i < atlasCount; i++) {
+            string spriteAtlasPath = string.Format(SpriteAtlasXPath, i);
+            SpriteAtlas spriteAtlas = new SpriteAtlas();
+            UnityEngine.Object[] sprites = new UnityEngine.Object[Mathf.Min(CharactersPerAtlas, charactersWithArt.Count - (CharactersPerAtlas * i))];
+            for (int j = 0; j < sprites.Length; ++iCharacterArt, ++j) {
+                sprites[j] = AssetDatabase.LoadAssetAtPath<Sprite>(charactersWithArt[iCharacterArt].path);
+            }
+            TextureImporterPlatformSettings textureSettings = spriteAtlas.GetPlatformSettings("DefaultTexturePlatform");
+            textureSettings.crunchedCompression = true;
+            spriteAtlas.SetPlatformSettings(textureSettings);
+            spriteAtlas.Add(sprites);
+            AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
+        }
+        
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        SpriteAtlasUtility.PackAllAtlases(EditorUserBuildSettings.activeBuildTarget);
+        AssetDatabase.Refresh();
+    
+        for (int i = 0; i < atlasCount; i++) {
+            string spriteAtlasPath = string.Format(SpriteAtlasXPath, i);
+            string spriteAtlasGUID = AssetDatabase.GUIDFromAssetPath(spriteAtlasPath).ToString();
+            addressablesSettings.CreateOrMoveEntry(spriteAtlasGUID, spriteAtlasGroup);
+
+            int max = Mathf.Min((i + 1) * CharactersPerAtlas, charactersWithArt.Count);
+            for (int iCharacter = i * CharactersPerAtlas; iCharacter < max; ++iCharacter) {
+                charactersWithArt[iCharacter].character.Sprite = new AssetReferenceAtlasedSprite(spriteAtlasGUID);
+                charactersWithArt[iCharacter].character.Sprite.SubObjectName = charactersWithArt[iCharacter].character.Name.AddresableSafe();
+                try {
+                    EditorUtility.SetDirty(charactersWithArt[iCharacter].character);
+                } catch (Exception ex) {
+                    Debug.Log($"{iCharacter}(asset null: {charactersWithArt[iCharacter].character == null}) - {ex.Message} \n {ex.StackTrace}");
+                }
+            }
+            
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        ClearCharacterArtQueue();
+    }
+
+    public static void ClearCharacterArtQueue() {
+        charactersWithArt.Clear();
     }
 }

@@ -61,6 +61,7 @@ public static class MediaDataRetriever {
 
         XmlDocument videogameListSite = await DataRetriever.GetSite(VideoGamesListSubFix);
 
+CharacterDataRetriever.ClearCharacterArtQueue();
         XmlNodeList table = videogameListSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/ul/li/a");
         for (int i = 0; i < table.Count; i++) {
             string videogameLinkSubFix = table.Item(i)?.Attributes.Item(0)?.InnerText ?? "";
@@ -72,8 +73,12 @@ public static class MediaDataRetriever {
                         continue;
                     }
 
-                    string videogameName = videogameSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
-                    Debug.Log(videogameName);
+                    string videogameName = videogameSite.SelectSingleNode("//*[@id='firstHeading']")?.InnerText;
+                    
+                    if (videogameName == null) {
+                        continue;
+                    }
+
                     string videogameNameSafe = videogameName.AddresableSafe();
                     string videogameArtPath = ArtMediaPath + videogameNameSafe + ".png";
                     string videogameDataPath = VideoGamesDataPath + "/" + videogameNameSafe + ".asset";
@@ -175,6 +180,10 @@ public static class MediaDataRetriever {
                                     lastCategoryName = auxNode.FirstChild.InnerText;
                                 }
 
+                                if (lastCategoryName == "Trivia") {
+                                    continue;
+                                }
+
                                 CharactersSet set = new CharactersSet {
                                     Name = lastCategoryName,
                                     CharacterRefs = new List<CharacterReference>()
@@ -189,7 +198,7 @@ public static class MediaDataRetriever {
                                         CharacterReference characterRef = new CharacterReference();
                                         string linkSubFix = characterNode.Attributes.GetNamedItem("href")?.InnerText ?? "";
 
-                                        if (!string.IsNullOrEmpty(linkSubFix)) {
+                                        if (!string.IsNullOrEmpty(linkSubFix) && (linkSubFix[0] == '/')) {
                                             if (!DataRetriever.SitesFinalLink.ContainsKey(linkSubFix)) {
                                                 await DataRetriever.GetSite(linkSubFix, finalLink => linkSubFix = finalLink);
                                             } else {
@@ -197,8 +206,11 @@ public static class MediaDataRetriever {
                                             }
 
                                             XmlDocument characterSite = await DataRetriever.GetSite(linkSubFix);
-                                            characterRef.Name = characterSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
-                                            Debug.LogError(characterRef.Name);
+                                            characterRef.Name = characterSite.SelectSingleNode("//*[@id='firstHeading']")?.InnerText;
+
+                                            if (string.IsNullOrEmpty(characterRef.Name)) {
+                                                continue;
+                                            }
 
                                             IDataEntry entry = dataCenter.DigimonDB.Digimons.Find(
                                                 d => string.Compare(d.Name, characterRef.Name, StringComparison.InvariantCultureIgnoreCase) == 0);
@@ -319,5 +331,7 @@ public static class MediaDataRetriever {
                 }
             }
         }
+        Debug.LogError("Done");
+        CharacterDataRetriever.PackCharacterArt();
     }
 }
