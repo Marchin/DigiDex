@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using System.Xml;
 using System.Globalization;
+using System.Threading;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -12,6 +12,7 @@ using UnityEditor.AddressableAssets.Settings.GroupSchemas;
 using UnityEngine.U2D;
 using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
+using HtmlAgilityPack;
 
 public static class DigimonDataRetriever {
     public const string DigimonSpriteAtlasesGroupName = "Digimon Sprite Atlases";
@@ -33,7 +34,9 @@ public static class DigimonDataRetriever {
     public const string FieldsRemoteArtPath = DataRetriever.RemoteArtPath + "Fields";
     public const string FieldsLocalArtPath = DataRetriever.LocalArtPath + "Fields";
     public const string FieldsDataPath = DigimonDataPath + "Fields";
-    public const string SpriteAtlasXPath = ArtDigimonsPath + "Digimons ({0}).spriteatlas";
+    public const string SpriteAtlasesPath = ArtDigimonsPath + "Atlases/";
+    public const string SpriteAtlasXPath = SpriteAtlasesPath + "Digimons ({0}).spriteatlas";
+    private static CancellationTokenSource _cts;
     
     public static DigimonDatabase GetDigimonDatabase() {
         if (!Directory.Exists(DigimonDataPath)) {
@@ -47,6 +50,10 @@ public static class DigimonDataRetriever {
 
     [MenuItem("DigiDex/Digimon/Retrieve Data")]
     public static async void RetrieveData() {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+
         if (!Directory.Exists(DigimonDataPath)) {
             Directory.CreateDirectory(DigimonDataPath);
         }
@@ -78,6 +85,7 @@ public static class DigimonDataRetriever {
             {"Balli Bastemon", 1},
             {"Beelzebumon (2010 Anime Version)", 2},
             {"Bio Lotusmon", 2},
+            {"Brigadramon", 1},
             {"Black Growmon", 2},
             {"Blucomon", 1},
             {"Bomber Nanimon", 1},
@@ -92,6 +100,7 @@ public static class DigimonDataRetriever {
             {"Durandamon", 1},
             {"Fros Velgrmon", 1},
             {"Frozomon", 1},
+            {"Gekkomon", 1},
             {"Hi-Vision Monitamon", 1},
             {"Hiyarimon", 1},
             {"JESmon (X-Antibody)", 1},
@@ -121,26 +130,46 @@ public static class DigimonDataRetriever {
             {"Xros Up Tuwarmon (Superstarmon)", 1},
         };
 
-        XmlDocument digimonListSite = await DataRetriever.GetSite(DigimonListSubFix);
-        XmlNodeList table = digimonListSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable'][position() < 27]/tbody/tr/td[1]/a");
+        HtmlDocument digimonListSite = await DataRetriever.GetSite(DigimonListSubFix);
+        HtmlNodeCollection table = digimonListSite.DocumentNode.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[@class='wikitable'][position() < 27]/tbody/tr/td[1]/a");
+        CancellationToken token = _cts.Token;
         for (int i = 0; i < table.Count; i++) {
-            string digimonLinkSubFix = table.Item(i)?.Attributes.Item(0)?.InnerText ?? "";
+            string digimonLinkSubFix = table[i]?.Attributes[0]?.Value ?? "";
+
+            if (token.IsCancellationRequested) {
+                break;
+            }
+
+            string[] terms = digimonLinkSubFix.Split('_', ':');
+            bool isDigimon = false;
+
+            for (int iTerm = 0; iTerm < terms.Length; ++iTerm) {
+                if (terms[iTerm].EndsWith("mon")) {
+                    isDigimon = true;
+                    break;
+                }
+            }
+
+            if (!isDigimon) {
+                continue;
+            }
 
             if (!string.IsNullOrEmpty(digimonLinkSubFix)) {
-                try {
-                    XmlDocument digimonSite = await DataRetriever.GetSite(digimonLinkSubFix);
+                try
+                {
+                    HtmlDocument digimonSite = await DataRetriever.GetSite(digimonLinkSubFix);
 
-                    digimonLinkSubFix = string.IsNullOrEmpty(digimonSite.BaseURI) ?
-                        digimonLinkSubFix :
-                        digimonSite.BaseURI.Replace(DataRetriever.WikimonBaseURL, "");
+                    //digimonLinkSubFix = string.IsNullOrEmpty(digimonSite.DocumentNode.Attributes["href"].Value) ?
+                    //    digimonLinkSubFix :
+                    //    digimonSite.DocumentNode.Attributes["href"].Value.Replace(DataRetriever.WikimonBaseURL, "");
 
-                    Debug.Log(digimonLinkSubFix);
+                     Debug.Log($"{digimonLinkSubFix} - {i}");
 
                     if (digimons.Find(d => d.LinkSubFix == digimonLinkSubFix)) {
                         continue;
                     }
 
-                    string digimonName = digimonSite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
+                    string digimonName = digimonSite.DocumentNode.SelectSingleNode("//*[@id='firstHeading']").InnerText;
                     string digimonNameSafe = digimonName.AddresableSafe();
                     string digimonArtPath = ArtDigimonsPath + digimonNameSafe + ".png";
                     string digimonDataPath = DigimonsDataPath + "/" + digimonNameSafe + ".asset";
@@ -155,15 +184,16 @@ public static class DigimonDataRetriever {
 
                     bool hasArt = false;
                     if (!File.Exists(digimonArtPath)) {
-                        XmlNode image = digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr[1]/td/div/div/a");
+                        // Debug.LogWarning(digimonArtPath);
+                        HtmlNode image = digimonSite.DocumentNode.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div/div[2]/div[1]/div/div[2]/div/div/a");
                         if (image != null) {
-                            string linkToImagePage = image.Attributes.GetNamedItem("href").InnerText;
+                            string linkToImagePage = image.Attributes["href"].Value;
                             var hdImageSide = await DataRetriever.GetSite(linkToImagePage);
-                            XmlNode hdImage = null;
-                            XmlNodeList images = hdImageSide.SelectNodes("//table[@class='wikitable filehistory']/tr/td[4]");
-                            List<(XmlNode node, int result)> imagesList = new List<(XmlNode node, int result)>(images?.Count ?? 0);
+                            HtmlNode hdImage = null;
+                            HtmlNodeCollection images = hdImageSide.DocumentNode.SelectNodes("//table[@class='wikitable filehistory']/tr/td[4]");
+                            List<(HtmlNode node, int result)> imagesList = new List<(HtmlNode node, int result)>(images?.Count ?? 0);
                             for (int iNode = 0; iNode < images.Count; ++iNode) {
-                                XmlNode imageItem = images.Item(iNode);
+                                HtmlNode imageItem = images[iNode];
                                 // We extract the image resolution and fetch the best one
                                 string[] values = imageItem.InnerText.Split(' ');
                                 int width; 
@@ -172,7 +202,7 @@ public static class DigimonDataRetriever {
                                     int.TryParse(values[2], NumberStyles.AllowThousands, NumberFormatInfo.InvariantInfo, out height)
                                 ) {
                                     int value = width * height;
-                                    imagesList.Add((images.Item(iNode), value));
+                                    imagesList.Add((images[iNode], value));
                                 }
                             }
 
@@ -188,7 +218,7 @@ public static class DigimonDataRetriever {
 
                                 hdImage = imagesList[0].node.PreviousSibling.FirstChild;
                                 if (hdImage != null) {
-                                    string linkToImage = DataRetriever.WikimonBaseURL + hdImage.Attributes.GetNamedItem("href").InnerText;
+                                    string linkToImage = DataRetriever.WikimonBaseURL + hdImage.Attributes["href"].Value;
 
                                     using (UnityWebRequest request = UnityWebRequest.Get(linkToImage)) {
                                         await request.SendWebRequest();
@@ -220,17 +250,17 @@ public static class DigimonDataRetriever {
                     digimonData.Hash = Hash128.Compute(digimonData.LinkSubFix);
                     digimonData.Name = digimonName;
 
-                    XmlNode profileNode = digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td") ??
-                        digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[2]/table/tbody/tr[2]/td/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td") ??
-                        digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td") ??
-                        digimonSite.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td/p");
+                    HtmlNode profileNode = digimonSite.DocumentNode.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td") ??
+                        digimonSite.DocumentNode.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[2]/table/tbody/tr[2]/td/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td") ??
+                        digimonSite.DocumentNode.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td") ??
+                        digimonSite.DocumentNode.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[1]/div[2]/table/tbody/tr[2]/td/div[1]/table/tbody/tr[1]/td/p");
 
                     if (profileNode != null) {
-                        if (profileNode.FirstChild?.LocalName == "span") {
+                        if (profileNode.FirstChild?.Name == "span") {
                             // Remove the "Japanese/English" Toggle
                             profileNode.RemoveChild(profileNode.FirstChild);
                         }
-                        digimonData.Profile = profileNode.InnerText;
+                        digimonData.Profile = profileNode.InnerText.TrimEnd();
                     } else {
                         Debug.Log($"No profile found for {digimonNameSafe}");
                     }
@@ -245,109 +275,125 @@ public static class DigimonDataRetriever {
                     digimonData.LevelIDs = new List<int>();
                     digimonData.GroupIDs = new List<int>();
                     digimonData.Attacks = new List<Attack>();
-                    XmlNodeList properties = digimonSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr");
+                    HtmlNodeCollection properties = digimonSite.DocumentNode.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div/div[2]/div[2]/table/tbody/tr");
                     string lastCategory = "";
-                    for (int iProperties = 0; iProperties < properties.Count; ++iProperties) {
-                        XmlNode dataNode = properties.Item(iProperties).FirstChild;
-                        if (dataNode == null) {
-                            continue;
-                        }
 
-                        string fieldType = dataNode?.FirstChild?.Name;
-                        if (fieldType == "b") {
-                            lastCategory = dataNode.InnerText;
-                            dataNode = dataNode.NextSibling;
-                            fieldType = dataNode?.FirstChild?.Name;
-                        }
-                        
-                        if (fieldType == "a") {
-                            string propertyName = dataNode.FirstChild?.InnerText;
+                    if (properties != null) {
+                        for (int iProperties = 0; iProperties < properties.Count; ++iProperties) {
+                            HtmlNode dataNode = properties[iProperties].ChildNodes[1];
+                            if (dataNode == null) {
+                                continue;
+                            }
 
-                            switch (lastCategory) {
-                                case "Attribute": {
-                                    int index = digimonDB.Attributes.FindIndex(a => a.Name == propertyName);
-                                    if (index >= 0) {
-                                        digimonData.AttributeIDs.Add(index);
-                                    }
-                                } break;
-                                case "Field": {
-                                    int index = digimonDB.Fields.FindIndex(f => f.Name == propertyName);
-                                    if (index >= 0) {
-                                        digimonData.FieldIDs.Add(index);
-                                        continue;
-                                    }
-                                } break;
-                                case "Type": {
-                                    int index = digimonDB.Types.FindIndex(t => t.Name == propertyName);
-                                    if (index >= 0) {
-                                        digimonData.TypeIDs.Add(index);
-                                    }
-                                } break;
-                                case "Level": {
-                                    int index = digimonDB.Levels.FindIndex(l => l.Name == propertyName);
-                                    if (index >= 0) {
-                                        digimonData.LevelIDs.Add(index);
-                                    }
-                                } break;
-                                case "Group": {
-                                    int index = digimonDB.Groups.FindIndex(g => g.Name == propertyName);
-                                    if (index >= 0) {
-                                        digimonData.GroupIDs.Add(index);
-                                    }
-                                } break;
+                            string fieldType = dataNode?.FirstChild?.Name;
+                            if (fieldType == "b") {
+                                lastCategory = dataNode.InnerText.TrimEnd();
+                                dataNode = properties[iProperties].ChildNodes[3];
+                                fieldType = dataNode?.FirstChild.Name.TrimEnd();
+                            }
+                            
+                            if (fieldType == "a") {
+                                string propertyName = dataNode.FirstChild?.InnerText.TrimEnd();
+                                // Debug.LogWarning($"{lastCategory} : {propertyName}");
+
+                                switch (lastCategory) {
+                                    case "Attribute": {
+                                        int index = digimonDB.Attributes.FindIndex(a => a.Name == propertyName);
+                                        if (index >= 0) {
+                                            digimonData.AttributeIDs.Add(index);
+                                        }
+                                    } break;
+                                    case "Field": {
+                                        int index = digimonDB.Fields.FindIndex(f => f.Name == propertyName);
+                                        if (index >= 0) {
+                                            digimonData.FieldIDs.Add(index);
+                                            continue;
+                                        }
+                                    } break;
+                                    case "Type": {
+                                        int index = digimonDB.Types.FindIndex(t => t.Name == propertyName);
+                                        if (index >= 0) {
+                                            digimonData.TypeIDs.Add(index);
+                                        }
+                                    } break;
+                                    case "Level": {
+                                        int index = digimonDB.Levels.FindIndex(l => l.Name == propertyName);
+                                        if (index >= 0) {
+                                            digimonData.LevelIDs.Add(index);
+                                        }
+                                    } break;
+                                    case "Group": {
+                                        int index = digimonDB.Groups.FindIndex(g => g.Name == propertyName);
+                                        if (index >= 0) {
+                                            digimonData.GroupIDs.Add(index);
+                                        }
+                                    } break;
+                                }
                             }
                         }
                     }
 
-                    XmlNode dubNode = digimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/table/tbody/tr/td/div/table/tbody/tr/td/div/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td[b='Dub:']");
+                    HtmlNode dubNode = digimonSite.DocumentNode.SelectSingleNode("/html/body/div/div/div/div/div/div/table/tbody/tr/td/div/table/tbody/tr/td/div/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td[b='Dub:']");
                     digimonData.DubNames = new List<string>();
                     if (dubNode != null) {
-                        XmlNode test = dubNode.NextSibling;
-                        while ((test != null) && (test.InnerText == "")) {
+                        HtmlNode test = dubNode.NextSibling;
+                        while ((test != null) && (string.IsNullOrWhiteSpace(test.InnerText))) {
                             test = test.NextSibling;
                         }
                         if (test != null) {
-                            XmlNode child = test.FirstChild;
+                            HtmlNode child = test.FirstChild;
                             while (child != null) {
                                 if (child.Name == "i") {
-                                    digimonData.DubNames.Add(child.FirstChild?.InnerText ?? child.InnerText);
+                                    string dubName = child.FirstChild?.InnerText ?? child.InnerText;
+                                    digimonData.DubNames.Add(dubName.TrimEnd());
                                 }
                                 child = child.NextSibling;
                             }
                         }
                     }
-                    
-                    XmlNode debutYearNode = digimonSite.SelectSingleNode("/html/body/div/div/div/div/div/div/table/tbody/tr/td/div/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td[contains(text(),'Year Active')]")?.NextSibling;
+
+                    HtmlNode debutYearNode = digimonSite.DocumentNode.SelectSingleNode("/html/body/div/div/div/div/div/div/table/tbody/tr/td/div/table/tbody/tr/td/table/tbody/tr/td/table/tbody/tr/td[contains(text(),'Year Active')]")?.NextSibling?.NextSibling;
                     int.TryParse(debutYearNode?.InnerText, out digimonData.DebutYear);
 
-                    XmlNode attackHeader = digimonSite.SelectSingleNode("//*[@id='Attack_Techniques']");
-                    if (attackHeader?.ParentNode.NextSibling.Name == "table") {
-                        XmlNodeList attacks = attackHeader?.ParentNode.NextSibling.FirstChild.ChildNodes;
+                    HtmlNode attackHeader = digimonSite.DocumentNode.SelectSingleNode("//*[@id='Attack_Techniques']");
+                    if (attackHeader?.ParentNode.NextSibling.NextSibling.Name == "table") {
+                        var test = attackHeader?.ParentNode.NextSibling.NextSibling;
+                        HtmlNodeCollection attacks = attackHeader?.ParentNode.NextSibling.NextSibling.ChildNodes[1].ChildNodes;
                         for (int iAttack = 1; iAttack < attacks.Count; ++iAttack) {
-                            XmlNode attackData = attacks.Item(iAttack);
+                            HtmlNode attackData = attacks[iAttack];
 
-                            if (string.IsNullOrEmpty(attackData.FirstChild.InnerText)) {
+                            if (string.IsNullOrEmpty(attackData.FirstChild?.InnerText)) {
                                 continue;
                             }
 
                             Attack attack = new Attack();
-                            attack.Name = attackData.FirstChild.InnerText;
-                            attack.Description = "";
-                            XmlNodeList descriptionNodes = attackData.LastChild.ChildNodes;
-                            for (int iNode = 0; iNode < descriptionNodes.Count; ++iNode) {
-                                XmlNode descNode = descriptionNodes.Item(iNode);
-                                if (descNode.Name != "sup") {
-                                    attack.Description += descNode.InnerText;
+                            attack.Name = attackData.ChildNodes[1]?.InnerText.TrimEnd();
+                            HtmlNodeCollection descriptionNodes = attackData.LastChild.ChildNodes;
+                            if (descriptionNodes[0].Name == "div") {
+                                attack.Description = descriptionNodes[^2].FirstChild?.FirstChild?.InnerText;
+                            } else {
+                                for (int iNode = 0; iNode < descriptionNodes.Count; ++iNode) {
+                                    HtmlNode descNode = descriptionNodes[iNode];
+                                    if (descNode.Name != "sup") {
+                                        attack.Description += descNode.InnerText;
+                                    }
                                 }
                             }
+
+                            attack.Description = attack.Description?.TrimEnd() ?? "";
+                            HtmlNodeCollection dubNames = attackData.ChildNodes[^3].FirstChild?.ChildNodes;
                             
-                            string[] dubNames = attackData.ChildNodes[attackData.ChildNodes.Count - 2].FirstChild.FirstChild.InnerText
-                                .Split(new char[] { ',', '/' }, StringSplitOptions.RemoveEmptyEntries);
-                            attack.DubNames = new List<string>(dubNames.Length);
-                            for (int iName = 0; iName < dubNames.Length; ++iName) {
-                                string name = dubNames[iName].Trim();
-                                if (attack.Name != name) {
-                                    attack.DubNames.Add(name);
+                            if (dubNames != null) {
+                                attack.DubNames = new List<string>(dubNames.Count);
+                                for (int iName = 0; iName < dubNames.Count; ++iName) {
+                                    if (dubNames[iName].Name == "#text") {
+                                        string[] names = dubNames[iName].InnerText.Split('/');
+                                        foreach (var name in names) {
+                                            if (attack.Name != name && !string.IsNullOrWhiteSpace(name)) {
+                                                attack.DubNames.Add(name);
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -367,7 +413,10 @@ public static class DigimonDataRetriever {
             }
         }
 
-
+        if (!Directory.Exists(SpriteAtlasesPath)) {
+            Directory.CreateDirectory(SpriteAtlasesPath);
+        }
+    
         int atlasCount = Mathf.CeilToInt((float)digimonsWithArt.Count / (float)DigimonsPerAtlas);
         int iDigimonArt = 0;
         for (int i = 0; i < atlasCount; i++) {
@@ -375,10 +424,12 @@ public static class DigimonDataRetriever {
             SpriteAtlas spriteAtlas = new SpriteAtlas();
             UnityEngine.Object[] sprites = new UnityEngine.Object[Mathf.Min(DigimonsPerAtlas, digimonsWithArt.Count - (DigimonsPerAtlas * i))];
             for (int j = 0; j < sprites.Length; ++iDigimonArt, ++j) {
+                // Debug.LogWarning(digimonsWithArt[iDigimonArt].path);
                 sprites[j] = AssetDatabase.LoadAssetAtPath<Sprite>(digimonsWithArt[iDigimonArt].path);
             }
             TextureImporterPlatformSettings textureSettings = spriteAtlas.GetPlatformSettings("DefaultTexturePlatform");
             textureSettings.crunchedCompression = true;
+            spriteAtlas.SetPlatformSettings(textureSettings);
             spriteAtlas.Add(sprites);
             AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
         }
@@ -387,7 +438,7 @@ public static class DigimonDataRetriever {
         AssetDatabase.Refresh();
 
         SpriteAtlasUtility.PackAllAtlases(EditorUserBuildSettings.activeBuildTarget);
-    
+
         for (int i = 0; i < atlasCount; i++) {
             string spriteAtlasPath = string.Format(SpriteAtlasXPath, i);
             string spriteAtlasGUID = AssetDatabase.GUIDFromAssetPath(spriteAtlasPath).ToString();
@@ -444,8 +495,8 @@ public static class DigimonDataRetriever {
 
     [MenuItem("DigiDex/Digimon/Generate/Field List")]
     public async static UniTask GenerateFieldList() {
-        XmlDocument fieldSite = await DataRetriever.GetSite(FieldListSubFix);
-        XmlNodeList table = fieldSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table/tbody/tr");
+        HtmlDocument fieldSite = await DataRetriever.GetSite(FieldListSubFix);
+        HtmlNodeCollection table = fieldSite.DocumentNode.SelectNodes("//*[@id=\"mw-content-text\"]/div/table[1]/tbody/tr");
         string fieldsDataPath = DigimonDataPath + "Fields";
         if (!Directory.Exists(fieldsDataPath)) {
             Directory.CreateDirectory(fieldsDataPath);
@@ -455,8 +506,8 @@ public static class DigimonDataRetriever {
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
         var listGroup = DataRetriever.GetOrAddAddressableGroup(DigimonDataGroupName);
         for (int i = 1; i < table.Count; i++) {
-            XmlNode fieldData = table.Item(i);
-            string fieldName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
+            HtmlNode fieldData = table[i];
+            string fieldName = fieldData.ChildNodes[1]?.InnerText ?? "";
 
             if (!string.IsNullOrEmpty(fieldName)) {
                 Field field = null;
@@ -469,7 +520,7 @@ public static class DigimonDataRetriever {
                 }
 
                 field.Name = fieldName;
-                field.Description = fieldData?.ChildNodes.Item(4)?.InnerText ?? "";
+                field.Description = fieldData?.ChildNodes[9]?.InnerText.TrimEnd() ?? "";
                 EditorUtility.SetDirty(field);
                 fields.Add(field);
             }
@@ -537,14 +588,14 @@ public static class DigimonDataRetriever {
             var remoteArtGroup = DataRetriever.GetOrAddAddressableGroup(DataRetriever.RemoteArtGroupName);
             addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(spriteAtlasPath).ToString(), remoteArtGroup);
 
-            XmlNodeList images = fieldSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/p[6]/a");
+            HtmlNodeCollection images = fieldSite.DocumentNode.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/p[6]/a");
             for (int i = 0; i < images.Count; i++) {
-                XmlNode image = images.Item(i);
-                string fieldName = image.Attributes.GetNamedItem("title").InnerText.Replace("Category:", string.Empty);
+                HtmlNode image = images[i];
+                string fieldName = image.Attributes["title"].Value.Replace("Category:", string.Empty);
                 
                 var field = fields.Find(f => f.Name == fieldName);
                 if (field != null) {
-                    string linkToImage = DataRetriever.WikimonBaseURL + image.FirstChild.Attributes.GetNamedItem("src").InnerText;
+                    string linkToImage = DataRetriever.WikimonBaseURL + image.FirstChild.Attributes["src"].Value;
                     string fieldArtPath = FieldsRemoteArtPath + "/" + fieldName + ".png";
                     
                     if (!File.Exists(fieldArtPath)) {
@@ -583,16 +634,17 @@ public static class DigimonDataRetriever {
         Array.Sort<string>(paths, (x, y) => x.CompareTo(y));
         for (int iDigimon = 0; iDigimon < paths.Length; iDigimon++) {
             Digimon digimonData = AssetDatabase.LoadAssetAtPath<Digimon>(paths[iDigimon]);
-            XmlDocument digimonSite = await DataRetriever.GetSite(digimonData.LinkSubFix);
+            // Debug.Log(digimonData.Name);
+            HtmlDocument digimonSite = await DataRetriever.GetSite(digimonData.LinkSubFix);
 
             digimonData.AttributeIDs = new List<int>();
             digimonData.FieldIDs = new List<int>();
             digimonData.TypeIDs = new List<int>();
             digimonData.LevelIDs = new List<int>();
-            XmlNodeList properties = digimonSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div[2]/table/tbody/tr[2]/td/table[2]/tbody/tr");
+            HtmlNodeCollection properties = digimonSite.DocumentNode.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div/div[2]/div[2]/table/tbody/tr");
             string lastCategory = "";
             for (int iProperties = 0; iProperties < properties.Count; ++iProperties) {
-                XmlNode dataNode = properties.Item(iProperties).FirstChild;
+                HtmlNode dataNode = properties[iProperties].FirstChild;
                 if (dataNode == null) {
                     continue;
                 }
@@ -649,12 +701,13 @@ public static class DigimonDataRetriever {
             EditorUtility.SetDirty(digimonData);
         }
         AssetDatabase.SaveAssets();
+        Debug.Log("Coupled");
     }
 
     [MenuItem("DigiDex/Digimon/Generate/Attribute List")]
     public static async UniTask GenerateAttributeList() {
-        XmlDocument attributeSite = await DataRetriever.GetSite(AttributeListSubFix);
-        XmlNodeList table = attributeSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table/tbody/tr/td/a");
+        HtmlDocument attributeSite = await DataRetriever.GetSite(AttributeListSubFix);
+        HtmlNodeCollection table = attributeSite.DocumentNode.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table/tbody/tr/td/a");
         string attributesDataPath = DigimonDataPath + "Attributes";
         if (!Directory.Exists(attributesDataPath)) {
             Directory.CreateDirectory(attributesDataPath);
@@ -664,8 +717,8 @@ public static class DigimonDataRetriever {
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
         var listGroup = DataRetriever.GetOrAddAddressableGroup(DigimonDataGroupName);
         for (int i = 0; i < table.Count; i++) {
-            XmlNode fieldData = table.Item(i);
-            string attributeName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
+            HtmlNode fieldData = table[i];
+            string attributeName = fieldData.ChildNodes[0]?.InnerText ?? "";
 
             if (!string.IsNullOrEmpty(attributeName)) {
                 Attribute attribute = null;
@@ -701,8 +754,8 @@ public static class DigimonDataRetriever {
 
     [MenuItem("DigiDex/Digimon/Generate/Type List")]
     public static async UniTask GenerateTypeList() {
-        XmlDocument typeSite = await DataRetriever.GetSite(TypeListSubFix);
-        XmlNodeList table = typeSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table/tbody/tr/td[1]/b/a");
+        HtmlDocument typeSite = await DataRetriever.GetSite(TypeListSubFix);
+        HtmlNodeCollection table = typeSite.DocumentNode.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table/tbody/tr/td[1]/b/a");
         string typesDataPath = DigimonDataPath + "Types";
         if (!Directory.Exists(typesDataPath)) {
             Directory.CreateDirectory(typesDataPath);
@@ -712,8 +765,8 @@ public static class DigimonDataRetriever {
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
         var listGroup = DataRetriever.GetOrAddAddressableGroup(DigimonDataGroupName);
         for (int i = 0; i < table.Count; i++) {
-            XmlNode fieldData = table.Item(i);
-            string typeName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
+            HtmlNode fieldData = table[i];
+            string typeName = fieldData.ChildNodes[0]?.InnerText ?? "";
 
             if (!string.IsNullOrEmpty(typeName)) {
                 DigimonType type = null;
@@ -745,8 +798,8 @@ public static class DigimonDataRetriever {
 
     [MenuItem("DigiDex/Digimon/Generate/Level List")]
     public static async UniTask GenerateLevelList() {
-        XmlDocument levelSite = await DataRetriever.GetSite(LevelListSubFix);
-        XmlNodeList table = levelSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[position() > 0][position() < 4]/tbody/tr/td/b/a");
+        HtmlDocument levelSite = await DataRetriever.GetSite(LevelListSubFix);
+        HtmlNodeCollection table = levelSite.DocumentNode.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[position() > 0][position() < 4]/tbody/tr/th[2]");
         string levelsDataPath = DigimonDataPath + "Levels";
         if (!Directory.Exists(levelsDataPath)) {
             Directory.CreateDirectory(levelsDataPath);
@@ -754,11 +807,10 @@ public static class DigimonDataRetriever {
 
         List<Level> levels = new List<Level>();
         for (int i = 0; i < table.Count; i++) {
-            XmlNode fieldData = table.Item(i);
-            string levelName = fieldData.ChildNodes.Item(0)?.InnerText ?? "";
-            string levelDubName = fieldData.ParentNode.ParentNode.LastChild.PreviousSibling.InnerText;
+            HtmlNode fieldData = table[i];
+            string levelName = fieldData.ChildNodes[0]?.InnerText ?? "";
 
-            if (levelName == "Digitama" || levelName == "Super Ultimate") {
+            if (levelName == "Digitama" || levelName == "Super Ultimate" || levelName.StartsWith("Name")) {
                 continue;
             }
 
@@ -773,6 +825,7 @@ public static class DigimonDataRetriever {
                 }
 
                 level.Name = levelName;
+                string levelDubName = fieldData.ChildNodes[6]?.ChildNodes[1]?.InnerText ?? "";// fieldData.ParentNode.ParentNode.LastChild.PreviousSibling.InnerText;
 
                 // HACK: the wiki has stuff like "Baby/Fresh/Training I" which is not ideal so we cherry pick the ones we want
                 switch (levelName) {
@@ -810,8 +863,8 @@ public static class DigimonDataRetriever {
     
     [MenuItem("DigiDex/Digimon/Generate/Digimon Group List")]
     public static async UniTask GenerateDigimonGroupList() {
-        XmlDocument levelSite = await DataRetriever.GetSite(DigimonGroupListSubFix);
-        XmlNodeList table = levelSite.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr");
+        HtmlDocument levelSite = await DataRetriever.GetSite(DigimonGroupListSubFix);
+        HtmlNodeCollection table = levelSite.DocumentNode.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr");
         string digimonGroupsDataPath = DigimonDataPath + "Groups";
         if (!Directory.Exists(digimonGroupsDataPath)) {
             Directory.CreateDirectory(digimonGroupsDataPath);
@@ -819,13 +872,12 @@ public static class DigimonDataRetriever {
 
         List<DigimonGroup> groups = new List<DigimonGroup>();
         for (int i = 0; i < table.Count; i++) {
-            XmlNode groupData = table.Item(i);
+            HtmlNode groupData = table[i];
 
-            if ((groupData.FirstChild == null) || (groupData.FirstChild.Name != "td")) {
+            string groupName = groupData.ChildNodes[1]?.InnerText ?? "";
+            if (groupName == "Name") {
                 continue;
             }
-
-            string groupName = groupData.FirstChild?.InnerText ?? "";
 
             if (!string.IsNullOrEmpty(groupName)) {
                 DigimonGroup group = null;
@@ -838,7 +890,7 @@ public static class DigimonDataRetriever {
                 }
 
                 group.Name = groupName;
-                group.Description = groupData?.LastChild.InnerText ?? "";
+                group.Description = groupData.ChildNodes[7]?.InnerText.TrimEnd() ?? "";
                 EditorUtility.SetDirty(group);
                 groups.Add(group);
             }
@@ -861,5 +913,13 @@ public static class DigimonDataRetriever {
     [MenuItem("DigiDex/Digimon/Get Evolutions")]
     public static void GetEvolutions() {
         DataRetriever.GetEvolutions<Digimon>(GetDigimonDatabase(), DigimonsDataPath, DigimonEvolutionsDataPath, DigimonEvolutionDataGroupName);
+    }
+
+    
+    [MenuItem("DigiDex/Digimon/Cancel Operation")]
+    public static void CancelOperation() {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
     }
 }

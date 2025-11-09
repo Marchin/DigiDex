@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Xml;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
@@ -10,6 +9,7 @@ using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
+using HtmlAgilityPack;
 
 public static class DataRetriever {
     public const string LocalArtPath = "Assets/Art/";
@@ -20,11 +20,11 @@ public static class DataRetriever {
     public const string DBGroupName = "Databases";
     public const string WikimonBaseURL = "https://wikimon.net";
     public const string DataCenterPath = DataPath + DataCenter.DataCenterAssetName + ".asset";
-    private static Dictionary<string, XmlDocument> _sitesData;
-    public static Dictionary<string, XmlDocument> SitesData {
+    private static Dictionary<string, HtmlDocument> _sitesData;
+    public static Dictionary<string, HtmlDocument> SitesData {
         get {
             if (_sitesData == null) {
-                _sitesData = new Dictionary<string, XmlDocument>();
+                _sitesData = new Dictionary<string, HtmlDocument>();
             }
             
             return _sitesData;
@@ -41,12 +41,12 @@ public static class DataRetriever {
         }
     }
 
-    private static string RemoveXmlComments(string xml) {
+    private static string RemoveHtmlComments(string html) {
         List<(int, int)> ranges = new List<(int, int)>();
         int index = 0;
         int startingIndex = 0;
-        for (int i = 0; i < xml.Length; ++i) {
-            switch (xml[i]) {
+        for (int i = 0; i < html.Length; ++i) {
+            switch (html[i]) {
                 case '<': {
                     if (index <= 3) {
                         index = 1;
@@ -88,7 +88,7 @@ public static class DataRetriever {
             }
         }
 
-        string result = xml;
+        string result = html;
         for (int iRange = 0; iRange < ranges.Count; ++iRange) {
             int baseIndex = ranges[iRange].Item1;
             for (int jRange = 0; jRange < iRange; ++jRange) {
@@ -100,7 +100,7 @@ public static class DataRetriever {
         return result;
     }
 
-    public static async UniTask<XmlDocument> GetSite(string linkSubFix, Action<string> OnFinalSubFix = null) {
+    public static async UniTask<HtmlDocument> GetSite(string linkSubFix, Action<string> OnFinalSubFix = null) {
         if (SitesFinalLink.ContainsKey(linkSubFix)) {
             linkSubFix = SitesFinalLink[linkSubFix];
         }
@@ -132,30 +132,31 @@ public static class DataRetriever {
                             }
                         }
                         data = Encoding.UTF8.GetString(request.downloadHandler.data);
-                        data = RemoveXmlComments(data);
+                        data = RemoveHtmlComments(data);
                     } else {
                         return null;
                     }
                 }
 
-                XmlDocument site = new XmlDocument();
-                site.LoadXml(data);
+                File.WriteAllText("site.html", data);
+                HtmlDocument site = new HtmlDocument();
+                site.LoadHtml(data);
 
                 // Sometimes name variants are used for the list, we look for the name used in the profile
-                XmlNode redirectNode = site.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
+                HtmlNode redirectNode = site.DocumentNode.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
                 while (redirectNode != null) {
-                    string newLinkSubFix = redirectNode.Attributes.GetNamedItem("href").InnerText;
+                    string newLinkSubFix = redirectNode.Attributes["href"].Value;
                     Debug.Log($"Redirecting from {linkSubFix} to {newLinkSubFix}");
                     subLinks.Add(newLinkSubFix);
                     linkSubFix = newLinkSubFix;
                     site = await DataRetriever.GetSite(linkSubFix);
-                    redirectNode = site.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
+                    redirectNode = site.DocumentNode.SelectSingleNode("/html/body/div/div/div/div/div/div/div/ul[@class='redirectText']/li/a");
                 }
 
                 if (linkSubFix.Contains('(') || linkSubFix.Contains(':')) {
-                    var linkNode = site.SelectSingleNode("//link[@rel='canonical']");
+                    var linkNode = site.DocumentNode.SelectSingleNode("//link[@rel='canonical']");
                     if (linkNode != null) {
-                        string newLinkSubFix = linkNode.Attributes.GetNamedItem("href")?.InnerText.Replace(WikimonBaseURL, "");
+                        string newLinkSubFix = linkNode.Attributes["href"]?.Value.Replace(WikimonBaseURL, "");
 
                         if (!string.IsNullOrEmpty(newLinkSubFix) && (newLinkSubFix != linkSubFix)) {
                             subLinks.Add(newLinkSubFix);
@@ -168,7 +169,7 @@ public static class DataRetriever {
                         SitesData[subLink] = site;
                     }
                 } else {
-                    string siteMeta = site.SelectSingleNode("/html/body").Attributes.GetNamedItem("class").InnerText;
+                    string siteMeta = site.DocumentNode.SelectSingleNode("/html/body").Attributes["class"].Value;
                     const string rootpage = "rootpage";
                     int rootpageStart = siteMeta.IndexOf(rootpage);
                     int rootpageEnd = siteMeta.IndexOf(' ', rootpageStart);
@@ -222,7 +223,9 @@ public static class DataRetriever {
     }
 
     public static string AddresableSafe(this string name) {
-        return name.Replace(":", string.Empty).Replace("/", "-");
+        char[] invalidCharacters = Path.GetInvalidFileNameChars();
+        name = name.Replace(":", string.Empty);
+        return string.Join('-', name.Split(invalidCharacters, StringSplitOptions.RemoveEmptyEntries));
     }
 
     public static DataCenter GetCentralDatabase() {
@@ -253,14 +256,16 @@ public static class DataRetriever {
             Directory.CreateDirectory(evolutionsDataPath);
         }
 
+        Debug.Log("Start evolutions fetch");
+
         var paths = Directory.GetFiles(entriesDataPath, "*.asset");
-        Array.Sort<string>(paths, (x, y) => y.CompareTo(y));
+        Array.Sort<string>(paths, (x, y) => x.CompareTo(y));
         List<(IDataEntry entry, EvolutionData evolutionData)> pairtList = new List<(IDataEntry d, EvolutionData ed)>();
         for (int iEntry = 0; iEntry < paths.Length; iEntry++) {
             IDataEntry entryData = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(paths[iEntry]) as IDataEntry;
             string evolutionDataPath =  $"{evolutionsDataPath}/{entryData.Name.AddresableSafe()} Evolutions.asset";
             EvolutionData evolutionData = GetOrCreateScriptableObject<EvolutionData>(evolutionDataPath);
-            XmlDocument entrySite = null;
+            HtmlDocument entrySite = null;
 
             try {
                 pairtList.Add((entryData, evolutionData));
@@ -303,12 +308,13 @@ public static class DataRetriever {
             async UniTask<List<Evolution>> ParseEvolutionList(string headerName) {
                 List<Evolution> evolutions = new List<Evolution>();
 
-                XmlNodeList header = entrySite.SelectNodes($"/html/body/div/div/div/div/div/div/h2/span[@id='{headerName}']");
+                HtmlNodeCollection header = entrySite.DocumentNode.SelectNodes($"/html/body/div/div/div/div/div/div/h2/span[@id='{headerName}']");
+                HtmlNode evolutionNode = header[0]?.ParentNode.NextSibling.NextSibling;
                 // Check if there're entries to be parsed
-                if (header?.Item(0)?.ParentNode.NextSibling.Name == "ul") {
-                    XmlNodeList evolutionsNode = header.Item(0).ParentNode.NextSibling.SelectNodes("li");
+                if (evolutionNode.Name == "ul") {
+                    HtmlNodeCollection evolutionsNode = evolutionNode.SelectNodes("li");
                     for (int iField = 0; iField < evolutionsNode.Count; ++iField) {
-                        XmlNode entryNode = evolutionsNode.Item(iField).FirstChild;
+                        HtmlNode entryNode = evolutionsNode[iField].FirstChild;
                         string name = entryNode.InnerText;
                         if (name.StartsWith("Any ")) {
                             continue;
@@ -317,13 +323,13 @@ public static class DataRetriever {
                         var auxNode = entryNode.Name == "b"? entryNode.FirstChild : entryNode;
                         
                         IDataEntry entry = db.Entries.Find(d => d.Name == name);
-                        string fuseEntryLinkSubFix = auxNode?.Attributes?.GetNamedItem("href")?.InnerText;
+                        string fuseEntryLinkSubFix = auxNode?.Attributes["href"]?.Value;
 
                         if (entry == null && !string.IsNullOrEmpty(fuseEntryLinkSubFix)) {
                             // Sometimes name variants are used for the list, we look for the name used in the profile
                             try {
-                                XmlDocument fuseEntrySite = await GetSite(fuseEntryLinkSubFix);
-                                name = fuseEntrySite.SelectSingleNode("//*[@id='firstHeading']").InnerText;
+                                HtmlDocument fuseEntrySite = await GetSite(fuseEntryLinkSubFix);
+                                name = fuseEntrySite.DocumentNode.SelectSingleNode("//*[@id='firstHeading']").InnerText;
                             } catch (Exception ex) {
                                 Debug.Log($"{name} - {fuseEntryLinkSubFix} - {ex.Message} \n {ex.StackTrace}");
                             }
@@ -345,7 +351,7 @@ public static class DataRetriever {
                             bool isWarp = false;
                             bool oneOrMoreOptionals = false;
 
-                            XmlNode siblingNode = entryNode.NextSibling;
+                            HtmlNode siblingNode = entryNode.NextSibling;
                             while (siblingNode != null) {
                                 if (siblingNode.InnerText == "Warp Evolution") {
                                     isWarp = true;
@@ -398,14 +404,14 @@ public static class DataRetriever {
                                             evolutions.Add(method);
                                             method = new Evolution { Entry = entryIndex, DebugName = name, Types = baseEvolutionType };
                                         } else if (siblingNode.Name == "b" || siblingNode.Name == "a") {
-                                            XmlNode aux = (siblingNode.Name == "b") ? siblingNode.FirstChild : siblingNode;
-                                            string materialLink = aux?.Attributes?.GetNamedItem("href")?.Value;
+                                            HtmlNode aux = (siblingNode.Name == "b") ? siblingNode.FirstChild : siblingNode;
+                                            string materialLink = aux?.Attributes["href"]?.Value;
                                             
                                             if (!string.IsNullOrEmpty(materialLink)) {
                                                 IDataEntry fusion = db.Entries.Find(d => d.LinkSubFix == materialLink);
                                                 if (fusion == null) {
                                                     try {
-                                                        XmlDocument materialSite = await GetSite(materialLink);
+                                                        HtmlDocument materialSite = await GetSite(materialLink);
                                                         fusion = db.Entries.Find(d => d.LinkSubFix == materialLink);
                                                     } catch (Exception ex) {
                                                         Debug.Log($"{name}: Failed to get material {materialLink} - {ex.Message} \n {ex.StackTrace}");
@@ -442,7 +448,7 @@ public static class DataRetriever {
 
                                         siblingNode = siblingNode.NextSibling;
 
-                                        void CheckMain(ref Evolution evo, XmlNode node) {
+                                        void CheckMain(ref Evolution evo, HtmlNode node) {
                                             if (node.Name != "b") {
                                                 evo.Types &= ~EvolutionType.Main;
                                             }

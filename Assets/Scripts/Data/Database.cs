@@ -95,7 +95,11 @@ public abstract class Database : ScriptableObject {
             if (_entryDict == null) {
                 _entryDict = new Dictionary<Hash128, IDataEntry>(Entries.Count);
                 for (int iEntry = 0; iEntry < Entries.Count; ++iEntry) {
-                    _entryDict.Add(Entries[iEntry].Hash, Entries[iEntry]);
+                    try {
+                        _entryDict.Add(Entries[iEntry].Hash, Entries[iEntry]);
+                    } catch (Exception ex) {
+                        Debug.LogWarning($"{ex.Message}: {Entries[iEntry].Name} - {_entryDict[Entries[iEntry].Hash].Name}");
+                    }
                 }
             }
             return _entryDict;
