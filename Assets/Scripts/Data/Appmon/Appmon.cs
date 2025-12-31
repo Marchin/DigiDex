@@ -53,7 +53,7 @@ public class Appmon : ScriptableObject, IEvolvable {
     }
     public AppData App;
     public List<int> GradeIDs;
-    public List<int> TypeIDs;
+    public List<int> AttributeIDs;
     public List<int> Powers;
     public List<Attack> Attacks;
     public int DebutYear;
@@ -88,13 +88,13 @@ public class Appmon : ScriptableObject, IEvolvable {
             });
         }
      
-        if (TypeIDs.Count > 0) {
-            information.Add(new InformationData { Prefix = "Type" });
-            for (int iType = 0; iType < TypeIDs.Count; ++iType) {
-                AppmonType type = appmonDB.Types[TypeIDs[iType]];
+        if (AttributeIDs.Count > 0) {
+            information.Add(new InformationData { Prefix = "Attribute" });
+            for (int iAttribute = 0; iAttribute < AttributeIDs.Count; ++iAttribute) {
+                AppmonAttribute attribute = appmonDB.Attributes[AttributeIDs[iAttribute]];
                 information.Add(new InformationData {
-                    Content = type.Name,
-                    SpriteReference = type.Sprite, 
+                    Content = attribute.Name,
+                    SpriteReference = attribute.Sprite, 
                     IndentLevel = 1
                 });
             }

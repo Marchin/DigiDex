@@ -8,7 +8,7 @@ public class AppmonDatabase : Database {
     private const string ReverseToggle = "Reverse";
     public List<Appmon> Appmons;
     public List<AppmonGrade> Grades;
-    public List<AppmonType> Types;
+    public List<AppmonAttribute> Attributes;
     private List<IDataEntry> _entries;
     public override List<IDataEntry> Entries {
         get {
@@ -28,11 +28,11 @@ public class AppmonDatabase : Database {
 
         FilterData typesFilter = new FilterData(
             name: TypesFilter,
-            getFilteringComponent: element => (element as Appmon).TypeIDs
+            getFilteringComponent: element => (element as Appmon).AttributeIDs
         );
-        typesFilter.Elements = new List<FilterEntryData>(Types.Count);
-        for (int iType = 0; iType < Types.Count; ++iType) {
-            typesFilter.Elements.Add(new FilterEntryData { Name = Types[iType].Name, Sprite = Types[iType].Sprite });
+        typesFilter.Elements = new List<FilterEntryData>(Attributes.Count);
+        for (int iType = 0; iType < Attributes.Count; ++iType) {
+            typesFilter.Elements.Add(new FilterEntryData { Name = Attributes[iType].Name, Sprite = Attributes[iType].Sprite });
         }
         filters.Add(typesFilter);
 

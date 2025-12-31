@@ -357,7 +357,6 @@ public static class DigimonDataRetriever {
 
                     HtmlNode attackHeader = digimonSite.DocumentNode.SelectSingleNode("//*[@id='Attack_Techniques']");
                     if (attackHeader?.ParentNode.NextSibling.NextSibling.Name == "table") {
-                        var test = attackHeader?.ParentNode.NextSibling.NextSibling;
                         HtmlNodeCollection attacks = attackHeader?.ParentNode.NextSibling.NextSibling.ChildNodes[1].ChildNodes;
                         for (int iAttack = 1; iAttack < attacks.Count; ++iAttack) {
                             HtmlNode attackData = attacks[iAttack];

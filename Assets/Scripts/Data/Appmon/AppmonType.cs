@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-public class AppmonType : ScriptableObject {
+public class AppmonAttribute : ScriptableObject {
     public string Name;
     public AssetReferenceAtlasedSprite Sprite;
 }
