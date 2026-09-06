@@ -250,6 +250,7 @@ public static class DataRetriever {
     }
 
     public static async void GetEvolutions<T>(Database db, string entriesDataPath, string evolutionsDataPath, string evolutionGroupName) where T : IEvolvable {
+        string evolutionAssetSubfix = " Evolutions.asset";
         long start = DateTime.Now.Ticks;
 
         if (!Directory.Exists(evolutionsDataPath)) {
@@ -263,7 +264,12 @@ public static class DataRetriever {
         List<(IDataEntry entry, EvolutionData evolutionData)> pairtList = new List<(IDataEntry d, EvolutionData ed)>();
         for (int iEntry = 0; iEntry < paths.Length; iEntry++) {
             IDataEntry entryData = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(paths[iEntry]) as IDataEntry;
-            string evolutionDataPath =  Path.Combine(evolutionsDataPath, entryData.Name.AddresableSafe() + " Evolutions.asset");
+            string name = entryData.Name.AddresableSafe();
+            if (string.IsNullOrEmpty(name)) {
+                Debug.LogWarning($"Empty name {entryData} - {entryData.Name}");
+                continue;
+            }
+            string evolutionDataPath =  Path.Combine(evolutionsDataPath, name + evolutionAssetSubfix);
             EvolutionData evolutionData = GetOrCreateScriptableObject<EvolutionData>(evolutionDataPath);
             HtmlDocument entrySite = null;
 
@@ -552,7 +558,7 @@ public static class DataRetriever {
         }
 
         foreach(var entryEvoData in pairtList) {
-            string evolutionDataPath = Path.Combine(evolutionsDataPath, entryEvoData.entry.Name.AddresableSafe() + " Evolutions.asset");
+            string evolutionDataPath = Path.Combine(evolutionsDataPath, entryEvoData.entry.Name.AddresableSafe() + evolutionAssetSubfix);
             (entryEvoData.entry as IEvolvable).EvolutionDataRef = new AssetReferenceEvolutionData(
                 AssetDatabase.GUIDFromAssetPath(evolutionDataPath).ToString());
         }
