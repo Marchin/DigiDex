@@ -12,14 +12,14 @@ using Cysharp.Threading.Tasks;
 using HtmlAgilityPack;
 
 public static class DataRetriever {
-    public const string LocalArtPath = "Assets/Art/";
-    public const string RemoteArtPath = "Assets/Remote/Art/";
-    public const string DataPath = "Assets/Remote/Data/";
+    public static string LocalArtPath = Path.Combine("Assets", "Art");
+    public static string RemoteArtPath = Path.Combine("Assets", "Remote","Art");
+    public static string DataPath = Path.Combine("Assets", "Remote", "Data");
     public const string RemoteArtGroupName = "Remote Art";
     public const string LocalArtGroupName = "Local Art";
     public const string DBGroupName = "Databases";
     public const string WikimonBaseURL = "https://wikimon.net";
-    public const string DataCenterPath = DataPath + DataCenter.DataCenterAssetName + ".asset";
+    public static string DataCenterPath = DataPath + DataCenter.DataCenterAssetName + ".asset";
     private static Dictionary<string, HtmlDocument> _sitesData;
     public static Dictionary<string, HtmlDocument> SitesData {
         get {
@@ -216,7 +216,7 @@ public static class DataRetriever {
         AddressableAssetGroup group = addressablesSettings.groups.Find(g => g.Name == name);
         if (group == null) {
             AddressableAssetGroupTemplate template = AssetDatabase.LoadAssetAtPath<AddressableAssetGroupTemplate>
-                ("Assets/AddressableAssetsData/AssetGroupTemplates/Packed Assets.asset");
+                (Path.Combine("Assets","AddressableAssetsData","AssetGroupTemplates","Packed Assets.asset"));
             group = addressablesSettings.CreateGroup(name, false, false, false, template.SchemaObjects);
         }
         return group;
@@ -263,7 +263,7 @@ public static class DataRetriever {
         List<(IDataEntry entry, EvolutionData evolutionData)> pairtList = new List<(IDataEntry d, EvolutionData ed)>();
         for (int iEntry = 0; iEntry < paths.Length; iEntry++) {
             IDataEntry entryData = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(paths[iEntry]) as IDataEntry;
-            string evolutionDataPath =  $"{evolutionsDataPath}/{entryData.Name.AddresableSafe()} Evolutions.asset";
+            string evolutionDataPath =  Path.Combine(evolutionsDataPath, entryData.Name.AddresableSafe() + " Evolutions.asset");
             EvolutionData evolutionData = GetOrCreateScriptableObject<EvolutionData>(evolutionDataPath);
             HtmlDocument entrySite = null;
 
@@ -552,7 +552,7 @@ public static class DataRetriever {
         }
 
         foreach(var entryEvoData in pairtList) {
-            string evolutionDataPath = $"{evolutionsDataPath}/{entryEvoData.entry.Name.AddresableSafe()} Evolutions.asset";
+            string evolutionDataPath = Path.Combine(evolutionsDataPath, entryEvoData.entry.Name.AddresableSafe() + " Evolutions.asset");
             (entryEvoData.entry as IEvolvable).EvolutionDataRef = new AssetReferenceEvolutionData(
                 AssetDatabase.GUIDFromAssetPath(evolutionDataPath).ToString());
         }

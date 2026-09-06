@@ -22,16 +22,16 @@ public static class AppmonDataRetriever {
     public const string AttributeListSubFix = "/Appmon_(species)";
     public const string GradeListSubFix = "/Evolution_Stage";
     public const int AppmonsPerAtlas = 3;
-    public const string ArtAppmonFolder = DataRetriever.RemoteArtPath + "Appmon/";
-    public const string ArtAppmonsPath = ArtAppmonFolder + "Appmons/";
-    public const string ArtAppsPath = ArtAppmonFolder + "Apps/";
-    public const string AppmonDataPath = DataRetriever.DataPath + "Appmon/";
-    public const string AppmonsDataPath = AppmonDataPath + "Appmons";
-    public const string AppmonEvolutionsDataPath = AppmonDataPath + "Appmons/Evolutions";
-    public const string AppmonDBPath = AppmonDataPath + "Appmon Database.asset";
-    public const string AppsRemoteArtPath = ArtAppmonFolder + "Apps";
-    public const string AttributesRemoteArtPath = ArtAppmonFolder + "Attributes";
-    public const string SpriteAtlasXPath = ArtAppmonsPath + "Appmons ({0}).spriteatlas";
+    public static string ArtAppmonFolder => Path.Combine(DataRetriever.RemoteArtPath, "Appmon/");
+    public static string ArtAppmonsPath => Path.Combine(ArtAppmonFolder, "Appmons/");
+    public static string ArtAppsPath => Path.Combine(ArtAppmonFolder, "Apps/");
+    public static string AppmonDataPath => Path.Combine(DataRetriever.DataPath, "Appmon/");
+    public static string AppmonsDataPath => Path.Combine(AppmonDataPath, "Appmons");
+    public static string AppmonEvolutionsDataPath => Path.Combine(AppmonDataPath, "Appmons/Evolutions");
+    public static string AppmonDBPath => Path.Combine(AppmonDataPath, "Appmon Database.asset");
+    public static string AppsRemoteArtPath => Path.Combine(ArtAppmonFolder, "Apps");
+    public static string AttributesRemoteArtPath => Path.Combine(ArtAppmonFolder, "Attributes");
+    public static string SpriteAtlasXPath => Path.Combine(ArtAppmonsPath, "Appmons ({0}).spriteatlas");
 
     public static AppmonDatabase GetAppmonDatabase() {
         if (!Directory.Exists(AppmonDataPath)) {
@@ -45,8 +45,8 @@ public static class AppmonDataRetriever {
 
     [MenuItem("DigiDex/Appmon/Retrieve Data")]
     public static async void RetrieveData() {
-        // await GenerateAttributeList();
-        // await GenerateGradeList();
+        await GenerateAttributeList();
+        await GenerateGradeList();
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
 
         if (!Directory.Exists(AppmonsDataPath)) {
@@ -66,7 +66,7 @@ public static class AppmonDataRetriever {
 
         List < (Appmon appmon, string path) > appmonsWithArt = new List < (Appmon appmon, string path) > ();
 
-        string appAtlasPath = AppsRemoteArtPath + "/Apps.spriteatlas";
+        string appAtlasPath = Path.Combine(AppsRemoteArtPath, "Apps.spriteatlas");
         SpriteAtlas appAtlas = new SpriteAtlas();
         AssetDatabase.CreateAsset(appAtlas, appAtlasPath);
         EditorUtility.SetDirty(appAtlas);
@@ -147,8 +147,8 @@ public static class AppmonDataRetriever {
                     HtmlDocument appmonSite = await DataRetriever.GetSite(appmonLinkSubFix);
                     string appmonName = appmonSite.DocumentNode.SelectSingleNode("//*[@id='firstHeading']").InnerText;
                     string appmonNameSafe = appmonName.AddresableSafe();
-                    string appmonArtPath = ArtAppmonsPath + appmonNameSafe + ".png";
-                    string appmonDataPath = AppmonsDataPath + "/" + appmonNameSafe + ".asset";
+                    string appmonArtPath = Path.Combine(ArtAppmonsPath, appmonNameSafe + ".png");
+                    string appmonDataPath = Path.Combine(AppmonsDataPath + "/" + appmonNameSafe + ".asset");
 
                     bool hasArt = false;
                     if (!File.Exists(appmonArtPath)) {  
@@ -266,7 +266,7 @@ public static class AppmonDataRetriever {
                                         {
                                             string appName = propertyName;
                                             appmonData.App = new AppData { Name = appName };
-                                            string appSpritePath = AppsRemoteArtPath + "/" + appName.AddresableSafe() + ".png";
+                                            string appSpritePath = Path.Combine(AppsRemoteArtPath, appName.AddresableSafe() + ".png");
                                             bool hasAppArt = false;
                                             if (!File.Exists(appSpritePath)) {
                                                 HtmlNode imageNode = appmonSite.DocumentNode.SelectSingleNode("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[1]/tbody/tr/td[3]/div/div[2]/div[2]/table/tbody/tr[1]/th/img");
@@ -511,7 +511,7 @@ public static class AppmonDataRetriever {
     public async static UniTask GenerateAttributeList() {
         HtmlDocument attributeSite = await DataRetriever.GetSite(AttributeListSubFix);
         HtmlNodeCollection table = attributeSite.DocumentNode.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[7]/tbody/tr");
-        string attributesDataPath = AppmonDataPath + "Attributes";
+        string attributesDataPath = Path.Combine(AppmonDataPath, "Attributes");
         if (!Directory.Exists(attributesDataPath)) {
             Directory.CreateDirectory(attributesDataPath);
         }
@@ -519,7 +519,7 @@ public static class AppmonDataRetriever {
             Directory.CreateDirectory(AttributesRemoteArtPath);
         }
 
-        string spriteAtlasPath = AttributesRemoteArtPath + "/Attributes.spriteatlas";
+        string spriteAtlasPath = Path.Combine(AttributesRemoteArtPath, "Attributes.spriteatlas");
         SpriteAtlas spriteAtlas = new SpriteAtlas();
         AssetDatabase.CreateAsset(spriteAtlas, spriteAtlasPath);
         AssetDatabase.SaveAssets();
@@ -540,7 +540,7 @@ public static class AppmonDataRetriever {
             if (!string.IsNullOrEmpty(attributeName)) {
                 attributeName = attributeName.Replace("\n", "");
                 AppmonAttribute attribute = null;
-                string attributeDataFilePath = attributesDataPath + "/" + attributeName + ".asset";
+                string attributeDataFilePath = Path.Combine(attributesDataPath, attributeName + ".asset");
                 if (!File.Exists(attributeDataFilePath)) {
                     attribute = ScriptableObject.CreateInstance<AppmonAttribute>();
                     AssetDatabase.CreateAsset(attribute, attributeDataFilePath);
@@ -550,7 +550,7 @@ public static class AppmonDataRetriever {
 
                 attribute.Name = attributeName;
 
-                string attributeArtPath = AttributesRemoteArtPath + "/" + attributeName.AddresableSafe() + ".png";
+                string attributeArtPath = Path.Combine(AttributesRemoteArtPath, attributeName.AddresableSafe() + ".png");
                 bool hasArt = false;
                 if (!File.Exists(attributeArtPath)) {
                     string linkToImage = DataRetriever.WikimonBaseURL + attributeData.ChildNodes[5].FirstChild.FirstChild.Attributes["src"].Value;
@@ -584,7 +584,7 @@ public static class AppmonDataRetriever {
         AssetDatabase.Refresh();
 
         for (int i = 0; i < attributes.Count; i++) {
-            string attributeDataPath = attributesDataPath + "/" + attributes[i].Name + ".asset";
+            string attributeDataPath = Path.Combine(attributesDataPath, attributes[i].Name + ".asset");
             addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(attributeDataPath).ToString(), listGroup);
         }
 
@@ -606,7 +606,7 @@ public static class AppmonDataRetriever {
     public async static UniTask GenerateGradeList() {
         HtmlDocument gradeSite = await DataRetriever.GetSite(GradeListSubFix);
         HtmlNodeCollection table = gradeSite.DocumentNode.SelectNodes("/html/body/div/div[2]/div[2]/div[3]/div[3]/div/table[4]/tbody/tr/th[1]/a");
-        string gradesDataPath = AppmonDataPath + "Grades";
+        string gradesDataPath = Path.Combine(AppmonDataPath, "Grades");
         if (!Directory.Exists(gradesDataPath)) {
             Directory.CreateDirectory(gradesDataPath);
         }
@@ -618,7 +618,7 @@ public static class AppmonDataRetriever {
 
             if (!string.IsNullOrEmpty(gradeName)) {
                 AppmonGrade grade = null;
-                string gradeDataPath = gradesDataPath + "/" + gradeName + ".asset";
+                string gradeDataPath = Path.Combine(gradesDataPath, gradeName + ".asset");
                 if (!File.Exists(gradeDataPath)) {
                     grade = ScriptableObject.CreateInstance<AppmonGrade>();
                     AssetDatabase.CreateAsset(grade, gradeDataPath);
@@ -641,7 +641,7 @@ public static class AppmonDataRetriever {
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
         var listGroup = DataRetriever.GetOrAddAddressableGroup(AppmonDataGroupName);
         for (int i = 0; i < grades.Count; i++) {
-            string gradeDataPath = gradesDataPath + "/" + grades[i].Name + ".asset";
+            string gradeDataPath = Path.Combine(gradesDataPath, grades[i].Name + ".asset");
             addressablesSettings.CreateOrMoveEntry(AssetDatabase.GUIDFromAssetPath(gradeDataPath).ToString(), listGroup);
         }
     }
