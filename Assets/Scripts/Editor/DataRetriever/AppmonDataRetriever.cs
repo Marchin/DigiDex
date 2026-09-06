@@ -533,9 +533,9 @@ public static class AppmonDataRetriever {
         List<AppmonAttribute> attributes = new List<AppmonAttribute>();
         var addressablesSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
         var listGroup = DataRetriever.GetOrAddAddressableGroup(AppmonDataGroupName);
-        for (int i = 1; i < table.Count; i++) {
+        for (int i = 2; i < table.Count; i++) {
             HtmlNode attributeData = table[i];
-            string attributeName = attributeData.ChildNodes[1]?.InnerText.TrimEnd() ?? "";
+            string attributeName = attributeData.ChildNodes[1]?.FirstChild?.InnerText.TrimEnd() ?? "";
 
             if (!string.IsNullOrEmpty(attributeName)) {
                 attributeName = attributeName.Replace("\n", "");
